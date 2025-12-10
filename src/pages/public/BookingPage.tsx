@@ -69,10 +69,23 @@ export default function PublicBookingPage() {
             });
 
             // Race for the business data
-            const businessData = await Promise.race([
-                businessService.getBusinessBySlug(slug),
+            // Direct query to debug service wrapper issues
+            console.log('[BookingPage] Ejecutando query directa a Supabase...');
+            const businessQuery = supabase
+                .from('businesses')
+                .select('*')
+                .eq('slug', slug)
+                .single();
+
+            const { data: businessData, error: businessError } = await Promise.race([
+                businessQuery,
                 timeoutPromise
-            ]) as Business | null;
+            ]) as any;
+
+            if (businessError) {
+                console.error('[BookingPage] Error en query de negocio:', businessError);
+                throw businessError;
+            }
 
             console.log('[BookingPage] Resultado negocio:', businessData);
 
