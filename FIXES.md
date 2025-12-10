@@ -41,21 +41,39 @@ ALTER TABLE notifications DISABLE ROW LEVEL SECURITY;
 **Causa:**
 1.  **Filtrado de Barberos:** El formulario mostraba TODOS los barberos del negocio, incluso si no ofrecían el servicio seleccionado. Si el usuario seleccionaba un barbero que no hacía el servicio, no aparecían horarios disponibles ("No hay horarios disponibles"), dando la impresión de que el form no funcionaba.
 2.  **Formato de Fechas:** Había errores de tipo en el manejo de fechas que podían causar problemas en la visualización.
+3.  **Loading Infinito:** Posible error en la consulta a la base de datos (JOIN) que causaba que la página se quedara cargando.
 
 **Solución:**
-1.  **Filtrar Barberos:** Se actualizó `BookingPage.tsx` para cargar la relación `barbers_services` y filtrar la lista de barberos en el Paso 2. Ahora solo aparecen los barberos que realmente ofrecen el servicio seleccionado.
+1.  **Filtrado de Barberos:** Se actualizó `BookingPage.tsx` para cargar la relación `barbers_services` y filtrar la lista de barberos en el Paso 2. Ahora solo aparecen los barberos que realmente ofrecen el servicio seleccionado.
 2.  **Corrección de Fechas:** Se implementó `parseDate` para manejar correctamente las fechas y eliminar errores de linting.
+3.  **Optimización de Carga:** Se separaron las consultas a la base de datos para evitar errores de conexión complejos.
 
 **Cambios:**
 - `BookingPage.tsx`:
     - Query actualizada para incluir `barbers_services`.
     - Lógica de filtrado añadida en el renderizado de barberos.
     - Corrección de tipos `Date` vs `string`.
+    - Refactorización de la carga de datos.
 
 **Resultado:**
 - El usuario solo puede seleccionar barberos válidos para el servicio.
 - Siempre deberían aparecer horarios si el barbero tiene disponibilidad.
-- Se eliminaron errores de consola relacionados con fechas.
+- La página carga más rápido y sin errores.
+
+---
+
+## ✨ Nueva Funcionalidad: Landing Page con Búsqueda
+
+**Descripción:** Se ha implementado una nueva página de inicio (`/`) completa.
+
+**Características:**
+- **Buscador:** Permite buscar barberías por nombre.
+- **Navegación:** Enlaces claros para "Soy Barbero" (Login) y "Registrar Negocio" (Signup).
+- **Diseño Moderno:** Hero section con imagen de fondo y tarjetas de resultados.
+
+**Resultado:**
+- Los usuarios pueden encontrar tu barbería buscando por nombre.
+- Acceso fácil para nuevos dueños y clientes.
 
 ---
 
@@ -66,10 +84,5 @@ ALTER TABLE notifications DISABLE ROW LEVEL SECURITY;
 Netlify debería haber desplegado la última versión automáticamente.
 
 **Verificación Final:**
-1.  **Quick Menu:** Navega en el dashboard sin recargas.
-2.  **Reserva:**
-    - Ve a `/book/tu-slug`.
-    - Selecciona un servicio.
-    - Verifica que solo salgan los barberos que hacen ese servicio.
-    - Selecciona barbero y fecha.
-    - Deberían aparecer los horarios.
+1.  **Landing Page:** Ve a `https://annly-reserve.netlify.app/`. Prueba el buscador.
+2.  **Reserva:** Ve a tu link de reserva (desde el Dashboard). Verifica que cargue y puedas reservar.

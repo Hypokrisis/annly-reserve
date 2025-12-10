@@ -16,7 +16,7 @@ interface BusinessResult {
 function Home() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState < BusinessResult[] > ([]);
+  const [searchResults, setSearchResults] = useState<BusinessResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -36,8 +36,9 @@ function Home() {
 
       if (error) throw error;
       setSearchResults(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error searching businesses:', error);
+      alert('Error de conexión: ' + (error.message || 'Error desconocido'));
     } finally {
       setLoading(false);
     }
