@@ -77,15 +77,26 @@ export default function PublicBookingPage() {
 
             setServices(servicesData || []);
 
-            // Load barbers with services
+            // Load barbers
             const { data: barbersData } = await supabase
                 .from('barbers')
-                .select('*, barbers_services(service_id)')
+                .select('*')
                 .eq('business_id', businessData.id)
                 .eq('is_active', true)
                 .order('display_order');
 
-            setBarbers(barbersData || []);
+            // Load barber services relationships
+            const { data: barberServicesData } = await supabase
+                .from('barbers_services')
+                .select('barber_id, service_id');
+
+            // Attach services to barbers manually to avoid join issues
+            const barbersWithServices = barbersData?.map(barber => ({
+                ...barber,
+                barbers_services: barberServicesData?.filter(bs => bs.barber_id === barber.id) || []
+            })) || [];
+
+            setBarbers(barbersWithServices);
         } catch (error) {
             console.error('Error loading business:', error);
             alert('Error al cargar el negocio');
