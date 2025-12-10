@@ -69,25 +69,31 @@ export default function PublicBookingPage() {
             });
 
             // Race for the business data
-            // Direct query to debug service wrapper issues
-            console.log('[BookingPage] Ejecutando query directa a Supabase...');
-            const businessQuery = supabase
-                .from('businesses')
-                .select('*')
-                .eq('slug', slug)
-                .single();
+            // Race for the business data
+            // Direct FETCH to debug Supabase Client Library issues
+            console.log('[BookingPage] Ejecutando FETCH nativo a Supabase REST API...');
 
-            const { data: businessData, error: businessError } = await Promise.race([
-                businessQuery,
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+            const fetchPromise = fetch(`${supabaseUrl}/rest/v1/businesses?slug=eq.${slug}&select=*`, {
+                headers: {
+                    'apikey': supabaseKey,
+                    'Authorization': `Bearer ${supabaseKey}`
+                }
+            }).then(async res => {
+                if (!res.ok) throw new Error(`Fetch error: ${res.status} ${res.statusText}`);
+                const data = await res.json();
+                // .single() equivalent: take first item
+                return data && data.length > 0 ? data[0] : null;
+            });
+
+            const businessData = await Promise.race([
+                fetchPromise,
                 timeoutPromise
             ]) as any;
 
-            if (businessError) {
-                console.error('[BookingPage] Error en query de negocio:', businessError);
-                throw businessError;
-            }
-
-            console.log('[BookingPage] Resultado negocio:', businessData);
+            console.log('[BookingPage] Resultado negocio (Fetch):', businessData);
 
             if (!businessData) {
                 alert('Negocio no encontrado');
