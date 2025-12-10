@@ -1,4 +1,4 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -66,42 +66,42 @@ export default function DashboardHome() {
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <a
-                            href="/dashboard/services"
+                        <Link
+                            to="/dashboard/services"
                             className="p-4 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition"
                         >
                             <h3 className="font-semibold text-gray-900">Gestionar Servicios</h3>
                             <p className="text-sm text-gray-600 mt-1">
                                 Añade o edita los servicios que ofreces
                             </p>
-                        </a>
-                        <a
-                            href="/dashboard/barbers"
+                        </Link>
+                        <Link
+                            to="/dashboard/barbers"
                             className="p-4 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition"
                         >
                             <h3 className="font-semibold text-gray-900">Gestionar Barberos</h3>
                             <p className="text-sm text-gray-600 mt-1">
                                 Administra tu equipo de trabajo
                             </p>
-                        </a>
-                        <a
-                            href="/dashboard/schedules"
+                        </Link>
+                        <Link
+                            to="/dashboard/schedules"
                             className="p-4 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition"
                         >
                             <h3 className="font-semibold text-gray-900">Configurar Horarios</h3>
                             <p className="text-sm text-gray-600 mt-1">
                                 Define los horarios de trabajo
                             </p>
-                        </a>
-                        <a
-                            href="/dashboard/settings"
+                        </Link>
+                        <Link
+                            to="/dashboard/appointments"
                             className="p-4 border border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition"
                         >
-                            <h3 className="font-semibold text-gray-900">Configuración</h3>
+                            <h3 className="font-semibold text-gray-900">Ver Citas</h3>
                             <p className="text-sm text-gray-600 mt-1">
-                                Ajusta la configuración del negocio
+                                Gestiona las reservas del día
                             </p>
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
