@@ -1,19 +1,8 @@
-export interface Reservation {
-  id: string;
-  user_id: string;
-  service_name: string;
-  date: string;
-  time: string;
-  status: 'pending' | 'confirmed' | 'cancelled';
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  full_name?: string;
-  phone?: string;
-  created_at: string;
-}
+// Re-export all types for easy importing
+export * from './user.types';
+export * from './business.types';
+export * from './barber.types';
+export * from './service.types';
+export * from './schedule.types';
+export * from './appointment.types';
+export * from './notification.types';

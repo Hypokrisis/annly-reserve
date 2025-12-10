@@ -1,34 +1,94 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { BusinessProvider } from '@/contexts/BusinessContext';
+import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-import Home from './pages/Home'
-import Reserve from './pages/Reserve'
-import Appointments from './pages/Appointments'
+// Public pages
+import Home from './pages/Home';
+import Reserve from './pages/Reserve';
+import Appointments from './pages/Appointments';
+import BookingPage from './pages/public/BookingPage';
+
+// Auth pages
+import LoginPage from './pages/auth/LoginPage';
+import SignupPage from './pages/auth/SignupPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+
+// Dashboard pages
+import DashboardHome from './pages/dashboard/DashboardHome';
+import ServicesPage from './pages/dashboard/ServicesPage';
+import BarbersPage from './pages/dashboard/BarbersPage';
+import SchedulesPage from './pages/dashboard/SchedulesPage';
+import AppointmentsPage from './pages/dashboard/AppointmentsPage';
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-        <nav className="bg-white shadow-sm p-4 sticky top-0 z-10">
-          <div className="max-w-4xl mx-auto flex justify-between items-center">
-            <Link to="/" className="text-xl font-bold text-indigo-600">BarberShop</Link>
-            <div className="space-x-4">
-              <Link to="/" className="hover:text-indigo-600 transition">Inicio</Link>
-              <Link to="/reserve" className="hover:text-indigo-600 transition">Reservar</Link>
-              <Link to="/appointments" className="hover:text-indigo-600 transition">Citas</Link>
-            </div>
-          </div>
-        </nav>
+    <AuthProvider>
+      <BusinessProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/reserve" element={<Reserve />} />
+              <Route path="/appointments" element={<Appointments />} />
+              <Route path="/book/:slug" element={<BookingPage />} />
 
-        <main className="max-w-4xl mx-auto p-4 py-8">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/reserve" element={<Reserve />} />
-            <Route path="/appointments" element={<Appointments />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
-  )
+              {/* Auth routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+              {/* Protected dashboard routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardHome />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/services"
+                element={
+                  <ProtectedRoute requiredRole={['owner', 'admin']}>
+                    <ServicesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/barbers"
+                element={
+                  <ProtectedRoute requiredRole={['owner', 'admin']}>
+                    <BarbersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/schedules"
+                element={
+                  <ProtectedRoute requiredRole={['owner', 'admin']}>
+                    <SchedulesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/appointments"
+                element={
+                  <ProtectedRoute>
+                    <AppointmentsPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Catch all - redirect to home */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </Router>
+      </BusinessProvider>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
