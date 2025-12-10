@@ -27,10 +27,16 @@ function Home() {
     setLoading(true);
     setHasSearched(true);
 
+    // LOG: Check environment variables
+    console.log('[searchBusinesses] Antes de llamar a Supabase', {
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+      query: searchTerm,
+    });
+
     try {
       // Create a timeout promise
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Tiempo de espera agotado. Verifica tu conexión o intenta más tarde.')), 10000);
+        setTimeout(() => reject(new Error('Tiempo de espera agotado (10s). Verifica tu conexión o intenta más tarde.')), 10000);
       });
 
       // Race between the query and the timeout
@@ -43,10 +49,16 @@ function Home() {
         timeoutPromise
       ]) as any;
 
-      if (error) throw error;
+      console.log('[searchBusinesses] Resultado recibido:', { data, error });
+
+      if (error) {
+        console.error("[Supabase Error]", error);
+        throw error;
+      }
+
       setSearchResults(data || []);
     } catch (error: any) {
-      console.error('Error searching businesses:', error);
+      console.error("[searchBusinesses] Error capturado:", error);
       alert('Error: ' + (error.message || 'Error desconocido'));
     } finally {
       setLoading(false);
