@@ -62,6 +62,34 @@ export default function DashboardHome() {
                     </div>
                 </div>
 
+                {/* Public Link Card */}
+                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 shadow-lg text-white mb-8">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-xl font-bold mb-2">Tu Página de Reservas</h2>
+                            <p className="text-indigo-100 mb-4">
+                                Comparte este enlace con tus clientes para que puedan agendar citas.
+                            </p>
+                            <div className="flex items-center gap-2 bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+                                <code className="text-sm font-mono flex-1">
+                                    {window.location.origin}/book/{business?.slug}
+                                </code>
+                                <a
+                                    href={`/book/${business?.slug}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-3 py-1 bg-white text-indigo-600 rounded-md text-sm font-semibold hover:bg-indigo-50 transition"
+                                >
+                                    Abrir
+                                </a>
+                            </div>
+                        </div>
+                        <div className="hidden md:block text-6xl opacity-20">
+                            🔗
+                        </div>
+                    </div>
+                </div>
+
                 {/* Quick Actions */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h2>
