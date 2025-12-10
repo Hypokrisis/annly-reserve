@@ -8,7 +8,7 @@ import { useAvailability } from '@/hooks/useAvailability';
 import { formatCurrency, formatDate, formatTimeDisplay, isValidEmail, isValidPhone } from '@/utils';
 import * as businessService from '@/services/business.service';
 import * as appointmentsService from '@/services/appointments.service';
-import { supabase } from '../supabaseClient';
+import { supabase } from '@/supabaseClient';
 import type { Business, Service, Barber } from '@/types';
 
 export default function PublicBookingPage() {
@@ -256,8 +256,8 @@ export default function PublicBookingPage() {
                         <div key={s} className="flex items-center">
                             <div
                                 className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${s <= step
-                                        ? 'bg-indigo-600 text-white'
-                                        : 'bg-gray-200 text-gray-500'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-gray-200 text-gray-500'
                                     }`}
                             >
                                 {s}
