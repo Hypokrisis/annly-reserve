@@ -5,7 +5,7 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAvailability } from '@/hooks/useAvailability';
-import { formatCurrency, formatDate, formatTimeDisplay, isValidEmail, isValidPhone } from '@/utils';
+import { formatCurrency, formatDate, parseDate, formatTimeDisplay, isValidEmail, isValidPhone } from '@/utils';
 import * as businessService from '@/services/business.service';
 import * as appointmentsService from '@/services/appointments.service';
 import { supabase } from '@/supabaseClient';
@@ -77,10 +77,10 @@ export default function PublicBookingPage() {
 
             setServices(servicesData || []);
 
-            // Load barbers
+            // Load barbers with services
             const { data: barbersData } = await supabase
                 .from('barbers')
-                .select('*')
+                .select('*, barbers_services(service_id)')
                 .eq('business_id', businessData.id)
                 .eq('is_active', true)
                 .order('display_order');
@@ -222,7 +222,7 @@ export default function PublicBookingPage() {
                             <strong>Barbero:</strong> {selectedSlot?.barber_name}
                         </p>
                         <p className="text-sm text-gray-600 mb-2">
-                            <strong>Fecha:</strong> {selectedDate && formatDate(selectedDate)}
+                            <strong>Fecha:</strong> {selectedDate && formatDate(parseDate(selectedDate))}
                         </p>
                         <p className="text-sm text-gray-600">
                             <strong>Hora:</strong> {selectedSlot && formatTimeDisplay(selectedSlot.time)}
@@ -327,20 +327,28 @@ export default function PublicBookingPage() {
                                         Te asignaremos el primer barbero disponible
                                     </p>
                                 </button>
-                                {barbers.map((barber) => (
-                                    <button
-                                        key={barber.id}
-                                        onClick={() => handleBarberSelect(barber)}
-                                        className="p-6 border-2 border-gray-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition text-left"
-                                    >
-                                        <h3 className="text-lg font-semibold text-gray-900">
-                                            {barber.name}
-                                        </h3>
-                                        {barber.bio && (
-                                            <p className="text-gray-600 text-sm mt-1">{barber.bio}</p>
-                                        )}
-                                    </button>
-                                ))}
+                                {barbers
+                                    .filter(barber => {
+                                        // Filter barbers who offer the selected service
+                                        // We cast to any because barbers_services is joined dynamically
+                                        const barberServices = (barber as any).barbers_services;
+                                        if (!barberServices) return true; // Fallback if join failed
+                                        return barberServices.some((bs: any) => bs.service_id === selectedService.id);
+                                    })
+                                    .map((barber) => (
+                                        <button
+                                            key={barber.id}
+                                            onClick={() => handleBarberSelect(barber)}
+                                            className="p-6 border-2 border-gray-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition text-left"
+                                        >
+                                            <h3 className="text-lg font-semibold text-gray-900">
+                                                {barber.name}
+                                            </h3>
+                                            {barber.bio && (
+                                                <p className="text-gray-600 text-sm mt-1">{barber.bio}</p>
+                                            )}
+                                        </button>
+                                    ))}
                             </div>
                             <Button
                                 variant="secondary"
@@ -386,7 +394,7 @@ export default function PublicBookingPage() {
                                 Selecciona una Hora
                             </h2>
                             <p className="text-gray-600 mb-6">
-                                {formatDate(selectedDate)}
+                                {formatDate(parseDate(selectedDate))}
                             </p>
 
                             {loadingSlots ? (
@@ -444,7 +452,7 @@ export default function PublicBookingPage() {
                                 <p className="text-sm text-gray-700">
                                     <strong>Resumen:</strong> {selectedService?.name} con {selectedSlot.barber_name}
                                     <br />
-                                    {formatDate(selectedDate)} a las {formatTimeDisplay(selectedSlot.time)}
+                                    {formatDate(parseDate(selectedDate))} a las {formatTimeDisplay(selectedSlot.time)}
                                 </p>
                             </div>
 
