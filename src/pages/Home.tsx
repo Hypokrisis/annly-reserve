@@ -28,17 +28,26 @@ function Home() {
     setHasSearched(true);
 
     try {
-      const { data, error } = await supabase
-        .from('businesses')
-        .select('id, name, slug, description, address, city')
-        .ilike('name', `%${searchTerm}%`)
-        .limit(10);
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Tiempo de espera agotado. Verifica tu conexión o intenta más tarde.')), 10000);
+      });
+
+      // Race between the query and the timeout
+      const { data, error } = await Promise.race([
+        supabase
+          .from('businesses')
+          .select('id, name, slug, description, address, city')
+          .ilike('name', `%${searchTerm}%`)
+          .limit(10),
+        timeoutPromise
+      ]) as any;
 
       if (error) throw error;
       setSearchResults(data || []);
     } catch (error: any) {
       console.error('Error searching businesses:', error);
-      alert('Error de conexión: ' + (error.message || 'Error desconocido'));
+      alert('Error: ' + (error.message || 'Error desconocido'));
     } finally {
       setLoading(false);
     }
