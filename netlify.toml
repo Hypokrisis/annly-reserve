@@ -8,3 +8,8 @@
   port = 5173
   targetPort = 5173
   framework = "#custom"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
