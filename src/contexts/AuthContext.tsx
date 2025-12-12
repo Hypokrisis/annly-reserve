@@ -27,7 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const LS_BUSINESS = "currentBusinessId";
     const LS_VERSION = "appSchemaVersion";
-    const SCHEMA_VERSION = "2025-12-12-NUCLEAR"; // Changed to ensure flush
+    const SCHEMA_VERSION = "2025-12-12-TOTAL-RESET"; // Bump to force clear
 
     const hardResetClientState = () => {
         console.log('[Auth] Performing HARD RESET of client state');
