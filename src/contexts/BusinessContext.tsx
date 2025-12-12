@@ -46,6 +46,7 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ]);
         } catch (error) {
             console.error('Error loading business data:', error);
+            // Don't throw here, just log so UI can decide what to do
         } finally {
             setLoading(false);
         }

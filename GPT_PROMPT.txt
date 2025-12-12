@@ -1,0 +1,22 @@
+Actúa como un Senior React & Supabase Architect.
+
+Tengo un problema de "Estado Fantasma" en mi aplicación.
+Stack: React + Vite + Supabase + Netlify.
+
+**Contexto:**
+1. Tenía problemas de RLS (Row Level Security) que daban "Negocio No Encontrado".
+2. Ejecuté un script SQL radical (`DROP TABLE ... CASCADE`) que borró TODAS las tablas de negocio (`businesses`, `services`, etc.) y las recreó limpias con nuevas políticas RLS.
+3. **El Problema:** Al entrar a la web (`/dashboard` o `/book/:slug`), la aplicación **SIGUE MOSTRANDO** la barbería vieja, a pesar de que la tabla `businesses` en Supabase está VACÍA (0 filas).
+4. He borrado "Site Data" desde DevTools, pero sigue apareciendo la sesión o datos viejos.
+
+**Mi Código de AuthContext (`useAuth`) hace esto:**
+*   Usa `supabase.auth.onAuthStateChange`.
+*   Persiste sesión con `persistSession: true`.
+*   Usa `localStorage` para guardar `currentBusinessId`.
+
+**Pregunta:**
+¿Por qué sigo viendo datos de un negocio que YA NO EXISTE en la base de datos?
+¿Es posible que React Query, LocalStorage, o el propio cliente de Supabase (GoTrue) estén cacheando esto agresivamente?
+¿Qué pasos exactos debo seguir para "matar" completamente cualquier rastro de la sesión anterior en el navegador del cliente para obligarlo a re-fetchear y darse cuenta de que el negocio es null?
+
+Dame una lista de comprobación técnica para depurar este "Ghost State".

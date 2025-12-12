@@ -60,80 +60,75 @@ export default function PublicBookingPage() {
     const loadBusinessData = async () => {
         if (!slug) return;
 
-        console.log('[BookingPage] Buscando negocio por slug...', slug);
+        console.log('[BookingPage] Buscando negocio por slug:', slug);
+        setLoading(true);
 
         try {
-            // Create a timeout promise
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Tiempo de espera agotado (10s) al cargar negocio.')), 10000);
-            });
-
-            // Race for the business data
-            const businessQuery = supabase
+            // Robust fetch using maybeSingle to avoid exceptions on 0 rows
+            const { data: businessData, error: businessError } = await supabase
                 .from('businesses')
                 .select('*')
                 .eq('slug', slug)
-                .single();
-
-            const { data: businessData, error: businessError } = await Promise.race([
-                businessQuery,
-                timeoutPromise
-            ]) as any;
+                .eq('is_active', true)
+                .maybeSingle();
 
             if (businessError) {
-                console.error('[BookingPage] Error en query de negocio:', businessError);
+                console.error('[BookingPage] Error fetching business:', businessError);
                 throw businessError;
             }
 
-            console.log('[BookingPage] Resultado negocio:', businessData);
-
             if (!businessData) {
-                alert('Negocio no encontrado');
-                navigate('/');
+                console.log('[BookingPage] Negocio no encontrado (0 rows)');
+                // Stay on page but show "Not Found" UI instead of infinite redirect loop
+                setBusiness(null);
+                setLoading(false);
                 return;
             }
 
+            console.log('[BookingPage] Negocio encontrado:', businessData);
             setBusiness(businessData);
 
-            // Load services
-            const { data: servicesData, error: servicesError } = await supabase
-                .from('services')
-                .select('*')
-                .eq('business_id', businessData.id)
-                .eq('is_active', true)
-                .order('display_order');
+            // Parallel fetch for services and barbers
+            // Note: RLS policies must allow public read for these
+            const [servicesResult, barbersResult, bsResult] = await Promise.all([
+                supabase
+                    .from('services')
+                    .select('*')
+                    .eq('business_id', businessData.id)
+                    .eq('is_active', true)
+                    .order('display_order'),
+                supabase
+                    .from('barbers')
+                    .select('*')
+                    .eq('business_id', businessData.id)
+                    .eq('is_active', true)
+                    .order('display_order'),
+                supabase
+                    .from('barbers_services')
+                    .select('barber_id, service_id')
+            ]);
 
-            if (servicesError) throw servicesError;
-            setServices(servicesData || []);
+            if (servicesResult.error) console.error('Error services:', servicesResult.error);
+            if (barbersResult.error) console.error('Error barbers:', barbersResult.error);
 
-            // Load barbers
-            const { data: barbersData, error: barbersError } = await supabase
-                .from('barbers')
-                .select('*')
-                .eq('business_id', businessData.id)
-                .eq('is_active', true)
-                .order('display_order');
+            setServices(servicesResult.data || []);
 
-            if (barbersError) throw barbersError;
+            const barbersList = barbersResult.data || [];
+            const bsList = bsResult.data || [];
 
-            // Load barber services relationships
-            const { data: barberServicesData, error: bsError } = await supabase
-                .from('barbers_services')
-                .select('barber_id, service_id');
-
-            if (bsError) throw bsError;
-
-            // Attach services to barbers manually to avoid join issues
-            const barbersWithServices = barbersData?.map(barber => ({
+            // Merge services into barbers
+            const barbersWithServices = barbersList.map(barber => ({
                 ...barber,
-                barbers_services: barberServicesData?.filter(bs => bs.barber_id === barber.id) || []
-            })) || [];
+                barbers_services: bsList.filter(bs => bs.barber_id === barber.id)
+            }));
 
             setBarbers(barbersWithServices);
+
         } catch (error: any) {
-            console.error('[BookingPage] Error cargando datos:', error);
-            alert('Error al cargar el negocio: ' + (error.message || 'Error desconocido'));
+            console.error('[BookingPage] Fatal error:', error);
+            alert('Error al cargar la información. Intente recargar.');
         } finally {
+            // ALWAYS finish loading
             setLoading(false);
         }
     };

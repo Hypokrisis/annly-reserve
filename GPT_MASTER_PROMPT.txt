@@ -1,0 +1,85 @@
+ACT AS: Senior Full Stack Architect (React + Supabase).
+
+PROBLEM SUMMARY:
+We have a Barber Booking App (SaaS) where Barbers create profiles and Clients book appointments.
+We are suffering from persistent "Ghost State" and "Infinite Loading" issues.
+Even after dropping the entire database and recreating it (RESET), the Frontend still thinks the old Business exists.
+When the user tries to create a Service or Barber, they get redirected to "/" or the dashboard crashes.
+The Public Booking Page (`/book/:slug`) loads forever.
+
+OBJECTIVE:
+Analyze the provided SQL Schema and React Context code.
+Identify WHY the frontend is out of sync with the backend.
+Provide a "Nuclear Solution" to:
+1. Force-clean the client state if it doesn't match the DB.
+2. Fix the "Infinite Loading" on the booking page.
+3. Ensure RLS policies allow the Public to read but not write, and Owners to read/write everything.
+
+---
+
+CONTEXT 1: THE DATABASE SCHEMA (Postgres/Supabase)
+```sql
+-- businesses
+CREATE TABLE businesses (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  is_active BOOLEAN DEFAULT TRUE
+);
+
+-- services
+CREATE TABLE services (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  business_id UUID REFERENCES businesses(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE
+);
+
+-- RLS POLICIES
+ALTER TABLE businesses ENABLE ROW LEVEL SECURITY;
+-- Public view active
+CREATE POLICY "Public can view active businesses" ON businesses FOR SELECT USING (is_active = true);
+-- Owner full access
+CREATE POLICY "Owner everything on businesses" ON businesses FOR ALL USING (auth.uid() = owner_id);
+```
+
+CONTEXT 2: AuthContext.tsx (Simplified)
+```typescript
+// We use localStorage to store 'currentBusinessId'
+// We listen to onAuthStateChange
+
+useEffect(() => {
+    if (businesses.length > 0 && !currentBusiness) {
+        // Auto-select first business
+        switchBusiness(businesses[0].business_id);
+    }
+}, [businesses]);
+
+const switchBusiness = async (businessId: string) => {
+    try {
+        const { data, error } = await supabase.from('businesses').select('*').eq('id', businessId).single();
+        if (error) throw error;
+        setCurrentBusiness(data);
+        localStorage.setItem('currentBusinessId', businessId);
+    } catch (error) {
+        // We added this recently to try and fix it
+        setCurrentBusiness(null);
+        localStorage.removeItem('currentBusinessId');
+    }
+};
+```
+
+CONTEXT 3: THE SYMPTOMS
+1. **Ghost Login:** User resets DB. User refreshes page. App *still* shows them logged into "Old Barber Shop" (which does not exist in DB).
+2. **Creation Fail:** User clicks "Create Service" -> Redirects to Home (likely because the underlying `business_id` is invalid/null).
+3. **Infinite Loading:** `/book/some-slug` waits forever for a promise that never resolves or races poorly.
+
+REQUEST:
+Please provide:
+1. A **ROBUST Auth/Context Strategy** that strictly validates the session against the DB on every single mount.
+2. A **Code Snippet** for `AuthContext.tsx` that *guarantees* if the DB says "User has no businesses", the App *instantly* reflects that (clears UI, redirects to Setup).
+3. A **Debug Strategy** for the Booking Page to stop the infinite loading (handle 404s/Empty Data correctly).
+```
