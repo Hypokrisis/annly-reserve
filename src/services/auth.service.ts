@@ -31,40 +31,26 @@ export const signup = async (data: SignupData): Promise<AuthResponse> => {
     if (authError) throw authError;
     if (!authData.user) throw new Error('Failed to create user');
 
-    // 2. Create business
+    // 2. Create business safely using RPC (Security Definer)
+    // This avoids RLS race conditions where session might not be ready
     const { data: businessData, error: businessError } = await supabase
-        .from('businesses')
-        .insert({
-            owner_id: authData.user.id,
-            name: data.businessName,
-            slug: data.businessSlug,
-        })
-        .select()
-        .single();
+        .rpc('create_business_and_membership', {
+            business_name: data.businessName,
+            business_slug: data.businessSlug
+        });
 
     if (businessError) {
-        // Rollback: delete the auth user
+        console.error('RPC Error creating business:', businessError);
+        // Rollback user
         await supabase.auth.admin.deleteUser(authData.user.id);
         throw businessError;
     }
 
-    // 3. Create user-business relationship with owner role
-    const { error: relationError } = await supabase
-        .from('users_businesses')
-        .insert({
-            user_id: authData.user.id,
-            business_id: businessData.id,
-            role: 'owner',
-        });
-
-    if (relationError) {
-        // Rollback: delete business and auth user
-        await supabase.from('businesses').delete().eq('id', businessData.id);
-        await supabase.auth.admin.deleteUser(authData.user.id);
-        throw relationError;
+    if (!businessData) {
+        throw new Error('Failed to create business (No data returned from RPC)');
     }
 
-    // 4. Fetch user businesses
+    // 3. Fetch user businesses to update state immediately
     const { data: userBusinesses } = await supabase
         .from('users_businesses')
         .select('*')

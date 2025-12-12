@@ -1,0 +1,42 @@
+Hola ChatGPT. Soy un desarrollador trabajando en una App de Reservas (React + Supabase) y estoy atrapado en un bucle de errores con las Políticas de Seguridad (RLS) al momento del Registro (Signup). 
+
+Necesito que analices mi situación y me des un ÚNICO script SQL ("Master Reset") que borre todo y lo reconstruya de forma que funcione 100% seguro.
+
+### EL PROBLEMA
+Cuando un usuario se registra en la web (`signup`), el código hace esto en el frontend:
+1. `supabase.auth.signUp()` -> Crea el usuario en Auth.
+2. `supabase.from('businesses').insert({ owner_id: user.id ... })` -> Intenta crear su negocio.
+3. `supabase.from('users_businesses').insert(...)` -> Lo vincula.
+
+**El Error:**
+En el paso 2, recibo siempre: `new row violates row-level security policy for table "businesses"`.
+Aunque he intentado poner políticas como `CREATE POLICY ... FOR INSERT WITH CHECK (auth.uid() = owner_id)`, sigue fallando. A veces me dice que el usuario es "anon" o que no tiene permisos.
+
+### MI CÓDIGO ACTUAL (Frontend)
+```typescript
+export const signup = async (data) => {
+    // 1. Crear User
+    const { data: authData } = await supabase.auth.signUp({ ... });
+    
+    // 2. Crear Negocio (AQUÍ FALLA EL RLS)
+    const { data: business } = await supabase
+        .from('businesses')
+        .insert({
+            owner_id: authData.user.id, // Pasamos el ID del usuario recién creado
+            name: data.businessName,
+            is_active: true
+        })
+        .select()
+        .single();
+}
+```
+
+### LO QUE QUIERO QUE HAGAS
+1. **Analiza por qué falla:** ¿Es posible que la sesión de Supabase no esté lista inmediatamente después de `signUp` y por eso la base de datos no reconoce `auth.uid()`?
+2. **Escribe el Script SQL Definitivo:**
+   - Que haga `DROP TABLE IF EXISTS ... CASCADE` de todas mis tablas (`businesses`, `users_businesses`, `services`, `barbers`, `appointments`, etc.).
+   - Que cree las tablas de nuevo con la estructura correcta (tengo una tabla `users_businesses` para relacionar usuarios y negocios).
+   - **LO MÁS IMPORTANTE:** Que defina las Políticas RLS Correctas para que el `INSERT` del paso 2 NUNCA falle. Si tengo que permitir inserts públicos o usar un Trigger/Function `SECURITY DEFINER` para la creación del negocio, házmelo saber y escribe el código para eso.
+   - Quiero aislamiento total: Que cada usuario solo pueda ver/editar su propio negocio una vez creado.
+
+Por favor, dame el código SQL completo y robusto para copiar y pegar en Supabase SQL Editor y solucionar esto de una vez.
