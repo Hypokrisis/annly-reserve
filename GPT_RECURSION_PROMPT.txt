@@ -1,0 +1,42 @@
+Hola ChatGPT. Sigo con problemas.
+Ahora mi App carga, pero cuando intento entrar al Dashboard, la petición a la tabla `users_businesses` falla con **Error 400 (Bad Request)**.
+
+Sospecho que he creado un "Bucle Infinito" (Recursión) en las políticas de seguridad.
+
+### MI CÓDIGO ACTUAL (SQL)
+
+1. Tenga esta función `is_business_member`:
+```sql
+create or replace function public.is_business_member(bid uuid)
+returns boolean
+language sql
+stable
+as $$
+  select exists (
+    select 1
+    from public.users_businesses ub -- <--- Consulta la tabla con RLS
+    where ub.business_id = bid
+      and ub.user_id = auth.uid()
+  );
+$$;
+```
+
+2. Y tengo esta política en `users_businesses`:
+```sql
+create policy "users_businesses_select_member"
+on public.users_businesses
+for select
+to authenticated
+using (
+  user_id = auth.uid() 
+  OR 
+  public.is_business_member(business_id) -- <--- Llama a la función
+);
+```
+
+### LA PREGUNTA
+¿Es esto una recursión infinita? (La política llama a la función, y la función consulta la tabla que llama a la política...).
+Si es así, ¿cómo lo arreglo? 
+¿Debería usar `SECURITY DEFINER` en la función para que se salte el RLS al leer la tabla?
+
+Dame el SQL corregido de la función `is_business_member` para evitar este Error 400.

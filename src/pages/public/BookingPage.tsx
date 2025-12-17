@@ -159,6 +159,19 @@ export default function PublicBookingPage() {
         setStep(5);
     };
 
+    // Load customer info from localStorage on mount
+    useEffect(() => {
+        const savedInfo = localStorage.getItem('customerInfo');
+        if (savedInfo) {
+            try {
+                const parsed = JSON.parse(savedInfo);
+                setCustomerInfo(prev => ({ ...prev, ...parsed }));
+            } catch (e) {
+                console.error('Error parsing saved customer info', e);
+            }
+        }
+    }, []);
+
     const validateCustomerInfo = (): boolean => {
         const errors: Record<string, string> = {};
 
@@ -201,10 +214,30 @@ export default function PublicBookingPage() {
                 start_time: selectedSlot.time,
             });
 
+            // SAVE TO LOCAL STORAGE
+            localStorage.setItem('customerInfo', JSON.stringify({
+                name: customerInfo.name,
+                email: customerInfo.email,
+                phone: customerInfo.phone
+            }));
+
+            // Save to Recent Businesses
+            const recent = JSON.parse(localStorage.getItem('recentBusinesses') || '[]');
+            if (business.slug && !recent.includes(business.slug)) {
+                const updatedRecents = [business.slug, ...recent].slice(0, 10); // Keep last 10
+                localStorage.setItem('recentBusinesses', JSON.stringify(updatedRecents));
+            }
+
             setConfirmed(true);
         } catch (error: any) {
             console.error('Error creating appointment:', error);
-            alert(error.message || 'Error al crear la cita. Por favor intenta nuevamente.');
+
+            // Check for unique constraint violation (Double Booking)
+            if (error.code === '23505') {
+                alert('Ese horario ya fue reservado. Por favor elige otro.');
+            } else {
+                alert(error.message || 'Error al crear la cita. Por favor intenta nuevamente.');
+            }
         } finally {
             setSubmitting(false);
         }

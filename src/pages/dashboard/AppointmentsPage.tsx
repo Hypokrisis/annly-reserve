@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, Clock, User, Mail, Phone, X, Check } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, User, Mail, Phone, X, Check, Filter } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/common/Button';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -8,23 +8,25 @@ import { useAppointments } from '@/hooks/useAppointments';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
-import { formatDateDisplay, formatTimeDisplay, formatCurrency } from '@/utils';
+import { formatDateDisplay, formatTimeDisplay, formatCurrency, formatRelativeTime } from '@/utils';
 import type { Appointment } from '@/types';
+
+type Tab = 'today' | 'upcoming' | 'all';
 
 export default function AppointmentsPage() {
     const { business, services, barbers } = useBusiness();
     const { role } = useAuth();
     const { canViewAllAppointments } = usePermissions();
-    const { user } = useAuth(); // Needed to match staff to barber
+    const { user } = useAuth();
 
     // Barber Filter State
     const [selectedBarberId, setSelectedBarberId] = useState<string>('all');
+    const [activeTab, setActiveTab] = useState<Tab>('today');
 
     // Auto-detect staff's barber profile
     const currentStaffBarber = barbers.find(b => b.user_id === user?.id);
     const isStaffBarber = !!currentStaffBarber && role === 'staff';
 
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -47,17 +49,13 @@ export default function AppointmentsPage() {
         if (business) {
             loadAppointments();
         }
-    }, [business, selectedDate, selectedBarberId]); // Reload when barber filter changes
+    }, [business, selectedBarberId, activeTab]);
 
     const loadAppointments = () => {
         if (!business) return;
 
         const filters: any = {
             business_id: business.id,
-            date: selectedDate,
-            // Only fetch confirmed/active by default if needed, but user said "Pending (status confirmed)"
-            // so we can filter later or add status filter.
-            // For now, let's keep it consistent: confirmed, completed, etc.
         };
 
         // Apply barber filter
@@ -65,10 +63,28 @@ export default function AppointmentsPage() {
             filters.barber_id = selectedBarberId;
         }
 
+        // Apply Tab filters
+        const today = new Date().toISOString().split('T')[0];
+
+        if (activeTab === 'today') {
+            filters.date = today;
+            // "Pendientes" logic for Today implies we mostly care about active ones, 
+            // but usually a daily view shows everything for that day. 
+            // However, prompt says "En Pendientes solo mostrar status = confirmed".
+            // Since "Hoy" and "Próximas" are basically "Pending", we filter.
+            filters.status = 'confirmed';
+        } else if (activeTab === 'upcoming') {
+            // For upcoming, we fetch all (or maybe should fetch from today onwards if backend supported it)
+            // We will filter client-side for > today
+            filters.status = 'confirmed';
+        } else {
+            // All: No date filter, no status filter (history)
+        }
+
         fetchAppointments(filters);
     };
 
-    const getServiceName = (serviceId: string) => {
+    const getServicesName = (serviceId: string) => {
         return services.find(s => s.id === serviceId)?.name || 'N/A';
     };
 
@@ -84,28 +100,19 @@ export default function AppointmentsPage() {
     const handleCancel = async (appointmentId: string) => {
         if (!confirm('¿Estás seguro de cancelar esta cita?')) return;
 
-        const success = await cancelAppointment(appointmentId, 'Cancelada por el negocio');
+        const success = await updateAppointmentStatus(appointmentId, 'cancelled');
         if (success) {
             setIsModalOpen(false);
-            alert('Cita cancelada exitosamente');
+            // No alert needed if UI updates automatically, brings better UX
         }
     };
 
     const handleMarkCompleted = async (appointmentId: string) => {
+        if (!confirm('¿Marcar cita como completada?')) return;
+
         const success = await updateAppointmentStatus(appointmentId, 'completed');
         if (success) {
             setIsModalOpen(false);
-            alert('Cita marcada como completada');
-        }
-    };
-
-    const handleMarkNoShow = async (appointmentId: string) => {
-        if (!confirm('¿Marcar como no asistió?')) return;
-
-        const success = await updateAppointmentStatus(appointmentId, 'no_show');
-        if (success) {
-            setIsModalOpen(false);
-            alert('Cita marcada como no asistió');
         }
     };
 
@@ -126,15 +133,20 @@ export default function AppointmentsPage() {
         );
     };
 
-    // Group appointments by time
-    const groupedAppointments = appointments.reduce((acc, apt) => {
-        const time = apt.start_time;
-        if (!acc[time]) acc[time] = [];
-        acc[time].push(apt);
-        return acc;
-    }, {} as Record<string, Appointment[]>);
-
-    const sortedTimes = Object.keys(groupedAppointments).sort();
+    // Filter and Sort Appointments for "Upcoming" & "All" Logic
+    const filteredAppointments = appointments.filter(apt => {
+        if (activeTab === 'upcoming') {
+            const today = new Date().toISOString().split('T')[0];
+            return apt.appointment_date > today;
+        }
+        return true;
+    }).sort((a, b) => {
+        // Sort by Date then Time
+        if (a.appointment_date !== b.appointment_date) {
+            return a.appointment_date.localeCompare(b.appointment_date);
+        }
+        return a.start_time.localeCompare(b.start_time);
+    });
 
     if (!canViewAllAppointments) {
         return (
@@ -148,48 +160,58 @@ export default function AppointmentsPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-6xl">
+            <div className="max-w-5xl mx-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Citas</h1>
-                        <p className="text-gray-600 mt-1">Gestiona las reservas del día</p>
-                    </div>
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900">Citas</h1>
+                    <p className="text-gray-500">Gestión de reservas</p>
                 </div>
 
-                {/* Filters Container */}
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row gap-4">
-                    {/* Date Selector */}
-                    <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Selecciona una fecha
-                        </label>
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        />
+                {/* Filters & Tabs */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    {/* Tabs */}
+                    <div className="flex p-1 bg-gray-100 rounded-lg self-start">
+                        <button
+                            onClick={() => setActiveTab('today')}
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Hoy
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('upcoming')}
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'upcoming' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Próximas
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('all')}
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Todas
+                        </button>
                     </div>
 
-                    {/* Barber Selector (Only for Owner/Admin) */}
+                    {/* Barber Dropdown */}
                     {!isStaffBarber && (
-                        <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700 mb-3">
-                                Filtrar por Barbero
-                            </label>
-                            <select
-                                value={selectedBarberId}
-                                onChange={(e) => setSelectedBarberId(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            >
-                                <option value="all">Todos los barberos</option>
-                                {barbers.map(barber => (
-                                    <option key={barber.id} value={barber.id}>
-                                        {barber.name}
-                                    </option>
-                                ))}
-                            </select>
+                        <div className="w-full md:w-64">
+                            <div className="relative">
+                                <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <select
+                                    value={selectedBarberId}
+                                    onChange={(e) => setSelectedBarberId(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none"
+                                >
+                                    <option value="all">Todos los barberos</option>
+                                    {barbers.map(barber => (
+                                        <option key={barber.id} value={barber.id}>
+                                            {barber.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -197,146 +219,124 @@ export default function AppointmentsPage() {
                 {/* Appointments List */}
                 {loading ? (
                     <LoadingSpinner />
-                ) : appointments.length === 0 ? (
-                    <div className="bg-white rounded-xl p-12 text-center">
-                        <CalendarIcon size={48} className="mx-auto text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            No hay citas
-                        </h3>
-                        <p className="text-gray-600">
-                            No hay citas programadas para {formatDateDisplay(selectedDate)}
+                ) : filteredAppointments.length === 0 ? (
+                    <div className="bg-white rounded-xl p-12 text-center border border-dashed border-gray-300">
+                        <CalendarIcon size={48} className="mx-auto text-gray-300 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-1">No hay citas</h3>
+                        <p className="text-gray-500 text-sm">
+                            {activeTab === 'today' ? 'No tienes citas para hoy' :
+                                activeTab === 'upcoming' ? 'No hay citas próximas' : 'No se encontraron citas'}
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
-                        {sortedTimes.map((time) => (
-                            <div key={time} className="bg-white rounded-xl shadow-sm border border-gray-200">
-                                <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
-                                    <h3 className="font-semibold text-gray-900">
-                                        {formatTimeDisplay(time)}
-                                    </h3>
-                                </div>
-                                <div className="divide-y divide-gray-200">
-                                    {groupedAppointments[time].map((appointment) => (
-                                        <div
-                                            key={appointment.id}
-                                            className="p-6 hover:bg-gray-50 transition cursor-pointer"
-                                            onClick={() => handleViewDetails(appointment)}
-                                        >
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-3 mb-2">
-                                                        <h4 className="font-semibold text-gray-900">
-                                                            {appointment.customer_name}
-                                                        </h4>
-                                                        {getStatusBadge(appointment.status)}
-                                                    </div>
-                                                    <div className="space-y-1 text-sm text-gray-600">
-                                                        <p>✂️ {getServiceName(appointment.service_id!)}</p>
-                                                        <p>👤 {getBarberName(appointment.barber_id)}</p>
-                                                        <p>📧 {appointment.customer_email}</p>
-                                                        {appointment.customer_phone && (
-                                                            <p>📱 {appointment.customer_phone}</p>
-                                                        )}
-                                                    </div>
-                                                </div>
+                    <div className="space-y-3">
+                        {filteredAppointments.map((appointment) => (
+                            <div
+                                key={appointment.id}
+                                onClick={() => handleViewDetails(appointment)}
+                                className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all cursor-pointer group"
+                            >
+                                <div className="flex items-start justify-between">
+                                    <div className="flex gap-4">
+                                        <div className="flex flex-col items-center justify-center bg-indigo-50 text-indigo-700 w-16 h-16 rounded-lg shrink-0">
+                                            <span className="text-xs font-semibold uppercase">{formatTimeDisplay(appointment.start_time).split(' ')[1]}</span>
+                                            <span className="text-lg font-bold">{formatTimeDisplay(appointment.start_time).split(' ')[0]}</span>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900 text-lg">
+                                                {appointment.customer_name}
+                                            </h4>
+                                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mt-1">
+                                                <span className="flex items-center gap-1">
+                                                    <User size={14} /> {getBarberName(appointment.barber_id)}
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <Check size={14} /> {getServicesName(appointment.service_id!)}
+                                                </span>
                                             </div>
                                         </div>
-                                    ))}
+                                    </div>
+                                    <div className="text-right">
+                                        {getStatusBadge(appointment.status)}
+                                        <p className="text-xs font-medium text-indigo-600 mt-2">
+                                            {formatRelativeTime(appointment.appointment_date, appointment.start_time)}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
 
-                {/* Appointment Details Modal */}
+                {/* Details Modal */}
                 {selectedAppointment && (
                     <Modal
                         isOpen={isModalOpen}
                         onClose={() => setIsModalOpen(false)}
                         title="Detalles de la Cita"
                     >
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-gray-600">Estado:</span>
+                        <div className="space-y-6">
+                            {/* Header Info */}
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900">{selectedAppointment.customer_name}</h3>
+                                    <p className="text-gray-500 text-sm mt-1">
+                                        {formatDateDisplay(selectedAppointment.appointment_date)} • {formatTimeDisplay(selectedAppointment.start_time)}
+                                    </p>
+                                </div>
                                 {getStatusBadge(selectedAppointment.status)}
                             </div>
 
-                            <div>
-                                <span className="text-gray-600">Cliente:</span>
-                                <p className="font-semibold text-gray-900">
-                                    {selectedAppointment.customer_name}
-                                </p>
-                            </div>
-
-                            <div>
-                                <span className="text-gray-600">Email:</span>
-                                <p className="font-semibold text-gray-900">
-                                    {selectedAppointment.customer_email}
-                                </p>
-                            </div>
-
-                            {selectedAppointment.customer_phone && (
-                                <div>
-                                    <span className="text-gray-600">Teléfono:</span>
-                                    <p className="font-semibold text-gray-900">
-                                        {selectedAppointment.customer_phone}
-                                    </p>
+                            {/* Contact Info */}
+                            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                                <div className="flex items-center gap-3 text-sm">
+                                    <Mail size={16} className="text-gray-400" />
+                                    <span className="text-gray-700">{selectedAppointment.customer_email}</span>
                                 </div>
-                            )}
-
-                            <div>
-                                <span className="text-gray-600">Servicio:</span>
-                                <p className="font-semibold text-gray-900">
-                                    {getServiceName(selectedAppointment.service_id!)}
-                                </p>
+                                {selectedAppointment.customer_phone && (
+                                    <div className="flex items-center gap-3 text-sm">
+                                        <Phone size={16} className="text-gray-400" />
+                                        <span className="text-gray-700">{selectedAppointment.customer_phone}</span>
+                                    </div>
+                                )}
                             </div>
 
-                            <div>
-                                <span className="text-gray-600">Barbero:</span>
-                                <p className="font-semibold text-gray-900">
-                                    {getBarberName(selectedAppointment.barber_id)}
-                                </p>
-                            </div>
-
-                            <div>
-                                <span className="text-gray-600">Fecha y Hora:</span>
-                                <p className="font-semibold text-gray-900">
-                                    {formatDateDisplay(selectedAppointment.appointment_date)} a las{' '}
-                                    {formatTimeDisplay(selectedAppointment.start_time)}
-                                </p>
+                            {/* Service Info */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs font-medium text-gray-500 uppercase">Servicio</label>
+                                    <p className="text-gray-900 font-medium">{getServicesName(selectedAppointment.service_id!)}</p>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-medium text-gray-500 uppercase">Barbero</label>
+                                    <p className="text-gray-900 font-medium">{getBarberName(selectedAppointment.barber_id)}</p>
+                                </div>
                             </div>
 
                             {selectedAppointment.customer_notes && (
                                 <div>
-                                    <span className="text-gray-600">Notas:</span>
-                                    <p className="text-gray-900 mt-1">
+                                    <label className="text-xs font-medium text-gray-500 uppercase">Notas</label>
+                                    <p className="text-gray-700 bg-yellow-50 p-3 rounded-lg mt-1 text-sm">
                                         {selectedAppointment.customer_notes}
                                     </p>
                                 </div>
                             )}
 
+                            {/* Actions */}
                             {selectedAppointment.status === 'confirmed' && (
-                                <div className="flex gap-3 pt-4 border-t">
+                                <div className="grid grid-cols-2 gap-3 pt-4 border-t">
                                     <Button
                                         variant="secondary"
                                         onClick={() => handleMarkCompleted(selectedAppointment.id)}
-                                        className="flex-1"
+                                        className="w-full text-green-700 hover:bg-green-50 border-green-200"
                                     >
                                         <Check size={16} className="mr-2" />
-                                        Completada
-                                    </Button>
-                                    <Button
-                                        variant="secondary"
-                                        onClick={() => handleMarkNoShow(selectedAppointment.id)}
-                                        className="flex-1"
-                                    >
-                                        No Asistió
+                                        Completar
                                     </Button>
                                     <Button
                                         variant="danger"
                                         onClick={() => handleCancel(selectedAppointment.id)}
-                                        className="flex-1"
+                                        className="w-full"
                                     >
                                         <X size={16} className="mr-2" />
                                         Cancelar
@@ -350,3 +350,4 @@ export default function AppointmentsPage() {
         </DashboardLayout>
     );
 }
+

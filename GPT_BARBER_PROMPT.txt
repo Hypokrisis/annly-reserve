@@ -1,0 +1,33 @@
+Hola ChatGPT. Ya casi está, pero mira esto.
+El código Frontend espera poder guardar `phone`, `bio` y `avatar_url` en la tabla `barbers`, pero mi script SQL (V4) no creó esas columnas.
+
+Por eso recibo un Error 400 al intentar crear un barbero (la API recibe campos que no existen en la tabla).
+
+### MI TABLA ACTUAL
+```sql
+create table public.barbers (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references public.businesses(id) on delete cascade,
+  name text not null,
+  email text,
+  is_active boolean not null default true,
+  display_order integer default 0,
+  created_at timestamptz not null default now()
+);
+```
+
+### MI TYPESCRIPT (Frontend)
+```typescript
+export interface CreateBarberData {
+    business_id: string;
+    name: string;
+    email?: string;
+    phone?: string; -- Faltan estas columnas
+    bio?: string;
+    service_ids?: string[];
+}
+```
+
+### LO QUE NECESITO
+Dame un script SQL corto (`ALTER TABLE ...`) para agregar las columnas faltantes (`phone`, `bio`, `avatar_url`) a la tabla `barbers` sin borrar los datos que ya tenga.
+Y asegúrate de que las nuevas columnas permitan NULL.

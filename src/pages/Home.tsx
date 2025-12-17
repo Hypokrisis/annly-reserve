@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, MapPin, Star, ArrowRight, Scissors, Calendar, Clock } from 'lucide-react';
+import { Search, MapPin, Star, ArrowRight, Scissors, Calendar, Clock, Heart } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
@@ -15,58 +15,126 @@ interface BusinessResult {
 
 function Home() {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<BusinessResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [allBusinesses, setAllBusinesses] = useState<BusinessResult[]>([]);
+  const [recentBusinesses, setRecentBusinesses] = useState<BusinessResult[]>([]);
+  const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchTerm.trim()) return;
+  useEffect(() => {
+    loadData();
+    loadFavorites();
+  }, []);
 
+  const loadFavorites = () => {
+    const saved = localStorage.getItem('favoriteBusinesses');
+    if (saved) {
+      setFavoriteSlugs(JSON.parse(saved));
+    }
+  };
+
+  const toggleFavorite = (e: React.MouseEvent, slug: string) => {
+    e.preventDefault(); // Prevent navigation
+    let newFavorites = [...favoriteSlugs];
+    if (newFavorites.includes(slug)) {
+      newFavorites = newFavorites.filter(s => s !== slug);
+    } else {
+      newFavorites.push(slug);
+    }
+    setFavoriteSlugs(newFavorites);
+    localStorage.setItem('favoriteBusinesses', JSON.stringify(newFavorites));
+  };
+
+  const loadData = async () => {
     setLoading(true);
-    setHasSearched(true);
-
-    // LOG: Check environment variables
-    console.log('[searchBusinesses] Antes de llamar a Supabase', {
-      supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
-      query: searchTerm,
-    });
-
     try {
-      // Create a timeout promise
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Tiempo de espera agotado (10s). Verifica tu conexión o intenta más tarde.')), 10000);
-      });
+      // Fetch all businesses (active)
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('id, name, slug, description, address, city')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-      // Race between the query and the timeout
-      const { data, error } = await Promise.race([
-        supabase
+      if (error) throw error;
+
+      const businesses = data || [];
+      setAllBusinesses(businesses);
+
+      // Load Recent from LocalStorage IDs/Slugs and match with fetched data
+      // Or fetch specifically if needed, but for now we filter from the loaded list 
+      // (Optimization: In a real app, fetch specifics by ID)
+      const recentSlugs = JSON.parse(localStorage.getItem('recentBusinesses') || '[]');
+      if (recentSlugs.length > 0) {
+        // We can fetch just these specific ones to be sure
+        const { data: recentData } = await supabase
           .from('businesses')
           .select('id, name, slug, description, address, city')
-          .ilike('name', `%${searchTerm}%`)
-          .limit(10),
-        timeoutPromise
-      ]) as any;
+          .in('slug', recentSlugs);
 
-      console.log('[searchBusinesses] Resultado recibido:', { data, error });
-
-      if (error) {
-        console.error("[Supabase Error]", error);
-        throw error;
+        if (recentData) setRecentBusinesses(recentData);
       }
 
-      setSearchResults(data || []);
-    } catch (error: any) {
-      console.error("[searchBusinesses] Error capturado:", error);
-      alert('Error: ' + (error.message || 'Error desconocido'));
+    } catch (error) {
+      console.error('Error loading home data:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  const BusinessCard = ({ business, isFavorite }: { business: BusinessResult, isFavorite: boolean }) => (
+    <Link
+      to={`/book/${business.slug}`}
+      className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition flex flex-col h-full relative"
+    >
+      <button
+        onClick={(e) => toggleFavorite(e, business.slug)}
+        className="absolute top-3 right-3 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition shadow-sm"
+      >
+        <Heart
+          size={20}
+          className={`${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+        />
+      </button>
+
+      <div className="h-40 bg-gray-100 relative">
+        <img
+          src={`https://source.unsplash.com/random/800x600/?barbershop,${business.id}`}
+          alt={business.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80';
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div className="absolute bottom-4 left-4 text-white">
+          <h3 className="text-lg font-bold">{business.name}</h3>
+          {business.city && (
+            <div className="flex items-center text-xs text-gray-200 mt-1">
+              <MapPin size={12} className="mr-1" />
+              {business.city}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="p-4 flex-1 flex flex-col">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">Activa</span>
+        </div>
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-1">
+          {business.description || 'Agenda tu cita con los mejores profesionales.'}
+        </p>
+        <div className="flex items-center justify-between text-indigo-600 text-sm font-medium group-hover:translate-x-1 transition">
+          <span>Reservar</span>
+          <ArrowRight size={16} />
+        </div>
+      </div>
+    </Link>
+  );
+
+  const favoriteBusinesses = allBusinesses.filter(b => favoriteSlugs.includes(b.slug));
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
       <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -78,12 +146,12 @@ function Home() {
               <span className="text-xl font-bold text-gray-900">AnnlyReserve</span>
             </div>
             <div className="flex items-center gap-4">
-              <Link to="/login" className="text-gray-600 hover:text-gray-900 font-medium">
+              <Link to="/login" className="text-gray-600 hover:text-gray-900 font-medium text-sm md:text-base">
                 Soy Barbero
               </Link>
               <Link
                 to="/signup"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition text-sm md:text-base"
               >
                 Registrar Negocio
               </Link>
@@ -92,142 +160,79 @@ function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <div className="relative bg-indigo-900 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Tu estilo, tu tiempo.
-            <br />
-            <span className="text-indigo-400">Reserva en segundos.</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+        {/* Header Hero */}
+        <div className="text-center py-8">
+          <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+            Reserva tu próxima cita
           </h1>
-          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-            Encuentra las mejores barberías cerca de ti y agenda tu cita sin llamadas ni esperas.
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Explora las mejores barberías y salones. Sin llamadas, sin esperas.
           </p>
-
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto relative">
-            <div className="relative flex items-center">
-              <Search className="absolute left-4 text-gray-400" size={24} />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Busca por nombre de barbería..."
-                className="w-full pl-12 pr-4 py-4 rounded-xl text-gray-900 text-lg focus:ring-4 focus:ring-indigo-500 focus:outline-none shadow-xl"
-              />
-              <button
-                type="submit"
-                className="absolute right-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition"
-              >
-                Buscar
-              </button>
-            </div>
-          </form>
         </div>
-      </div>
 
-      {/* Search Results */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {loading ? (
           <div className="flex justify-center py-12">
             <LoadingSpinner />
           </div>
-        ) : hasSearched ? (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">
-              {searchResults.length > 0
-                ? `Resultados para "${searchTerm}"`
-                : `No encontramos barberías con el nombre "${searchTerm}"`}
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {searchResults.map((business) => (
-                <Link
-                  key={business.id}
-                  to={`/book/${business.slug}`}
-                  className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition flex flex-col h-full"
-                >
-                  <div className="h-48 bg-gray-100 relative">
-                    <img
-                      src={`https://source.unsplash.com/random/800x600/?barbershop,${business.id}`}
-                      alt={business.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80';
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <div className="absolute bottom-4 left-4 text-white">
-                      <h3 className="text-xl font-bold">{business.name}</h3>
-                      {business.city && (
-                        <div className="flex items-center text-sm text-gray-200 mt-1">
-                          <MapPin size={14} className="mr-1" />
-                          {business.city}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="p-6 flex-1 flex flex-col">
-                    <p className="text-gray-600 mb-4 line-clamp-2 flex-1">
-                      {business.description || 'Sin descripción disponible.'}
-                    </p>
-                    <div className="flex items-center justify-between text-indigo-600 font-medium group-hover:translate-x-1 transition">
-                      <span>Reservar Cita</span>
-                      <ArrowRight size={20} />
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
         ) : (
-          /* Features Section (Default View) */
-          <div className="py-12">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Por qué usar AnnlyReserve?</h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                La forma más fácil de gestionar tus citas, ya seas cliente o dueño de negocio.
-              </p>
-            </div>
+          <>
+            {/* Favorites Section */}
+            {favoriteBusinesses.length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-6">
+                  <Star className="text-yellow-400 fill-yellow-400" />
+                  <h2 className="text-2xl font-bold text-gray-900">Tus Favoritas</h2>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {favoriteBusinesses.map(b => (
+                    <BusinessCard key={b.id} business={b} isFavorite={true} />
+                  ))}
+                </div>
+              </section>
+            )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center p-6">
-                <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-indigo-600">
-                  <Calendar size={32} />
+            {/* Recents Section */}
+            {recentBusinesses.length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-6">
+                  <Clock className="text-indigo-600" />
+                  <h2 className="text-2xl font-bold text-gray-900">Vistos Recientemente</h2>
                 </div>
-                <h3 className="text-xl font-bold mb-3">Reserva 24/7</h3>
-                <p className="text-gray-600">
-                  Agenda tu cita en cualquier momento, desde cualquier lugar. Sin llamadas ni esperas.
-                </p>
-              </div>
-              <div className="text-center p-6">
-                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-purple-600">
-                  <Clock size={32} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {recentBusinesses.map(b => (
+                    <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />
+                  ))}
                 </div>
-                <h3 className="text-xl font-bold mb-3">Ahorra Tiempo</h3>
-                <p className="text-gray-600">
-                  Olvídate de las filas. Llega a tu hora y recibe el servicio que mereces.
-                </p>
+              </section>
+            )}
+
+            {/* All Businesses Directory */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Todas las Barberías</h2>
+                <span className="text-sm text-gray-500">{allBusinesses.length} resultados</span>
               </div>
-              <div className="text-center p-6">
-                <div className="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-pink-600">
-                  <Star size={32} />
+              {allBusinesses.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {allBusinesses.map(b => (
+                    <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />
+                  ))}
                 </div>
-                <h3 className="text-xl font-bold mb-3">Los Mejores Profesionales</h3>
-                <p className="text-gray-600">
-                  Encuentra a los barberos más calificados y lee reseñas de otros clientes.
-                </p>
-              </div>
-            </div>
-          </div>
+              ) : (
+                <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+                  <p className="text-gray-500">No hay negocios registrados aún.</p>
+                </div>
+              )}
+            </section>
+          </>
         )}
       </div>
 
       {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200 py-12 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500">
-          <p>&copy; {new Date().getFullYear()} AnnlyReserve. Todos los derechos reservados.</p>
+      <footer className="bg-white border-t border-gray-200 py-12 mt-12">
+        <div className="max-w-7xl mx-auto px-4 text-center text-gray-500">
+          <p>&copy; {new Date().getFullYear()} AnnlyReserve</p>
         </div>
       </footer>
     </div>

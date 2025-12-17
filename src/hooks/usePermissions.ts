@@ -24,7 +24,7 @@ export const usePermissions = (): Permissions => {
         canEditBusiness: isOwnerOrAdmin,
         canManageBarbers: isOwnerOrAdmin,
         canManageServices: isOwnerOrAdmin,
-        canViewAllAppointments: isOwnerOrAdmin,
+        canViewAllAppointments: isOwnerOrAdmin || isStaff, // Staff can view (filtered by RLS)
         canInviteUsers: isOwnerOrAdmin,
         canDeleteUsers: isOwner,
         canEditAllSchedules: isOwnerOrAdmin,
