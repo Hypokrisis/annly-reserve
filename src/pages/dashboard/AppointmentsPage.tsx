@@ -8,13 +8,22 @@ import { useAppointments } from '@/hooks/useAppointments';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
-import { formatDate, formatTimeDisplay, formatCurrency } from '@/utils';
+import { formatDateDisplay, formatTimeDisplay, formatCurrency } from '@/utils';
 import type { Appointment } from '@/types';
 
 export default function AppointmentsPage() {
     const { business, services, barbers } = useBusiness();
     const { role } = useAuth();
     const { canViewAllAppointments } = usePermissions();
+    const { user } = useAuth(); // Needed to match staff to barber
+
+    // Barber Filter State
+    const [selectedBarberId, setSelectedBarberId] = useState<string>('all');
+
+    // Auto-detect staff's barber profile
+    const currentStaffBarber = barbers.find(b => b.user_id === user?.id);
+    const isStaffBarber = !!currentStaffBarber && role === 'staff';
+
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,19 +36,36 @@ export default function AppointmentsPage() {
         updateAppointmentStatus,
     } = useAppointments();
 
+    // Effect to auto-select barber for Staff
+    useEffect(() => {
+        if (isStaffBarber && currentStaffBarber) {
+            setSelectedBarberId(currentStaffBarber.id);
+        }
+    }, [isStaffBarber, currentStaffBarber]);
+
     useEffect(() => {
         if (business) {
             loadAppointments();
         }
-    }, [business, selectedDate]);
+    }, [business, selectedDate, selectedBarberId]); // Reload when barber filter changes
 
     const loadAppointments = () => {
         if (!business) return;
 
-        fetchAppointments({
+        const filters: any = {
             business_id: business.id,
             date: selectedDate,
-        });
+            // Only fetch confirmed/active by default if needed, but user said "Pending (status confirmed)"
+            // so we can filter later or add status filter.
+            // For now, let's keep it consistent: confirmed, completed, etc.
+        };
+
+        // Apply barber filter
+        if (selectedBarberId !== 'all') {
+            filters.barber_id = selectedBarberId;
+        }
+
+        fetchAppointments(filters);
     };
 
     const getServiceName = (serviceId: string) => {
@@ -131,17 +157,41 @@ export default function AppointmentsPage() {
                     </div>
                 </div>
 
-                {/* Date Selector */}
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                        Selecciona una fecha
-                    </label>
-                    <input
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
+                {/* Filters Container */}
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row gap-4">
+                    {/* Date Selector */}
+                    <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                            Selecciona una fecha
+                        </label>
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                    </div>
+
+                    {/* Barber Selector (Only for Owner/Admin) */}
+                    {!isStaffBarber && (
+                        <div className="flex-1">
+                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                                Filtrar por Barbero
+                            </label>
+                            <select
+                                value={selectedBarberId}
+                                onChange={(e) => setSelectedBarberId(e.target.value)}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            >
+                                <option value="all">Todos los barberos</option>
+                                {barbers.map(barber => (
+                                    <option key={barber.id} value={barber.id}>
+                                        {barber.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                 </div>
 
                 {/* Appointments List */}
@@ -154,7 +204,7 @@ export default function AppointmentsPage() {
                             No hay citas
                         </h3>
                         <p className="text-gray-600">
-                            No hay citas programadas para {formatDate(selectedDate)}
+                            No hay citas programadas para {formatDateDisplay(selectedDate)}
                         </p>
                     </div>
                 ) : (
@@ -252,7 +302,7 @@ export default function AppointmentsPage() {
                             <div>
                                 <span className="text-gray-600">Fecha y Hora:</span>
                                 <p className="font-semibold text-gray-900">
-                                    {formatDate(selectedAppointment.appointment_date)} a las{' '}
+                                    {formatDateDisplay(selectedAppointment.appointment_date)} a las{' '}
                                     {formatTimeDisplay(selectedAppointment.start_time)}
                                 </p>
                             </div>
