@@ -21,3 +21,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Local SQL scripts
+FIX_HOME_RLS*.sql
+
