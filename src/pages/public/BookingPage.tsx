@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
@@ -12,6 +12,7 @@ import type { Business, Service, Barber } from '@/types';
 
 export default function PublicBookingPage() {
     const { slug } = useParams<{ slug: string }>();
+    const navigate = useNavigate();
 
     useEffect(() => {
         console.log('[BookingPage] Montando componente. slug =', slug);
@@ -205,7 +206,7 @@ export default function PublicBookingPage() {
                 .from('appointments')
                 .select('id')
                 .eq('business_id', business.id)
-                .eq('customer_email', customerInfo.email.trim())
+                .eq('customer_email', customerInfo.email.toLowerCase().trim())
                 .in('status', ['confirmed', 'pending'])
                 .order('created_at', { ascending: false })
                 .limit(1);
@@ -221,7 +222,7 @@ export default function PublicBookingPage() {
                 barber_id: selectedSlot.barber_id,
                 service_id: selectedService.id,
                 customer_name: customerInfo.name.trim(),
-                customer_email: customerInfo.email.trim(),
+                customer_email: customerInfo.email.toLowerCase().trim(),
                 customer_phone: customerInfo.phone.trim(),
                 customer_notes: customerInfo.notes.trim() || undefined,
                 appointment_date: selectedDate,
@@ -457,14 +458,38 @@ export default function PublicBookingPage() {
                             <p className="text-gray-600 mb-6">
                                 Barbero: <strong>{selectedBarber?.name || 'Cualquiera'}</strong>
                             </p>
-                            <Input
-                                type="date"
-                                value={selectedDate}
-                                onChange={(e) => handleDateSelect(e.target.value)}
-                                min={getMinDate()}
-                                max={getMaxDate()}
-                                className="text-lg"
-                            />
+                            <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto no-scrollbar pb-2">
+                                {[
+                                    { label: 'Hoy', value: new Date().toISOString().split('T')[0] },
+                                    { label: 'Mañana', value: new Date(Date.now() + 86400000).toISOString().split('T')[0] },
+                                    {
+                                        label: 'En 7 días',
+                                        value: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
+                                    }
+                                ].map((quickDate) => (
+                                    <button
+                                        key={quickDate.value}
+                                        onClick={() => handleDateSelect(quickDate.value)}
+                                        className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors ${selectedDate === quickDate.value
+                                            ? 'bg-indigo-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        {quickDate.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="relative">
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Otra fecha</label>
+                                <Input
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={(e) => handleDateSelect(e.target.value)}
+                                    min={getMinDate()}
+                                    max={getMaxDate()}
+                                    className="text-lg h-[44px]"
+                                />
+                            </div>
                             <Button
                                 variant="secondary"
                                 onClick={() => setStep(2)}
@@ -502,17 +527,20 @@ export default function PublicBookingPage() {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
                                         {availableSlots.map((slot, index) => (
                                             <button
                                                 key={index}
                                                 onClick={() => handleSlotSelect(slot)}
-                                                className="p-3 md:p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition"
+                                                className={`min-h-[60px] p-3 md:p-4 border-2 rounded-2xl transition-all flex flex-col items-center justify-center ${selectedSlot?.time === slot.time
+                                                    ? 'border-indigo-600 bg-indigo-50 shadow-md'
+                                                    : 'border-gray-100 bg-gray-50 hover:border-indigo-200'
+                                                    }`}
                                             >
-                                                <p className="font-semibold text-gray-900 text-sm md:text-base">
+                                                <p className="font-bold text-gray-900 text-sm md:text-base">
                                                     {formatTimeDisplay(slot.time)}
                                                 </p>
-                                                <p className="text-[10px] md:text-xs text-gray-500 mt-1 truncate">
+                                                <p className="text-[10px] md:text-xs text-gray-500 mt-0.5 truncate w-full text-center">
                                                     {slot.barber_name}
                                                 </p>
                                             </button>
@@ -609,15 +637,25 @@ export default function PublicBookingPage() {
                 </div>
             </div>
 
-            {/* Fixed Back Button for Mobile UX */}
+            {/* Fixed Navigation for Mobile UX */}
             {step > 1 && (
-                <button
-                    onClick={() => setStep(prev => prev - 1)}
-                    className="fixed bottom-6 right-6 z-50 bg-white/90 backdrop-blur-md text-gray-700 px-6 py-3 rounded-full shadow-2xl border border-gray-200 font-bold flex items-center gap-2 hover:bg-gray-50 transition md:hidden"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
-                    Volver
-                </button>
+                <div className="fixed bottom-6 left-0 right-0 px-6 flex justify-between items-center z-50 pointer-events-none md:hidden">
+                    <button
+                        onClick={() => setStep(prev => prev - 1)}
+                        className="pointer-events-auto bg-white/90 backdrop-blur-md text-gray-700 w-12 h-12 rounded-full shadow-2xl border border-gray-100 flex items-center justify-center hover:bg-gray-50 transition"
+                        title="Atrás"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+                    </button>
+
+                    <button
+                        onClick={() => navigate('/')}
+                        className="pointer-events-auto bg-black text-white px-8 h-12 rounded-full shadow-2xl flex items-center gap-2 font-bold hover:bg-gray-900 transition"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+                        Inicio
+                    </button>
+                </div>
             )}
         </div>
     );

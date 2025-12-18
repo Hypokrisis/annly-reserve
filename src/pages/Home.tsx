@@ -44,24 +44,31 @@ function Home() {
     const normalizedEmail = user.email.toLowerCase().trim();
     setLoadingApts(true);
     try {
+      console.debug('[Home] Fetching appointments for:', normalizedEmail);
       const data = await appointmentsService.getCustomerAppointments(normalizedEmail);
+      console.debug('[Home] Appointments data received:', data);
 
-      // Filter out expired (15m)
       const now = new Date();
-      const active = data.filter(apt => {
-        // Construct date more safely: YYYY-MM-DD + HH:mm
-        // Use local interpretation for comparison with 'now'
+
+      const enriched = data.map(apt => {
         const [year, month, day] = apt.appointment_date.split('-').map(Number);
         const [hours, minutes] = apt.start_time.split(':').map(Number);
-
         const aptDate = new Date(year, month - 1, day, hours, minutes);
-        const expirationTime = new Date(aptDate.getTime() + 15 * 60000);
 
-        const isNotExpired = now <= expirationTime;
-        return isNotExpired;
+        const diffMs = now.getTime() - aptDate.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+
+        console.debug(`[Home] Apt ${apt.id} at ${apt.appointment_date} ${apt.start_time}. Now: ${now}. Diff: ${diffMins} mins.`);
+
+        let statusBadge = 'upcoming';
+        if (diffMins > 120) statusBadge = 'expired';
+        else if (diffMins > 15) statusBadge = 'late';
+        else if (apt.appointment_date === now.toISOString().split('T')[0]) statusBadge = 'today';
+
+        return { ...apt, statusBadge };
       });
 
-      setCustomerAppointments(active);
+      setCustomerAppointments(enriched);
     } catch (err) {
       console.error('Error loading customer appointments', err);
     } finally {
@@ -300,29 +307,42 @@ function Home() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {customerAppointments.map((apt: any) => (
-                      <div key={apt.id} className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex justify-between items-center group hover:border-indigo-200 transition">
+                      <div key={apt.id} className="bg-white rounded-2xl p-5 border border-indigo-50 shadow-sm flex justify-between items-center group hover:border-indigo-200 hover:shadow-md transition-all">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">{apt.business?.name}</span>
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest px-2 py-0.5 bg-indigo-50 rounded-full">{apt.business?.name}</span>
+
+                            {apt.statusBadge === 'today' && (
+                              <span className="text-[10px] font-bold text-orange-600 uppercase tracking-widest px-2 py-0.5 bg-orange-50 rounded-full">Hoy</span>
+                            )}
+                            {apt.statusBadge === 'late' && (
+                              <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest px-2 py-0.5 bg-red-50 rounded-full">Atrasada</span>
+                            )}
+                            {apt.statusBadge === 'expired' && (
+                              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 py-0.5 bg-gray-50 rounded-full">Expirada</span>
+                            )}
+                            {apt.statusBadge === 'upcoming' && (
+                              <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest px-2 py-0.5 bg-green-50 rounded-full">Próxima</span>
+                            )}
                           </div>
-                          <h4 className="font-bold text-gray-900 mb-1">{apt.service_name}</h4>
+                          <h4 className="font-bold text-gray-900 text-lg mb-1">{apt.service_name}</h4>
                           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <Calendar size={14} />
+                            <div className="flex items-center gap-1.5">
+                              <Calendar size={14} className="text-indigo-400" />
                               <span>{formatRelativeTime(apt.appointment_date, apt.start_time)}</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Clock size={14} />
+                            <div className="flex items-center gap-1.5">
+                              <Clock size={14} className="text-indigo-400" />
                               <span>{apt.start_time.slice(0, 5)}</span>
                             </div>
                           </div>
                         </div>
                         <button
                           onClick={() => handleCancelApt(apt.id)}
-                          className="ml-4 p-2 text-gray-400 hover:text-red-500 transition-colors"
+                          className="ml-4 w-11 h-11 flex items-center justify-center rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all"
                           title="Cancelar cita"
                         >
-                          <XCircle size={24} />
+                          <XCircle size={22} />
                         </button>
                       </div>
                     ))}
