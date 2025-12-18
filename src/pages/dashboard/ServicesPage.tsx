@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Scissors } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Edit2, Scissors, ShieldAlert, Ban } from 'lucide-react';
+import { supabase } from '@/supabaseClient';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
@@ -11,7 +12,7 @@ import { formatCurrency } from '@/utils';
 import type { Service } from '@/types';
 
 export default function ServicesPage() {
-    const { services, loading, createService, updateService, deleteService } = useServices();
+    const { services, loading, createService, updateService, deleteService, hardDeleteService } = useServices();
     const { canManageServices } = usePermissions();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -102,11 +103,34 @@ export default function ServicesPage() {
     };
 
     const handleDelete = async (service: Service) => {
-        if (!confirm(`¿Estás seguro de eliminar el servicio "${service.name}"?`)) {
+        if (!confirm(`¿Estás seguro de desactivar el servicio "${service.name}"? Ya no aparecerá en el flujo de reservas.`)) {
             return;
         }
 
+        // We use deleteService which is likely a soft delete based on the current implementation
+        // or just calls servicesService.deleteService.
         await deleteService(service.id);
+    };
+
+    const handleHardDelete = async (service: Service) => {
+        // Check for active appointments
+        const { data: activeApts } = await supabase
+            .from('appointments')
+            .select('id')
+            .eq('service_id', service.id)
+            .eq('status', 'confirmed')
+            .limit(1);
+
+        if (activeApts && activeApts.length > 0) {
+            alert('No se puede eliminar permanentemente: hay citas CONFIRMADAS activas para este servicio. Cancela las citas primero o solo desactiva el servicio.');
+            return;
+        }
+
+        if (!confirm(`⚠️ ALERTA: ¿Eliminar permanentemente "${service.name}"?\n\n- Se borrará de todos los barberos asociados.\n- Las citas históricas mostrarán "Servicio eliminado".\n- Esta acción NO se puede deshacer.`)) {
+            return;
+        }
+
+        await hardDeleteService(service.id);
     };
 
     if (!canManageServices) {
@@ -123,14 +147,14 @@ export default function ServicesPage() {
         <DashboardLayout>
             <div className="max-w-6xl">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Servicios</h1>
-                        <p className="text-sm text-gray-600 mt-1">Gestiona los servicios que ofreces</p>
+                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Servicios</h1>
+                        <p className="text-sm text-gray-500 mt-1">Define tu catálogo y precios</p>
                     </div>
-                    <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto">
-                        <Plus size={20} className="mr-2" />
-                        <span>Nuevo<span className="hidden sm:inline"> Servicio</span></span>
+                    <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto rounded-full px-8 h-12 shadow-lg shadow-black/5 hover:shadow-black/10 transition-all active:scale-95 flex items-center gap-2">
+                        <Plus size={20} />
+                        <span className="font-bold uppercase text-xs tracking-widest">Nuevo Servicio</span>
                     </Button>
                 </div>
 
@@ -138,57 +162,96 @@ export default function ServicesPage() {
                 {loading && services.length === 0 ? (
                     <LoadingSpinner />
                 ) : services.length === 0 ? (
-                    <div className="bg-white rounded-xl p-12 text-center">
-                        <Scissors size={48} className="mx-auto text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            No hay servicios
+                    <div className="bg-white rounded-3xl p-16 text-center border-2 border-dashed border-gray-100 shadow-sm">
+                        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Scissors size={40} className="text-gray-300" />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-900 mb-2">
+                            Catálogo vacío
                         </h3>
-                        <p className="text-gray-600 mb-6">
-                            Comienza agregando tu primer servicio
+                        <p className="text-gray-500 mb-8 max-w-sm mx-auto">
+                            Empieza agregando un servicio para que tus clientes puedan reservar.
                         </p>
-                        <Button onClick={() => handleOpenModal()}>
+                        <Button onClick={() => handleOpenModal()} className="rounded-full px-8 py-3">
                             <Plus size={20} className="mr-2" />
                             Crear Servicio
                         </Button>
                     </div>
                 ) : (
-                    <div className="grid gap-4">
+                    <div className="grid gap-6">
                         {services.map((service) => (
                             <div
                                 key={service.id}
-                                className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition"
+                                className={`bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-xl hover:shadow-black/5 transition-all duration-300 ${!service.is_active ? 'bg-gray-50/50' : ''
+                                    }`}
                             >
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-semibold text-gray-900">
-                                            {service.name}
-                                        </h3>
-                                        {service.description && (
-                                            <p className="text-gray-600 mt-1">{service.description}</p>
-                                        )}
-                                        <div className="flex items-center gap-4 mt-3">
-                                            <span className="text-sm text-gray-500">
-                                                ⏱️ {service.duration_minutes} min
-                                            </span>
-                                            <span className="text-sm font-semibold text-indigo-600">
-                                                {formatCurrency(service.price)}
-                                            </span>
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                    <div className="flex-1 flex gap-6 items-start">
+                                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 ${!service.is_active ? 'bg-gray-200 text-gray-400' : 'bg-black text-white'}`}>
+                                            <Scissors size={28} />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-3 flex-wrap">
+                                                <h3 className="text-2xl font-black text-gray-900 truncate">
+                                                    {service.name}
+                                                </h3>
+                                                {!service.is_active && (
+                                                    <span className="px-3 py-1 bg-gray-100 text-gray-500 text-[10px] uppercase font-bold tracking-widest rounded-full">
+                                                        Inactivo
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {service.description && (
+                                                <p className="text-gray-500 mt-2 text-sm leading-relaxed max-w-2xl">{service.description}</p>
+                                            )}
+                                            <div className="flex flex-wrap gap-4 mt-4">
+                                                <span className="flex items-center gap-2 text-sm font-bold text-gray-400">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                                    ⏱️ {service.duration_minutes} MIN
+                                                </span>
+                                                <span className="flex items-center gap-2 text-sm font-black text-black">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-black"></span>
+                                                    {formatCurrency(service.price)}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 ml-4">
+                                    <div className="flex items-center gap-3 self-end md:self-center">
                                         <Button
-                                            variant="ghost"
-                                            size="sm"
+                                            variant="secondary"
                                             onClick={() => handleOpenModal(service)}
+                                            className="rounded-full w-12 h-12 p-0 flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm"
+                                            title="Editar"
                                         >
-                                            <Edit2 size={16} />
+                                            <Edit2 size={18} />
                                         </Button>
+
+                                        {service.is_active ? (
+                                            <Button
+                                                variant="secondary"
+                                                onClick={() => handleDelete(service)}
+                                                className="rounded-full w-12 h-12 p-0 flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm text-gray-600"
+                                                title="Desactivar"
+                                            >
+                                                <Ban size={18} />
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                variant="secondary"
+                                                onClick={() => updateService(service.id, { is_active: true })}
+                                                className="rounded-full px-6 h-12 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm text-sm font-bold uppercase tracking-widest"
+                                            >
+                                                Activar
+                                            </Button>
+                                        )}
+
                                         <Button
                                             variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDelete(service)}
+                                            onClick={() => handleHardDelete(service)}
+                                            className="rounded-full w-12 h-12 p-0 flex items-center justify-center hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
+                                            title="Eliminar Permanentemente"
                                         >
-                                            <Trash2 size={16} className="text-red-600" />
+                                            <ShieldAlert size={18} />
                                         </Button>
                                     </div>
                                 </div>

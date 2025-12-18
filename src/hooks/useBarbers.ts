@@ -77,6 +77,23 @@ export const useBarbers = () => {
         }
     };
 
+    const hardDeleteBarber = async (barberId: string): Promise<boolean> => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            await barbersService.hardDeleteBarber(barberId);
+            await refreshBarbers();
+            return true;
+        } catch (err: any) {
+            console.error('Error hard deleting barber:', err);
+            setError(err.message || 'Failed to hard delete barber');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         barbers,
         loading,
@@ -84,6 +101,7 @@ export const useBarbers = () => {
         createBarber,
         updateBarber,
         deleteBarber,
+        hardDeleteBarber,
         getBarberServices,
     };
 };

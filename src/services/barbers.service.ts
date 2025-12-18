@@ -96,6 +96,25 @@ export const deleteBarber = async (barberId: string): Promise<void> => {
 };
 
 /**
+ * Hard delete barber
+ */
+export const hardDeleteBarber = async (barberId: string): Promise<void> => {
+    // Delete service associations first
+    await supabase
+        .from('barbers_services')
+        .delete()
+        .eq('barber_id', barberId);
+
+    // Delete barber
+    const { error } = await supabase
+        .from('barbers')
+        .delete()
+        .eq('id', barberId);
+
+    if (error) throw error;
+};
+
+/**
  * Assign services to barber
  */
 export const assignServicesToBarber = async (

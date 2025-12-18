@@ -207,3 +207,18 @@ export const getCustomerAppointments = async (email: string, clientId?: string):
     if (error) throw error;
     return data || [];
 };
+
+/**
+ * Clear appointment history (cancelled, completed, no_show)
+ * @returns Number of rows deleted
+ */
+export const clearAppointmentHistory = async (businessId: string): Promise<number> => {
+    const { count, error } = await supabase
+        .from('appointments')
+        .delete({ count: 'exact' })
+        .eq('business_id', businessId)
+        .in('status', ['cancelled', 'completed', 'no_show']);
+
+    if (error) throw error;
+    return count || 0;
+};

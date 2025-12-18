@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Appointment, CreateAppointmentData, UpdateAppointmentData, AppointmentFilters } from '@/types';
+import type { Appointment, CreateAppointmentData, AppointmentFilters } from '@/types';
 import * as appointmentsService from '@/services/appointments.service';
 
 export const useAppointments = (initialFilters?: AppointmentFilters) => {
@@ -97,6 +97,23 @@ export const useAppointments = (initialFilters?: AppointmentFilters) => {
         }
     };
 
+    const clearHistory = async (businessId: string): Promise<number> => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const count = await appointmentsService.clearAppointmentHistory(businessId);
+            await fetchAppointments();
+            return count;
+        } catch (err: any) {
+            console.error('Error clearing history:', err);
+            setError(err.message || 'Failed to clear history');
+            return 0;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         appointments,
         loading,
@@ -106,5 +123,6 @@ export const useAppointments = (initialFilters?: AppointmentFilters) => {
         cancelAppointment,
         rescheduleAppointment,
         updateAppointmentStatus,
+        clearHistory,
     };
 };

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, User, Mail, Phone, X, Check, Filter } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Calendar as CalendarIcon, User, Mail, Phone, X, Check, Filter, Trash2 } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/common/Button';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -35,6 +35,7 @@ export default function AppointmentsPage() {
         loading,
         fetchAppointments,
         updateAppointmentStatus,
+        clearHistory,
     } = useAppointments();
 
     // Effect to auto-select barber for Staff
@@ -115,6 +116,25 @@ export default function AppointmentsPage() {
         }
     };
 
+    const handleClearHistory = async () => {
+        if (!business) return;
+
+        // Count cancelled/completed/no_show appointments
+        const historyCount = appointments.filter(a => ['cancelled', 'completed', 'no_show'].includes(a.status)).length;
+
+        if (historyCount === 0) {
+            alert('No hay citas en el historial para limpiar.');
+            return;
+        }
+
+        if (!confirm(`Esto borrará permanentemente ${historyCount} citas del historial (canceladas y completadas). Esta acción no se puede deshacer. ¿Continuar?`)) return;
+
+        const deletedCount = await clearHistory(business.id);
+        if (deletedCount > 0) {
+            alert(`Se han eliminado ${deletedCount} citas del historial.`);
+        }
+    };
+
     const getStatusBadge = (status: string) => {
         const badges = {
             confirmed: { bg: 'bg-green-100', text: 'text-green-700', label: 'Confirmada' },
@@ -134,24 +154,21 @@ export default function AppointmentsPage() {
 
     // Filter and Sort Appointments for "Upcoming" & "All" Logic
     const filteredAppointments = appointments.filter(apt => {
-        const aptDate = new Date(`${apt.appointment_date}T${apt.start_time}`);
-        const expirationTime = new Date(aptDate.getTime() + 15 * 60000);
-        const now = new Date();
-        const isExpired = now > expirationTime;
-
         if (activeTab === 'today') {
             const today = new Date().toISOString().split('T')[0];
-            // Solo confirmadas de HOY que no hayan expirado (>15 min de retraso)
-            return apt.status === 'confirmed' && apt.appointment_date === today && !isExpired;
+            return apt.appointment_date === today && apt.status === 'confirmed';
         }
 
         if (activeTab === 'upcoming') {
             const today = new Date().toISOString().split('T')[0];
-            // Solo confirmadas FUTURAS
             return apt.status === 'confirmed' && apt.appointment_date > today;
         }
 
-        // 'Todas' actúa como historial y visión general
+        if (activeTab === 'all') {
+            // Historial: cancelled, completed, no_show
+            return ['cancelled', 'completed', 'no_show'].includes(apt.status);
+        }
+
         return true;
     }).sort((a, b) => {
         // Sort by Date then Time
@@ -175,32 +192,44 @@ export default function AppointmentsPage() {
         <DashboardLayout>
             <div className="max-w-5xl mx-auto">
                 {/* Header */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Citas</h1>
-                    <p className="text-gray-500">Gestión de reservas</p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Citas</h1>
+                        <p className="text-gray-500 text-sm">Gestiona la agenda y el historial</p>
+                    </div>
+                    {role === 'owner' && activeTab === 'all' && (
+                        <Button
+                            variant="danger"
+                            onClick={handleClearHistory}
+                            className="rounded-full px-6 py-2 h-11 text-xs uppercase tracking-widest font-bold flex items-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-95"
+                        >
+                            <Trash2 size={14} />
+                            Limpiar Historial
+                        </Button>
+                    )}
                 </div>
 
                 {/* Filters & Tabs */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
                     {/* Tabs */}
-                    <div className="flex p-1 bg-gray-100 rounded-lg w-full md:w-auto overflow-x-auto no-scrollbar scroll-smooth">
+                    <div className="flex p-1.5 bg-gray-100 rounded-2xl w-full lg:w-auto overflow-x-auto no-scrollbar scroll-smooth shadow-inner">
                         <button
                             onClick={() => setActiveTab('today')}
-                            className={`flex-1 lg:flex-none px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${activeTab === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                            className={`flex-1 lg:flex-none px-6 py-2.5 text-xs font-bold rounded-xl transition-all uppercase tracking-tighter whitespace-nowrap ${activeTab === 'today' ? 'bg-white text-black shadow-sm ring-1 ring-gray-100' : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Hoy
                         </button>
                         <button
                             onClick={() => setActiveTab('upcoming')}
-                            className={`flex-1 lg:flex-none px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${activeTab === 'upcoming' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                            className={`flex-1 lg:flex-none px-6 py-2.5 text-xs font-bold rounded-xl transition-all uppercase tracking-tighter whitespace-nowrap ${activeTab === 'upcoming' ? 'bg-white text-black shadow-sm ring-1 ring-gray-100' : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Próximas
                         </button>
                         <button
                             onClick={() => setActiveTab('all')}
-                            className={`flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-medium rounded-md transition-all whitespace-nowrap ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                            className={`flex-1 lg:flex-none px-6 py-2.5 text-xs font-bold rounded-xl transition-all uppercase tracking-tighter whitespace-nowrap ${activeTab === 'all' ? 'bg-white text-black shadow-sm ring-1 ring-gray-100' : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Historial
@@ -209,13 +238,13 @@ export default function AppointmentsPage() {
 
                     {/* Barber Dropdown */}
                     {!isStaffBarber && (
-                        <div className="w-full md:w-64">
-                            <div className="relative">
-                                <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <div className="w-full lg:w-72">
+                            <div className="relative group">
+                                <Filter size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-black transition-colors" />
                                 <select
                                     value={selectedBarberId}
                                     onChange={(e) => setSelectedBarberId(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none"
+                                    className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-800 focus:ring-4 focus:ring-black/5 focus:border-black outline-none appearance-none transition-all shadow-sm"
                                 >
                                     <option value="all">Todos los barberos</option>
                                     {barbers.map(barber => (

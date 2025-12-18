@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useBusiness } from '@/contexts/BusinessContext';
 import type { Service, CreateServiceData, UpdateServiceData } from '@/types';
 import * as servicesService from '@/services/services.service';
@@ -85,6 +85,23 @@ export const useServices = () => {
         }
     };
 
+    const hardDeleteService = async (serviceId: string): Promise<boolean> => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            await servicesService.hardDeleteService(serviceId);
+            await refreshServices();
+            return true;
+        } catch (err: any) {
+            console.error('Error hard deleting service:', err);
+            setError(err.message || 'Failed to hard delete service');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         services,
         loading,
@@ -92,6 +109,7 @@ export const useServices = () => {
         createService,
         updateService,
         deleteService,
+        hardDeleteService,
         reorderServices,
     };
 };

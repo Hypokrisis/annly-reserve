@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Users as UsersIcon } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Edit2, Users as UsersIcon, ShieldAlert, UserMinus } from 'lucide-react';
+import { supabase } from '@/supabaseClient';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
@@ -11,7 +12,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import type { Barber } from '@/types';
 
 export default function BarbersPage() {
-    const { barbers, loading, createBarber, updateBarber, deleteBarber, getBarberServices } = useBarbers();
+    const { barbers, loading, createBarber, updateBarber, deleteBarber, hardDeleteBarber, getBarberServices } = useBarbers();
     const { services } = useServices();
     const { canManageBarbers } = usePermissions();
 
@@ -105,17 +106,38 @@ export default function BarbersPage() {
     };
 
     const handleDelete = async (barber: Barber) => {
-        if (!confirm(`¿Estás seguro de desactivar a "${barber.name}"?`)) {
+        if (!confirm(`¿Estás seguro de desactivar a "${barber.name}"? El barbero dejará de estar disponible para reservas.`)) {
             return;
         }
 
         await deleteBarber(barber.id);
     };
 
+    const handleHardDelete = async (barber: Barber) => {
+        // Check for active appointments
+        const { data: activeApts } = await supabase
+            .from('appointments')
+            .select('id')
+            .eq('barber_id', barber.id)
+            .eq('status', 'confirmed')
+            .limit(1);
+
+        if (activeApts && activeApts.length > 0) {
+            alert('No se puede eliminar permanentemente: este barbero tiene citas CONFIRMADAS activas. Cancela las citas primero o solo desactiva al barbero.');
+            return;
+        }
+
+        if (!confirm(`⚠️ ALERTA DE SEGURIDAD\n\n¿Estás ABSOLUTAMENTE seguro de eliminar permanentemente a "${barber.name}"?\n\n- Se borrará su perfil y asociaciones.\n- Las citas históricas mostrarán "Barbero eliminado".\n- Esta acción NO se puede deshacer.`)) {
+            return;
+        }
+
+        await hardDeleteBarber(barber.id);
+    };
+
     const toggleService = (serviceId: string) => {
-        setSelectedServices(prev =>
+        setSelectedServices((prev: string[]) =>
             prev.includes(serviceId)
-                ? prev.filter(id => id !== serviceId)
+                ? prev.filter((id: string) => id !== serviceId)
                 : [...prev, serviceId]
         );
     };
@@ -134,14 +156,14 @@ export default function BarbersPage() {
         <DashboardLayout>
             <div className="max-w-6xl">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Barberos</h1>
-                        <p className="text-sm text-gray-600 mt-1">Gestiona tu equipo de trabajo</p>
+                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Barberos</h1>
+                        <p className="text-sm text-gray-500 mt-1">Coordina tu equipo y disponibilidad</p>
                     </div>
-                    <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto">
-                        <Plus size={20} className="mr-2" />
-                        <span>Nuevo<span className="hidden sm:inline"> Barbero</span></span>
+                    <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto rounded-full px-8 h-12 shadow-lg shadow-black/5 hover:shadow-black/10 transition-all active:scale-95 flex items-center gap-2">
+                        <Plus size={20} />
+                        <span className="font-bold uppercase text-xs tracking-widest">Añadir Barbero</span>
                     </Button>
                 </div>
 
@@ -149,69 +171,100 @@ export default function BarbersPage() {
                 {loading && barbers.length === 0 ? (
                     <LoadingSpinner />
                 ) : barbers.length === 0 ? (
-                    <div className="bg-white rounded-xl p-12 text-center">
-                        <UsersIcon size={48} className="mx-auto text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            No hay barberos
+                    <div className="bg-white rounded-3xl p-16 text-center border-2 border-dashed border-gray-100 shadow-sm">
+                        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <UsersIcon size={40} className="text-gray-300" />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-900 mb-2">
+                            Equipo vacío
                         </h3>
-                        <p className="text-gray-600 mb-6">
-                            Comienza agregando tu primer barbero
+                        <p className="text-gray-500 mb-8 max-w-sm mx-auto">
+                            Comienza agregando a tu primer barbero para empezar a recibir citas.
                         </p>
-                        <Button onClick={() => handleOpenModal()}>
+                        <Button onClick={() => handleOpenModal()} className="rounded-full px-8 py-3">
                             <Plus size={20} className="mr-2" />
                             Crear Barbero
                         </Button>
                     </div>
                 ) : (
-                    <div className="grid gap-4">
+                    <div className="grid gap-6">
                         {barbers.map((barber) => (
                             <div
                                 key={barber.id}
-                                className={`bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition ${!barber.is_active ? 'opacity-50' : ''
+                                className={`bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-xl hover:shadow-black/5 transition-all duration-300 ${!barber.is_active ? 'bg-gray-50/50' : ''
                                     }`}
                             >
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-3">
-                                            <h3 className="text-lg font-semibold text-gray-900">
-                                                {barber.name}
-                                            </h3>
-                                            {!barber.is_active && (
-                                                <span className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded">
-                                                    Inactivo
-                                                </span>
-                                            )}
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                    <div className="flex-1 flex gap-6 items-start">
+                                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 ${!barber.is_active ? 'bg-gray-200 text-gray-400' : 'bg-black text-white'}`}>
+                                            <UsersIcon size={28} />
                                         </div>
-                                        {barber.bio && (
-                                            <p className="text-gray-600 mt-1">{barber.bio}</p>
-                                        )}
-                                        <div className="flex flex-col gap-1 mt-3">
-                                            {barber.email && (
-                                                <span className="text-sm text-gray-500">
-                                                    📧 {barber.email}
-                                                </span>
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-3 flex-wrap">
+                                                <h3 className="text-2xl font-black text-gray-900 truncate">
+                                                    {barber.name}
+                                                </h3>
+                                                {!barber.is_active && (
+                                                    <span className="px-3 py-1 bg-gray-100 text-gray-500 text-[10px] uppercase font-bold tracking-widest rounded-full">
+                                                        Inactivo
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {barber.bio && (
+                                                <p className="text-gray-500 mt-2 text-sm leading-relaxed max-w-2xl">{barber.bio}</p>
                                             )}
-                                            {barber.phone && (
-                                                <span className="text-sm text-gray-500">
-                                                    📱 {barber.phone}
-                                                </span>
-                                            )}
+                                            <div className="flex flex-wrap gap-4 mt-4">
+                                                {barber.email && (
+                                                    <span className="flex items-center gap-2 text-sm font-medium text-gray-400">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                                        {barber.email}
+                                                    </span>
+                                                )}
+                                                {barber.phone && (
+                                                    <span className="flex items-center gap-2 text-sm font-medium text-gray-400">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                                        {barber.phone}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 ml-4">
+                                    <div className="flex items-center gap-3 self-end md:self-center">
                                         <Button
-                                            variant="ghost"
-                                            size="sm"
+                                            variant="secondary"
                                             onClick={() => handleOpenModal(barber)}
+                                            className="rounded-full w-12 h-12 p-0 flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm"
+                                            title="Editar"
                                         >
-                                            <Edit2 size={16} />
+                                            <Edit2 size={18} />
                                         </Button>
+
+                                        {barber.is_active ? (
+                                            <Button
+                                                variant="secondary"
+                                                onClick={() => handleDelete(barber)}
+                                                className="rounded-full w-12 h-12 p-0 flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm text-gray-600"
+                                                title="Desactivar"
+                                            >
+                                                <UserMinus size={18} />
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                variant="secondary"
+                                                onClick={() => updateBarber(barber.id, { is_active: true })}
+                                                className="rounded-full px-6 h-12 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm text-sm font-bold uppercase tracking-widest"
+                                            >
+                                                Activar
+                                            </Button>
+                                        )}
+
                                         <Button
                                             variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDelete(barber)}
+                                            onClick={() => handleHardDelete(barber)}
+                                            className="rounded-full w-12 h-12 p-0 flex items-center justify-center hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
+                                            title="Eliminar Permanentemente"
                                         >
-                                            <Trash2 size={16} className="text-red-600" />
+                                            <ShieldAlert size={18} />
                                         </Button>
                                     </div>
                                 </div>

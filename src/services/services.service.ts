@@ -78,6 +78,25 @@ export const deleteService = async (serviceId: string): Promise<void> => {
 };
 
 /**
+ * Hard delete service
+ */
+export const hardDeleteService = async (serviceId: string): Promise<void> => {
+    // Delete associations first
+    await supabase
+        .from('barbers_services')
+        .delete()
+        .eq('service_id', serviceId);
+
+    // Hard delete service
+    const { error } = await supabase
+        .from('services')
+        .delete()
+        .eq('id', serviceId);
+
+    if (error) throw error;
+};
+
+/**
  * Reorder services
  */
 export const reorderServices = async (serviceIds: string[]): Promise<void> => {
