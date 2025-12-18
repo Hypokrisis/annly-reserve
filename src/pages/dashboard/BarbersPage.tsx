@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, Users as UsersIcon } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/common/Button';
@@ -134,14 +134,14 @@ export default function BarbersPage() {
         <DashboardLayout>
             <div className="max-w-6xl">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Barberos</h1>
-                        <p className="text-gray-600 mt-1">Gestiona tu equipo de trabajo</p>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Barberos</h1>
+                        <p className="text-sm text-gray-600 mt-1">Gestiona tu equipo de trabajo</p>
                     </div>
-                    <Button onClick={() => handleOpenModal()}>
+                    <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto">
                         <Plus size={20} className="mr-2" />
-                        Nuevo Barbero
+                        <span>Nuevo<span className="hidden sm:inline"> Barbero</span></span>
                     </Button>
                 </div>
 

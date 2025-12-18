@@ -123,14 +123,14 @@ export default function ServicesPage() {
         <DashboardLayout>
             <div className="max-w-6xl">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Servicios</h1>
-                        <p className="text-gray-600 mt-1">Gestiona los servicios que ofreces</p>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Servicios</h1>
+                        <p className="text-sm text-gray-600 mt-1">Gestiona los servicios que ofreces</p>
                     </div>
-                    <Button onClick={() => handleOpenModal()}>
+                    <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto">
                         <Plus size={20} className="mr-2" />
-                        Nuevo Servicio
+                        <span>Nuevo<span className="hidden sm:inline"> Servicio</span></span>
                     </Button>
                 </div>
 

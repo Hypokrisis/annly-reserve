@@ -8,11 +8,13 @@ import { useAvailability } from '@/hooks/useAvailability';
 import { formatCurrency, formatDate, parseDate, formatTimeDisplay, isValidEmail, isValidPhone } from '@/utils';
 import * as appointmentsService from '@/services/appointments.service';
 import { supabase } from '@/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Business, Service, Barber } from '@/types';
 
 export default function PublicBookingPage() {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     useEffect(() => {
         console.log('[BookingPage] Montando componente. slug =', slug);
@@ -160,7 +162,7 @@ export default function PublicBookingPage() {
 
     // Load customer info from localStorage on mount
     useEffect(() => {
-        const savedInfo = localStorage.getItem('customerInfo');
+        const savedInfo = localStorage.getItem('annly_customer_data');
         if (savedInfo) {
             try {
                 const parsed = JSON.parse(savedInfo);
@@ -227,10 +229,11 @@ export default function PublicBookingPage() {
                 customer_notes: customerInfo.notes.trim() || undefined,
                 appointment_date: selectedDate,
                 start_time: selectedSlot.time,
+                client_id: user?.id,
             });
 
             // SAVE TO LOCAL STORAGE
-            localStorage.setItem('customerInfo', JSON.stringify({
+            localStorage.setItem('annly_customer_data', JSON.stringify({
                 name: customerInfo.name,
                 email: customerInfo.email,
                 phone: customerInfo.phone

@@ -26,6 +26,7 @@ export interface Appointment {
     updated_at: string;
     cancelled_at?: string;
     cancellation_reason?: string;
+    client_id?: string;
 }
 
 export interface CreateAppointmentData {
@@ -38,6 +39,7 @@ export interface CreateAppointmentData {
     customer_notes?: string;
     appointment_date: string;
     start_time: string;
+    client_id?: string;
 }
 
 export interface UpdateAppointmentData {
@@ -53,6 +55,7 @@ export interface AppointmentFilters {
     date?: string;
     status?: AppointmentStatus;
     customer_email?: string;
+    client_id?: string;
 }
 
 export interface AppointmentWithDetails extends Appointment {

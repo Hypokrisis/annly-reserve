@@ -70,18 +70,29 @@ export default function DashboardHome() {
                             <p className="text-indigo-100 mb-4">
                                 Comparte este enlace con tus clientes para que puedan agendar citas.
                             </p>
-                            <div className="flex items-center gap-2 bg-white/10 p-2 rounded-lg backdrop-blur-sm">
-                                <code className="text-sm font-mono flex-1">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/10 p-2 rounded-lg backdrop-blur-sm overflow-hidden">
+                                <code className="text-[10px] sm:text-sm font-mono flex-1 truncate bg-indigo-900/30 px-2 py-1 rounded">
                                     {window.location.origin}/book/{business?.slug}
                                 </code>
-                                <a
-                                    href={`/book/${business?.slug}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-3 py-1 bg-white text-indigo-600 rounded-md text-sm font-semibold hover:bg-indigo-50 transition"
-                                >
-                                    Abrir
-                                </a>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(`${window.location.origin}/book/${business?.slug}`);
+                                            alert('Enlace copiado al portapapeles');
+                                        }}
+                                        className="flex-1 sm:flex-none px-3 py-1.5 bg-indigo-400/50 hover:bg-indigo-400/70 rounded-md text-xs font-semibold transition text-center"
+                                    >
+                                        Copiar
+                                    </button>
+                                    <a
+                                        href={`/book/${business?.slug}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex-1 sm:flex-none px-3 py-1.5 bg-white text-indigo-600 rounded-md text-xs font-semibold hover:bg-indigo-50 transition text-center"
+                                    >
+                                        Abrir
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         <div className="hidden md:block text-6xl opacity-20">

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { MapPin, Star, Scissors, Calendar, Clock, Heart, ChevronRight, XCircle, Search } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -15,6 +15,8 @@ interface BusinessResult {
   description?: string;
   address?: string;
   city?: string;
+  banner_url?: string;
+  logo_url?: string;
 }
 
 function Home() {
@@ -33,19 +35,43 @@ function Home() {
     loadFavorites();
   }, []);
 
+  const location = useLocation();
+
   useEffect(() => {
-    if (user?.email) {
-      loadCustomerAppointments();
-    }
+    loadCustomerAppointments();
+  }, [user, location.pathname]);
+
+  useEffect(() => {
+    // Refresh on window focus to ensure data is up to date
+    window.addEventListener('focus', loadCustomerAppointments);
+    return () => window.removeEventListener('focus', loadCustomerAppointments);
   }, [user]);
 
-  const loadCustomerAppointments = async () => {
-    if (!user?.email) return;
-    const normalizedEmail = user.email.toLowerCase().trim();
+  const loadCustomerAppointments = useCallback(async () => {
+    let emailToFetch = user?.email;
+
+    if (!emailToFetch) {
+      try {
+        const savedInfo = localStorage.getItem('annly_customer_data');
+        if (savedInfo) {
+          emailToFetch = JSON.parse(savedInfo).email;
+        }
+      } catch (e) {
+        console.error('Error reading annly_customer_data from LS', e);
+      }
+    }
+
+    if (!emailToFetch) {
+      setCustomerAppointments([]);
+      return;
+    }
+
+    const normalizedEmail = emailToFetch.toLowerCase().trim();
+    const clientId = user?.id; // If logged in, prioritize client_id too
     setLoadingApts(true);
     try {
-      console.debug('[Home] Fetching appointments for:', normalizedEmail);
-      const data = await appointmentsService.getCustomerAppointments(normalizedEmail);
+      console.debug('[Home] Fetching appointments for:', { normalizedEmail, clientId });
+      const data = await appointmentsService.getCustomerAppointments(normalizedEmail, clientId);
       console.debug('[Home] Appointments data received:', data);
 
       const now = new Date();
@@ -66,7 +92,7 @@ function Home() {
         else if (apt.appointment_date === now.toISOString().split('T')[0]) statusBadge = 'today';
 
         return { ...apt, statusBadge };
-      });
+      }).filter(apt => apt.status === 'confirmed');
 
       setCustomerAppointments(enriched);
     } catch (err) {
@@ -74,13 +100,13 @@ function Home() {
     } finally {
       setLoadingApts(false);
     }
-  };
+  }, [user]);
 
   const handleCancelApt = async (id: string) => {
     if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) return;
     try {
       await appointmentsService.updateAppointmentStatus(id, 'cancelled');
-      loadCustomerAppointments();
+      await loadCustomerAppointments();
     } catch (err) {
       alert('No se pudo cancelar la cita. Intenta de nuevo.');
     }
@@ -116,7 +142,7 @@ function Home() {
       // Fetch all businesses (active)
       const { data, error } = await supabase
         .from('businesses')
-        .select('id, name, slug, description, address, city')
+        .select('id, name, slug, description, address, city, banner_url, logo_url')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -173,11 +199,12 @@ function Home() {
 
       <div className="h-48 bg-gray-200 relative overflow-hidden">
         <img
-          src={`https://source.unsplash.com/random/800x600/?barbershop,haircut,${business.id}`}
+          src={business.banner_url || business.logo_url || `https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800`}
           alt={business.name}
           className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+          loading="lazy"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80';
+            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800';
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
@@ -224,15 +251,18 @@ function Home() {
               </div>
               <span className="text-xl font-bold text-gray-900 tracking-tight">AnnlyReserve</span>
             </div>
-            <div className="flex items-center gap-4">
-              <Link to="/login" className="text-sm font-semibold text-gray-600 hover:text-black transition">
-                Acceso Barbero
+            <div className="flex flex-row items-center gap-1.5">
+              <Link
+                to="/login"
+                className="text-[10px] sm:text-xs font-bold text-gray-500 hover:text-black transition uppercase tracking-tighter px-2 py-1.5 border border-gray-100 rounded-lg whitespace-nowrap"
+              >
+                Acceso
               </Link>
               <Link
                 to="/signup"
-                className="bg-black hover:bg-gray-800 text-white px-5 py-2.5 rounded-full font-semibold transition text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                className="bg-black hover:bg-gray-800 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold transition text-[10px] sm:text-xs shadow-sm uppercase tracking-tight whitespace-nowrap"
               >
-                Registrar Negocio
+                Registrar
               </Link>
             </div>
           </div>
@@ -286,10 +316,10 @@ function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 -mt-20 relative z-20" id="directory">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 -mt-12 md:-mt-20 relative z-20" id="directory">
 
         {/* Customer Appointments Panel */}
-        {user && customerAppointments.length > 0 && (
+        {customerAppointments.length > 0 && (
           <div className="mb-12">
             <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-indigo-50">
               <div className="bg-indigo-600 px-6 py-4 flex items-center justify-between">

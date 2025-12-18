@@ -184,15 +184,23 @@ export const updateAppointmentStatus = async (
 /**
  * Get active appointments for a customer email
  */
-export const getCustomerAppointments = async (email: string): Promise<Appointment[]> => {
-    const { data, error } = await supabase
+export const getCustomerAppointments = async (email: string, clientId?: string): Promise<Appointment[]> => {
+    let query = supabase
         .from('appointments')
         .select(`
             *,
             business:businesses(id, name, slug)
         `)
-        .ilike('customer_email', email.trim())
-        .in('status', ['confirmed', 'pending'])
+        .eq('status', 'confirmed');
+
+    if (clientId) {
+        // Use OR for either email match OR client_id match
+        query = query.or(`customer_email.ilike.${email.trim()},client_id.eq.${clientId}`);
+    } else {
+        query = query.ilike('customer_email', email.trim());
+    }
+
+    const { data, error } = await query
         .order('appointment_date', { ascending: true })
         .order('start_time', { ascending: true });
 

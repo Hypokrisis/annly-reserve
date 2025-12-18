@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, Clock, User, Mail, Phone, X, Check, Filter } from 'lucide-react';
+import { Calendar as CalendarIcon, User, Mail, Phone, X, Check, Filter } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/common/Button';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -8,7 +8,7 @@ import { useAppointments } from '@/hooks/useAppointments';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
-import { formatDateDisplay, formatTimeDisplay, formatCurrency, formatRelativeTime } from '@/utils';
+import { formatDateDisplay, formatTimeDisplay, formatRelativeTime } from '@/utils';
 import type { Appointment } from '@/types';
 
 type Tab = 'today' | 'upcoming' | 'all';
@@ -181,9 +181,9 @@ export default function AppointmentsPage() {
                 </div>
 
                 {/* Filters & Tabs */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     {/* Tabs */}
-                    <div className="flex p-1 bg-gray-100 rounded-lg w-full lg:w-auto overflow-x-auto no-scrollbar">
+                    <div className="flex p-1 bg-gray-100 rounded-lg w-full md:w-auto overflow-x-auto no-scrollbar scroll-smooth">
                         <button
                             onClick={() => setActiveTab('today')}
                             className={`flex-1 lg:flex-none px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${activeTab === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
@@ -200,7 +200,7 @@ export default function AppointmentsPage() {
                         </button>
                         <button
                             onClick={() => setActiveTab('all')}
-                            className={`flex-1 lg:flex-none px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                            className={`flex-1 md:flex-none px-4 py-2 text-xs md:text-sm font-medium rounded-md transition-all whitespace-nowrap ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Historial
