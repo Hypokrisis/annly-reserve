@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Clock, User, Mail, Phone, MessageSquare, Check } from 'lucide-react';
+import { useParams, Link } from 'react-router-dom';
+import { Check } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAvailability } from '@/hooks/useAvailability';
 import { formatCurrency, formatDate, parseDate, formatTimeDisplay, isValidEmail, isValidPhone } from '@/utils';
-import * as businessService from '@/services/business.service';
 import * as appointmentsService from '@/services/appointments.service';
 import { supabase } from '@/supabaseClient';
 import type { Business, Service, Barber } from '@/types';
 
 export default function PublicBookingPage() {
     const { slug } = useParams<{ slug: string }>();
-    const navigate = useNavigate();
 
     useEffect(() => {
         console.log('[BookingPage] Montando componente. slug =', slug);
@@ -202,6 +200,22 @@ export default function PublicBookingPage() {
         setSubmitting(true);
 
         try {
+            // Check for existing active appointment in this business
+            const { data: existingActive } = await supabase
+                .from('appointments')
+                .select('id')
+                .eq('business_id', business.id)
+                .eq('customer_email', customerInfo.email.trim())
+                .in('status', ['confirmed', 'pending'])
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (existingActive && existingActive.length > 0) {
+                alert('Ya tienes una cita activa en esta barbería. Cancélala para crear una nueva.');
+                setSubmitting(false);
+                return;
+            }
+
             await appointmentsService.createAppointment({
                 business_id: business.id,
                 barber_id: selectedSlot.barber_id,

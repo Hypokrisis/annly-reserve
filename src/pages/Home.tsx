@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, MapPin, Star, ArrowRight, Scissors, Calendar, Clock, Heart, ChevronRight } from 'lucide-react';
+import { MapPin, Star, Scissors, Calendar, Clock, Heart, ChevronRight, XCircle, Search } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { useAuth } from '@/contexts/AuthContext';
+import * as appointmentsService from '@/services/appointments.service';
+import { formatRelativeTime } from '@/utils/formatters';
+import { Appointment } from '@/types';
 
 interface BusinessResult {
   id: string;
@@ -14,18 +18,58 @@ interface BusinessResult {
 }
 
 function Home() {
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [allBusinesses, setAllBusinesses] = useState<BusinessResult[]>([]);
   const [recentBusinesses, setRecentBusinesses] = useState<BusinessResult[]>([]);
   const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
+  const [customerAppointments, setCustomerAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingApts, setLoadingApts] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
     loadFavorites();
   }, []);
+
+  useEffect(() => {
+    if (user?.email) {
+      loadCustomerAppointments();
+    }
+  }, [user]);
+
+  const loadCustomerAppointments = async () => {
+    if (!user?.email) return;
+    setLoadingApts(true);
+    try {
+      const data = await appointmentsService.getCustomerAppointments(user.email);
+
+      // Filter out expired (15m)
+      const now = new Date();
+      const active = data.filter(apt => {
+        const aptDate = new Date(`${apt.appointment_date}T${apt.start_time}`);
+        const expirationTime = new Date(aptDate.getTime() + 15 * 60000);
+        return now <= expirationTime;
+      });
+
+      setCustomerAppointments(active);
+    } catch (err) {
+      console.error('Error loading customer appointments', err);
+    } finally {
+      setLoadingApts(false);
+    }
+  };
+
+  const handleCancelApt = async (id: string) => {
+    if (!confirm('¿Estás seguro de que deseas cancelar esta cita?')) return;
+    try {
+      await appointmentsService.updateAppointmentStatus(id, 'cancelled');
+      loadCustomerAppointments();
+    } catch (err) {
+      alert('No se pudo cancelar la cita. Intenta de nuevo.');
+    }
+  };
 
   const loadFavorites = () => {
     try {
@@ -228,6 +272,58 @@ function Home() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 -mt-20 relative z-20" id="directory">
+
+        {/* Customer Appointments Panel */}
+        {user && customerAppointments.length > 0 && (
+          <div className="mb-12">
+            <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-indigo-50">
+              <div className="bg-indigo-600 px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-white">
+                  <Calendar size={20} />
+                  <h2 className="text-lg font-bold">Mis Próximas Citas</h2>
+                </div>
+                <span className="bg-white/20 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  {customerAppointments.length} activa(s)
+                </span>
+              </div>
+              <div className="p-2 md:p-4">
+                {loadingApts ? (
+                  <div className="py-8 flex justify-center"><LoadingSpinner /></div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {customerAppointments.map((apt: any) => (
+                      <div key={apt.id} className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex justify-between items-center group hover:border-indigo-200 transition">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">{apt.business?.name}</span>
+                          </div>
+                          <h4 className="font-bold text-gray-900 mb-1">{apt.service_name}</h4>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <Calendar size={14} />
+                              <span>{formatRelativeTime(apt.appointment_date, apt.start_time)}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock size={14} />
+                              <span>{apt.start_time.slice(0, 5)}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleCancelApt(apt.id)}
+                          className="ml-4 p-2 text-gray-400 hover:text-red-500 transition-colors"
+                          title="Cancelar cita"
+                        >
+                          <XCircle size={24} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (

@@ -180,3 +180,22 @@ export const updateAppointmentStatus = async (
 
     if (error) throw error;
 };
+
+/**
+ * Get active appointments for a customer email
+ */
+export const getCustomerAppointments = async (email: string): Promise<Appointment[]> => {
+    const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+            *,
+            business:businesses(id, name, slug)
+        `)
+        .eq('customer_email', email)
+        .in('status', ['confirmed', 'pending'])
+        .order('appointment_date', { ascending: true })
+        .order('start_time', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+};

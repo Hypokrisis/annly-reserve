@@ -135,10 +135,24 @@ export default function AppointmentsPage() {
 
     // Filter and Sort Appointments for "Upcoming" & "All" Logic
     const filteredAppointments = appointments.filter(apt => {
+        const aptDate = new Date(`${apt.appointment_date}T${apt.start_time}`);
+        const expirationTime = new Date(aptDate.getTime() + 15 * 60000);
+        const now = new Date();
+        const isExpired = now > expirationTime;
+
+        if (activeTab === 'today') {
+            const today = new Date().toISOString().split('T')[0];
+            // Solo confirmadas de HOY que no hayan expirado (>15 min de retraso)
+            return apt.status === 'confirmed' && apt.appointment_date === today && !isExpired;
+        }
+
         if (activeTab === 'upcoming') {
             const today = new Date().toISOString().split('T')[0];
-            return apt.appointment_date > today;
+            // Solo confirmadas FUTURAS
+            return apt.status === 'confirmed' && apt.appointment_date > today;
         }
+
+        // 'Todas' actúa como historial y visión general
         return true;
     }).sort((a, b) => {
         // Sort by Date then Time
