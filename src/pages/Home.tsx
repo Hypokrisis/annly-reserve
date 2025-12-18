@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { MapPin, Star, Scissors, Calendar, Clock, Heart, ChevronRight, XCircle, Search } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -41,16 +41,24 @@ function Home() {
 
   const loadCustomerAppointments = async () => {
     if (!user?.email) return;
+    const normalizedEmail = user.email.toLowerCase().trim();
     setLoadingApts(true);
     try {
-      const data = await appointmentsService.getCustomerAppointments(user.email);
+      const data = await appointmentsService.getCustomerAppointments(normalizedEmail);
 
       // Filter out expired (15m)
       const now = new Date();
       const active = data.filter(apt => {
-        const aptDate = new Date(`${apt.appointment_date}T${apt.start_time}`);
+        // Construct date more safely: YYYY-MM-DD + HH:mm
+        // Use local interpretation for comparison with 'now'
+        const [year, month, day] = apt.appointment_date.split('-').map(Number);
+        const [hours, minutes] = apt.start_time.split(':').map(Number);
+
+        const aptDate = new Date(year, month - 1, day, hours, minutes);
         const expirationTime = new Date(aptDate.getTime() + 15 * 60000);
-        return now <= expirationTime;
+
+        const isNotExpired = now <= expirationTime;
+        return isNotExpired;
       });
 
       setCustomerAppointments(active);
@@ -225,7 +233,7 @@ function Home() {
       </nav>
 
       {/* Hero Section - Booksy Style */}
-      <div className="relative h-[500px] flex items-center justify-center bg-gray-900 overflow-hidden">
+      <div className="relative h-[400px] md:h-[500px] flex items-center justify-center bg-gray-900 overflow-hidden">
         {/* Background Image with Dark Overlay */}
         <div className="absolute inset-0 z-0">
           <img
@@ -249,19 +257,19 @@ function Home() {
           </p>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto relative group">
-            <div className="relative flex items-center bg-white rounded-full p-2 shadow-2xl transform transition-transform group-hover:scale-[1.01]">
-              <Search className="absolute left-6 text-gray-400" size={20} />
+          <form onSubmit={handleSearch} className="max-w-2xl mx-auto relative group px-2">
+            <div className="relative flex items-center bg-white rounded-2xl md:rounded-full p-1.5 shadow-2xl transform transition-transform group-hover:scale-[1.01]">
+              <Search className="absolute left-4 md:left-6 text-gray-400" size={20} />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="¿Qué servicio buscas? (ej. Corte, Barba)"
-                className="w-full pl-12 pr-36 py-3 rounded-full text-gray-900 placeholder-gray-400 focus:outline-none text-base"
+                placeholder="¿Qué servicio buscas?"
+                className="w-full pl-10 md:pl-14 pr-24 md:pr-36 py-3 rounded-full text-gray-900 placeholder-gray-400 focus:outline-none text-sm md:text-base"
               />
               <button
                 type="submit"
-                className="absolute right-2 bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-full font-semibold transition shadow-md"
+                className="absolute right-1.5 bg-black hover:bg-gray-800 text-white px-5 md:px-8 py-2.5 md:py-3 rounded-xl md:rounded-full font-semibold transition shadow-md text-sm md:text-base"
               >
                 Buscar
               </button>

@@ -34,7 +34,6 @@ export default function AppointmentsPage() {
         appointments,
         loading,
         fetchAppointments,
-        cancelAppointment,
         updateAppointmentStatus,
     } = useAppointments();
 
@@ -182,29 +181,29 @@ export default function AppointmentsPage() {
                 </div>
 
                 {/* Filters & Tabs */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
                     {/* Tabs */}
-                    <div className="flex p-1 bg-gray-100 rounded-lg self-start">
+                    <div className="flex p-1 bg-gray-100 rounded-lg w-full lg:w-auto overflow-x-auto no-scrollbar">
                         <button
                             onClick={() => setActiveTab('today')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                            className={`flex-1 lg:flex-none px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${activeTab === 'today' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Hoy
                         </button>
                         <button
                             onClick={() => setActiveTab('upcoming')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'upcoming' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                            className={`flex-1 lg:flex-none px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${activeTab === 'upcoming' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Próximas
                         </button>
                         <button
                             onClick={() => setActiveTab('all')}
-                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                            className={`flex-1 lg:flex-none px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
-                            Todas
+                            Historial
                         </button>
                     </div>
 
@@ -243,36 +242,36 @@ export default function AppointmentsPage() {
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3">
                         {filteredAppointments.map((appointment) => (
                             <div
                                 key={appointment.id}
                                 onClick={() => handleViewDetails(appointment)}
                                 className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all cursor-pointer group"
                             >
-                                <div className="flex items-start justify-between">
-                                    <div className="flex gap-4">
-                                        <div className="flex flex-col items-center justify-center bg-indigo-50 text-indigo-700 w-16 h-16 rounded-lg shrink-0">
-                                            <span className="text-xs font-semibold uppercase">{formatTimeDisplay(appointment.start_time).split(' ')[1]}</span>
-                                            <span className="text-lg font-bold">{formatTimeDisplay(appointment.start_time).split(' ')[0]}</span>
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex gap-3 md:gap-4 overflow-hidden">
+                                        <div className="flex flex-col items-center justify-center bg-indigo-50 text-indigo-700 w-14 h-14 md:w-16 md:h-16 rounded-lg shrink-0">
+                                            <span className="text-[10px] md:text-xs font-semibold uppercase">{formatTimeDisplay(appointment.start_time).split(' ')[1]}</span>
+                                            <span className="text-base md:text-lg font-bold">{formatTimeDisplay(appointment.start_time).split(' ')[0]}</span>
                                         </div>
-                                        <div>
-                                            <h4 className="font-semibold text-gray-900 text-lg">
+                                        <div className="min-w-0">
+                                            <h4 className="font-bold text-gray-900 text-base md:text-lg truncate">
                                                 {appointment.customer_name}
                                             </h4>
-                                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mt-1">
-                                                <span className="flex items-center gap-1">
-                                                    <User size={14} /> {getBarberName(appointment.barber_id)}
+                                            <div className="flex flex-col gap-y-0.5 text-xs md:text-sm text-gray-500 mt-1">
+                                                <span className="flex items-center gap-1 truncate">
+                                                    <User size={12} className="shrink-0" /> {getBarberName(appointment.barber_id)}
                                                 </span>
-                                                <span className="flex items-center gap-1">
-                                                    <Check size={14} /> {getServicesName(appointment.service_id!)}
+                                                <span className="flex items-center gap-1 truncate font-medium text-indigo-600">
+                                                    <Check size={12} className="shrink-0" /> {getServicesName(appointment.service_id!)}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="text-right">
+                                    <div className="text-right shrink-0 flex flex-col items-end gap-2">
                                         {getStatusBadge(appointment.status)}
-                                        <p className="text-xs font-medium text-indigo-600 mt-2">
+                                        <p className="text-[10px] md:text-xs font-medium text-gray-400">
                                             {formatRelativeTime(appointment.appointment_date, appointment.start_time)}
                                         </p>
                                     </div>

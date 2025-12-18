@@ -191,7 +191,7 @@ export const getCustomerAppointments = async (email: string): Promise<Appointmen
             *,
             business:businesses(id, name, slug)
         `)
-        .eq('customer_email', email)
+        .ilike('customer_email', email.trim())
         .in('status', ['confirmed', 'pending'])
         .order('appointment_date', { ascending: true })
         .order('start_time', { ascending: true });

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
@@ -332,33 +332,35 @@ export default function PublicBookingPage() {
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-indigo-600 mb-2">{business.name}</h1>
+                    <h1 className="text-3xl md:text-4xl font-bold text-indigo-600 mb-2">{business.name}</h1>
                     <p className="text-gray-600">Reserva tu cita en línea</p>
                 </div>
 
-                {/* Progress Steps */}
-                <div className="flex items-center justify-center mb-8">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                        <div key={s} className="flex items-center">
-                            <div
-                                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${s <= step
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'bg-gray-200 text-gray-500'
-                                    }`}
-                            >
-                                {s}
-                            </div>
-                            {s < 5 && (
+                {/* Progress Steps - Scrollable on mobile */}
+                <div className="flex items-center justify-center mb-8 overflow-x-auto pb-4 px-2 no-scrollbar">
+                    <div className="flex items-center min-w-max">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                            <div key={s} className="flex items-center">
                                 <div
-                                    className={`w-12 h-1 ${s < step ? 'bg-indigo-600' : 'bg-gray-200'
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${s <= step
+                                        ? 'bg-indigo-600 text-white'
+                                        : 'bg-gray-200 text-gray-500'
                                         }`}
-                                />
-                            )}
-                        </div>
-                    ))}
+                                >
+                                    {s}
+                                </div>
+                                {s < 5 && (
+                                    <div
+                                        className={`w-12 h-1 ${s < step ? 'bg-indigo-600' : 'bg-gray-200'
+                                            }`}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="bg-white rounded-2xl shadow-xl p-4 md:p-8">
                     {/* Step 1: Select Service */}
                     {step === 1 && (
                         <div>
@@ -500,17 +502,17 @@ export default function PublicBookingPage() {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="grid grid-cols-3 gap-3 mb-6">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                                         {availableSlots.map((slot, index) => (
                                             <button
                                                 key={index}
                                                 onClick={() => handleSlotSelect(slot)}
-                                                className="p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition"
+                                                className="p-3 md:p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition"
                                             >
-                                                <p className="font-semibold text-gray-900">
+                                                <p className="font-semibold text-gray-900 text-sm md:text-base">
                                                     {formatTimeDisplay(slot.time)}
                                                 </p>
-                                                <p className="text-xs text-gray-500 mt-1">
+                                                <p className="text-[10px] md:text-xs text-gray-500 mt-1 truncate">
                                                     {slot.barber_name}
                                                 </p>
                                             </button>
@@ -519,6 +521,7 @@ export default function PublicBookingPage() {
                                     <Button
                                         variant="secondary"
                                         onClick={() => setStep(3)}
+                                        className="hidden md:block"
                                     >
                                         Volver
                                     </Button>
@@ -605,6 +608,17 @@ export default function PublicBookingPage() {
                     )}
                 </div>
             </div>
+
+            {/* Fixed Back Button for Mobile UX */}
+            {step > 1 && (
+                <button
+                    onClick={() => setStep(prev => prev - 1)}
+                    className="fixed bottom-6 right-6 z-50 bg-white/90 backdrop-blur-md text-gray-700 px-6 py-3 rounded-full shadow-2xl border border-gray-200 font-bold flex items-center gap-2 hover:bg-gray-50 transition md:hidden"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+                    Volver
+                </button>
+            )}
         </div>
     );
 }
