@@ -56,8 +56,7 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
     const { data: userBusinesses } = await supabase
         .from('users_businesses')
         .select('*')
-        .eq('user_id', authData.user.id)
-        .eq('is_active', true);
+        .eq('user_id', authData.user.id);
 
     return {
         user: authData.user as User,
@@ -86,8 +85,7 @@ export const getCurrentSession = async (): Promise<AuthResponse | null> => {
     const { data: userBusinesses } = await supabase
         .from('users_businesses')
         .select('*')
-        .eq('user_id', session.user.id)
-        .eq('is_active', true);
+        .eq('user_id', session.user.id);
 
     return {
         user: session.user as User,
@@ -104,7 +102,6 @@ export const getUserRole = async (userId: string, businessId: string): Promise<U
         .select('role')
         .eq('user_id', userId)
         .eq('business_id', businessId)
-        .eq('is_active', true)
         .single();
 
     if (error) return null;

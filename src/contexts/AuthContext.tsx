@@ -65,8 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     *,
                     business:businesses (*)
                 `)
-                .eq("user_id", uid)
-                .eq("is_active", true);
+                .eq("user_id", uid);
 
             if (memErr) throw memErr;
 
