@@ -12,7 +12,8 @@ export interface AuthResponse {
 }
 
 /**
- * Sign up a new user and automatically create their business
+ * Sign up a new user using a Supabase trigger to create the business/membership.
+ * Pass business data in options.data (metadata).
  */
 export const signup = async (data: {
     email: string;
@@ -21,56 +22,21 @@ export const signup = async (data: {
     slug?: string;
     phone?: string;
 }): Promise<void> => {
-    // 1. Create user in Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // We send metadata so the Supabase Trigger can pick it up
+    const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
+        options: {
+            data: {
+                business_name: data.businessName,
+                business_slug: data.slug || data.businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+                business_phone: data.phone || '',
+            },
+            emailRedirectTo: `${window.location.origin}/login`,
+        },
     });
 
-    if (authError) throw authError;
-    const user = authData.user;
-    if (!user) throw new Error("Error al crear usuario");
-
-    let businessId: string | null = null;
-
-    try {
-        // 2. Insert into businesses
-        const { data: business, error: bError } = await supabase
-            .from('businesses')
-            .insert({
-                owner_id: user.id,
-                name: data.businessName,
-                slug: data.slug || data.businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-                phone: data.phone,
-                is_active: true
-            })
-            .select()
-            .single();
-
-        if (bError) throw bError;
-        businessId = business.id;
-
-        // 3. Insert into users_businesses (Membership)
-        const { error: mError } = await supabase
-            .from('users_businesses')
-            .insert({
-                user_id: user.id,
-                business_id: businessId,
-                role: 'admin'
-            });
-
-        if (mError) throw mError;
-
-    } catch (err: any) {
-        console.error("Signup secondary steps failed:", err);
-
-        // Manual Rollback: Attempt to delete the business if membership failed
-        if (businessId) {
-            await supabase.from('businesses').delete().eq('id', businessId);
-        }
-
-        throw new Error(`Error al configurar el negocio: ${err.message || 'Inténtalo de nuevo.'}`);
-    }
+    if (error) throw error;
 };
 
 /**

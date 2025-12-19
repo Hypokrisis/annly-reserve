@@ -9,6 +9,7 @@ interface AuthContextType {
     currentBusiness: Business | null;
     role: UserRole | null;
     loading: boolean;
+    loadingMessage: string | null;
     isEmailConfirmed: boolean;
 
     login: (email: string, password: string) => Promise<void>;
@@ -32,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [currentBusiness, setCurrentBusiness] = useState<Business | null>(null);
     const [role, setRole] = useState<UserRole | null>(null);
     const [loading, setLoading] = useState(true);
+    const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
     const isEmailConfirmed = !!user?.email_confirmed_at;
 
@@ -46,6 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const bootstrap = async () => {
         setLoading(true);
+        setLoadingMessage(null);
         try {
             const v = localStorage.getItem(LS_VERSION);
             if (v !== SCHEMA_VERSION) {
@@ -64,16 +67,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const uid = session.user.id;
             setUser(session.user as User);
 
-            // Fetch ALL memberships for this user
-            const { data: memberships, error: memErr } = await supabase
-                .from("users_businesses")
-                .select(`
-                    *,
-                    business:businesses (*)
-                `)
-                .eq("user_id", uid);
+            // Retry logic to handle Trigger delay
+            let memberships: any[] = [];
+            let attempts = 0;
+            const maxAttempts = 3;
+            const delays = [800, 1200, 1500];
 
-            if (memErr) throw memErr;
+            while (attempts < maxAttempts) {
+                const { data, error } = await supabase
+                    .from("users_businesses")
+                    .select(`
+                        *,
+                        business:businesses (*)
+                    `)
+                    .eq("user_id", uid);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    memberships = data;
+                    break;
+                }
+
+                attempts++;
+                if (attempts < maxAttempts) {
+                    setLoadingMessage("Configurando tu cuenta...");
+                    await new Promise(resolve => setTimeout(resolve, delays[attempts - 1]));
+                }
+            }
 
             const userBusinesses = (memberships || []).map(m => ({
                 id: m.id,
@@ -82,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 role: m.role as UserRole,
                 is_active: m.is_active,
                 created_at: m.created_at,
-                business: m.business // Keep the nested business data
+                business: m.business
             }));
 
             setBusinesses(userBusinesses);
@@ -110,6 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setCurrentBusiness(null);
         } finally {
             setLoading(false);
+            setLoadingMessage(null);
         }
     };
 
@@ -209,6 +231,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentBusiness,
         role,
         loading,
+        loadingMessage,
         isEmailConfirmed,
         login,
         signup,

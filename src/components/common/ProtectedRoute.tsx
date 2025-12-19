@@ -18,13 +18,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     requiredRole,
     redirectTo = '/login',
 }) => {
-    const { user, role, loading, isEmailConfirmed } = useAuth();
+    const { user, role, loading, loadingMessage, isEmailConfirmed } = useAuth();
 
     // Show loading state while checking auth
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+                {loadingMessage && (
+                    <p className="text-gray-600 font-medium animate-pulse">{loadingMessage}</p>
+                )}
             </div>
         );
     }
