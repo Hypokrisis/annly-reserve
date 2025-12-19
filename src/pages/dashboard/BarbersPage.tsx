@@ -20,6 +20,7 @@ export default function BarbersPage() {
     const [editingBarber, setEditingBarber] = useState<Barber | null>(null);
     const [formData, setFormData] = useState({
         name: '',
+        user_id: '',
         email: '',
         phone: '',
         bio: '',
@@ -32,6 +33,7 @@ export default function BarbersPage() {
             setEditingBarber(barber);
             setFormData({
                 name: barber.name,
+                user_id: barber.user_id || '',
                 email: barber.email || '',
                 phone: barber.phone || '',
                 bio: barber.bio || '',
@@ -44,6 +46,7 @@ export default function BarbersPage() {
             setEditingBarber(null);
             setFormData({
                 name: '',
+                user_id: '',
                 email: '',
                 phone: '',
                 bio: '',
@@ -57,7 +60,7 @@ export default function BarbersPage() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingBarber(null);
-        setFormData({ name: '', email: '', phone: '', bio: '' });
+        setFormData({ name: '', user_id: '', email: '', phone: '', bio: '' });
         setSelectedServices([]);
         setFormErrors({});
     };
@@ -84,6 +87,7 @@ export default function BarbersPage() {
 
         const barberData = {
             name: formData.name.trim(),
+            user_id: formData.user_id.trim() || undefined,
             email: formData.email.trim() || undefined,
             phone: formData.phone.trim() || undefined,
             bio: formData.bio.trim() || undefined,
@@ -288,6 +292,13 @@ export default function BarbersPage() {
                             error={formErrors.name}
                             placeholder="Ej: Juan Pérez"
                             required
+                        />
+
+                        <Input
+                            label="ID de Usuario vinculado (opcional)"
+                            value={formData.user_id}
+                            onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
+                            placeholder="UUID del usuario para acceso al dashboard"
                         />
 
                         <Input

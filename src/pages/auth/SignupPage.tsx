@@ -1,48 +1,34 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { isValidEmail, isValidSlug, generateSlug } from '@/utils';
+import { isValidEmail } from '@/utils';
 
 export default function SignupPage() {
-    const navigate = useNavigate();
     const { signup } = useAuth();
 
     const [formData, setFormData] = useState({
         email: '',
         password: '',
         confirmPassword: '',
-        businessName: '',
-        businessSlug: '',
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-
         setFormData({
             ...formData,
             [name]: value,
         });
-
-        // Auto-generate slug from business name
-        if (name === 'businessName') {
-            setFormData(prev => ({
-                ...prev,
-                businessName: value,
-                businessSlug: generateSlug(value),
-            }));
-        }
-
-        setError(''); // Clear error on input change
+        setError('');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
-        // Validation
-        if (!formData.email || !formData.password || !formData.confirmPassword || !formData.businessName) {
+        if (!formData.email || !formData.password || !formData.confirmPassword) {
             setError('Por favor completa todos los campos');
             return;
         }
@@ -62,27 +48,18 @@ export default function SignupPage() {
             return;
         }
 
-        if (!isValidSlug(formData.businessSlug)) {
-            setError('El slug del negocio solo puede contener letras minúsculas, números y guiones');
-            return;
-        }
-
         setLoading(true);
 
         try {
             await signup({
                 email: formData.email,
                 password: formData.password,
-                businessName: formData.businessName,
-                businessSlug: formData.businessSlug,
             });
-            navigate('/dashboard');
+            setSuccess(true);
         } catch (err: any) {
             console.error('Signup error:', err);
-
-            // Handle specific errors
             if (err.message?.includes('already exists') || err.message?.includes('duplicate')) {
-                setError('Este email o slug ya está en uso');
+                setError('Este email ya está en uso');
             } else {
                 setError(err.message || 'Error al crear la cuenta. Intenta nuevamente.');
             }
@@ -90,6 +67,30 @@ export default function SignupPage() {
             setLoading(false);
         }
     };
+
+    if (success) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+                <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">¡Cuenta creada!</h2>
+                    <p className="text-gray-600 mb-8">
+                        Hemos enviado un enlace de confirmación a <strong>{formData.email}</strong>. Por favor, revisa tu correo para activar tu cuenta.
+                    </p>
+                    <Link
+                        to="/login"
+                        className="inline-block w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
+                    >
+                        Ir al inicio de sesión
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-white px-4 py-12">
@@ -106,43 +107,6 @@ export default function SignupPage() {
                                 {error}
                             </div>
                         )}
-
-                        <div>
-                            <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-2">
-                                Nombre del Negocio
-                            </label>
-                            <input
-                                type="text"
-                                id="businessName"
-                                name="businessName"
-                                value={formData.businessName}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                placeholder="Mi Barbería"
-                                disabled={loading}
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="businessSlug" className="block text-sm font-medium text-gray-700 mb-2">
-                                URL del Negocio
-                            </label>
-                            <div className="flex items-center">
-                                <span className="text-gray-500 text-sm mr-2">annly-reserve.com/book/</span>
-                                <input
-                                    type="text"
-                                    id="businessSlug"
-                                    name="businessSlug"
-                                    value={formData.businessSlug}
-                                    onChange={handleChange}
-                                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                    placeholder="mi-barberia"
-                                    disabled={loading}
-                                />
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">Solo letras minúsculas, números y guiones</p>
-                        </div>
-
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                                 Email

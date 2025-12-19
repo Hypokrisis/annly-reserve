@@ -9,11 +9,13 @@ interface AuthContextType {
     currentBusiness: Business | null;
     role: UserRole | null;
     loading: boolean;
+    isEmailConfirmed: boolean;
 
     login: (email: string, password: string) => Promise<void>;
-    signup: (data: authService.SignupData) => Promise<void>;
+    signup: (data: { email: string; password: string }) => Promise<void>;
     logout: () => Promise<void>;
     switchBusiness: (businessId: string) => Promise<void>;
+    createBusiness: (name: string, slug: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,126 +27,99 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [role, setRole] = useState<UserRole | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const isEmailConfirmed = !!user?.email_confirmed_at;
+
     const LS_BUSINESS = "currentBusinessId";
     const LS_VERSION = "appSchemaVersion";
-    const SCHEMA_VERSION = "2025-12-12-TOTAL-RESET"; // Bump to force clear
+    const SCHEMA_VERSION = "2025-12-19-STABLE-MVP";
 
     const hardResetClientState = () => {
-        console.log('[Auth] Performing HARD RESET of client state');
         localStorage.removeItem(LS_BUSINESS);
         localStorage.setItem(LS_VERSION, SCHEMA_VERSION);
-
-        // Clear Supabase tokens if possible (best effort)
-        Object.keys(localStorage)
-            .filter(k => k.startsWith("sb-") && k.endsWith("-auth-token"))
-            .forEach(k => localStorage.removeItem(k));
     };
 
-    useEffect(() => {
-        let cancelled = false;
+    const bootstrap = async () => {
+        setLoading(true);
+        try {
+            const v = localStorage.getItem(LS_VERSION);
+            if (v !== SCHEMA_VERSION) {
+                hardResetClientState();
+            }
 
-        const bootstrap = async () => {
-            setLoading(true);
-
-            try {
-                // 0) Schema version kill-switch
-                const v = localStorage.getItem(LS_VERSION);
-                if (v !== SCHEMA_VERSION) {
-                    hardResetClientState();
-                }
-
-                // 1) Session check
-                const { data: sessionData } = await supabase.auth.getSession();
-                const session = sessionData.session;
-
-                if (!session) {
-                    if (cancelled) return;
-                    setUser(null);
-                    setBusinesses([]);
-                    setCurrentBusiness(null);
-                    setRole(null);
-                    return;
-                }
-
-                const uid = session.user.id;
-
-                // 2) Fetch businesses owned by user (strict check)
-                // We use maybeSingle or select list to avoid errors if empty
-                const { data: bizList, error: bizErr } = await supabase
-                    .from("businesses")
-                    .select("*")
-                    .eq("owner_id", uid)
-                    .eq("is_active", true);
-
-                if (bizErr) throw bizErr;
-
-                if (cancelled) return;
-
-                setUser(session.user);
-
-                // Construct UserBusiness objects for compatibility
-                const userBusinesses: UserBusiness[] = (bizList || []).map(b => ({
-                    id: crypto.randomUUID(), // distinct from business_id
-                    user_id: uid,
-                    business_id: b.id,
-                    role: 'owner', // In this simple model, user is owner
-                    is_active: true,
-                    created_at: b.created_at || new Date().toISOString()
-                }));
-
-                setBusinesses(userBusinesses);
-
-                // 3) No businesses -> hard reset state
-                if (!bizList || bizList.length === 0) {
-                    console.log('[Auth] User has no businesses. Resetting state.');
-                    setCurrentBusiness(null);
-                    setRole(null);
-                    localStorage.removeItem(LS_BUSINESS);
-                    // We don't force signOut/navigate here to avoid loops, just clear data
-                    return;
-                }
-
-                // 4) Pick active business (validate stored id)
-                const storedId = localStorage.getItem(LS_BUSINESS);
-                const validStored = storedId && bizList.some(b => b.id === storedId);
-
-                const activeId = validStored ? storedId : bizList[0].id;
-                if (activeId) {
-                    localStorage.setItem(LS_BUSINESS, activeId);
-                    const activeBiz = bizList.find(b => b.id === activeId) ?? bizList[0];
-                    setCurrentBusiness(activeBiz);
-                    setRole('owner');
-                }
-
-            } catch (e) {
-                console.error("[Auth bootstrap] fatal:", e);
-                if (cancelled) return;
-                // Fallback: clear critical state
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
                 setUser(null);
                 setBusinesses([]);
                 setCurrentBusiness(null);
-            } finally {
-                if (!cancelled) setLoading(false);
+                setRole(null);
+                return;
             }
-        };
 
+            const uid = session.user.id;
+            setUser(session.user as User);
+
+            // Fetch ALL memberships for this user
+            const { data: memberships, error: memErr } = await supabase
+                .from("users_businesses")
+                .select(`
+                    *,
+                    business:businesses (*)
+                `)
+                .eq("user_id", uid)
+                .eq("is_active", true);
+
+            if (memErr) throw memErr;
+
+            const userBusinesses = (memberships || []).map(m => ({
+                id: m.id,
+                user_id: m.user_id,
+                business_id: m.business_id,
+                role: m.role as UserRole,
+                is_active: m.is_active,
+                created_at: m.created_at,
+                business: m.business // Keep the nested business data
+            }));
+
+            setBusinesses(userBusinesses);
+
+            if (userBusinesses.length === 0) {
+                setCurrentBusiness(null);
+                setRole(null);
+                return;
+            }
+
+            // Pick active business
+            const storedId = localStorage.getItem(LS_BUSINESS);
+            const activeMembership = userBusinesses.find(b => b.business_id === storedId) || userBusinesses[0];
+
+            if (activeMembership) {
+                localStorage.setItem(LS_BUSINESS, activeMembership.business_id);
+                setCurrentBusiness(activeMembership.business);
+                setRole(activeMembership.role);
+            }
+
+        } catch (e) {
+            console.error("[Auth bootstrap] fatal:", e);
+            setUser(null);
+            setBusinesses([]);
+            setCurrentBusiness(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         bootstrap();
-
         const { data: sub } = supabase.auth.onAuthStateChange(() => {
-            bootstrap(); // Re-validate ALWAYS
+            bootstrap();
         });
-
-        return () => {
-            cancelled = true;
-            sub.subscription.unsubscribe();
-        };
+        return () => sub.subscription.unsubscribe();
     }, []);
 
     const login = async (email: string, password: string) => {
         setLoading(true);
         try {
-            const response = await authService.login({ email, password });
-            // State will be updated by onAuthStateChange listener
+            await authService.login({ email, password });
         } catch (error) {
             console.error('Login failed:', error);
             throw error;
@@ -153,11 +128,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    const signup = async (data: authService.SignupData) => {
+    const signup = async (data: { email: string; password: string }) => {
         setLoading(true);
         try {
             await authService.signup(data);
-            // State updated by listener
         } catch (error) {
             console.error('Signup failed:', error);
             throw error;
@@ -170,7 +144,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(true);
         try {
             await authService.logout();
-            hardResetClientState(); // Force clear on explicit logout
+            hardResetClientState();
             setUser(null);
             setBusinesses([]);
             setCurrentBusiness(null);
@@ -185,16 +159,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const switchBusiness = async (businessId: string) => {
         try {
-            // Re-fetch to be safe or just find in existing list
-            // For robustness, we check the list we already validated
-            const business = businesses.find(b => b.business_id === businessId);
+            const membership = businesses.find(b => b.business_id === businessId);
+            if (!membership) throw new Error('No tienes acceso a este negocio');
 
-            if (!business) {
-                throw new Error('Business not found in user list');
-            }
-
-            // In a real app we might re-fetch details, but for now filtering from list is safer 
-            // against "ghost" IDs not in the list.
             const { data: businessData, error } = await supabase
                 .from('businesses')
                 .select('*')
@@ -204,14 +171,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (error) throw error;
 
             setCurrentBusiness(businessData);
-            setRole(business.role); // owner
+            setRole(membership.role);
             localStorage.setItem(LS_BUSINESS, businessId);
         } catch (error) {
             console.error('Failed to switch business:', error);
-            setCurrentBusiness(null);
-            setRole(null);
-            localStorage.removeItem(LS_BUSINESS);
             throw error;
+        }
+    };
+
+    const createBusiness = async (name: string, slug: string) => {
+        setLoading(true);
+        try {
+            await authService.createBusiness(name, slug);
+            await bootstrap(); // Refresh state to pick up new business
+        } catch (error) {
+            console.error('Failed to create business:', error);
+            throw error;
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -221,10 +198,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentBusiness,
         role,
         loading,
+        isEmailConfirmed,
         login,
         signup,
         logout,
         switchBusiness,
+        createBusiness
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

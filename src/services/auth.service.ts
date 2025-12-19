@@ -1,12 +1,5 @@
 import { supabase } from '../supabaseClient';
-import type { User, UserBusiness, UserRole } from '@/types';
-
-export interface SignupData {
-    email: string;
-    password: string;
-    businessName: string;
-    businessSlug: string;
-}
+import type { User, UserBusiness, UserRole, Business } from '@/types';
 
 export interface LoginData {
     email: string;
@@ -19,47 +12,32 @@ export interface AuthResponse {
 }
 
 /**
- * Sign up a new user and create their business
+ * Sign up a new user (standard account)
  */
-export const signup = async (data: SignupData): Promise<AuthResponse> => {
-    // 1. Create user in Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+export const signup = async (data: { email: string; password: string }): Promise<void> => {
+    // Create user in Supabase Auth
+    const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
     });
 
-    if (authError) throw authError;
-    if (!authData.user) throw new Error('Failed to create user');
+    if (error) throw error;
+};
 
-    // 2. Create business safely using RPC (Security Definer)
-    // This avoids RLS race conditions where session might not be ready
-    const { data: businessData, error: businessError } = await supabase
+/**
+ * Create a new business for the authenticated user
+ */
+export const createBusiness = async (name: string, slug: string): Promise<Business> => {
+    const { data, error } = await supabase
         .rpc('create_business_and_membership', {
-            business_name: data.businessName,
-            business_slug: data.businessSlug
+            business_name: name,
+            business_slug: slug
         });
 
-    if (businessError) {
-        console.error('RPC Error creating business:', businessError);
-        // Rollback user
-        await supabase.auth.admin.deleteUser(authData.user.id);
-        throw businessError;
-    }
+    if (error) throw error;
+    if (!data) throw new Error('Failed to create business');
 
-    if (!businessData) {
-        throw new Error('Failed to create business (No data returned from RPC)');
-    }
-
-    // 3. Fetch user businesses to update state immediately
-    const { data: userBusinesses } = await supabase
-        .from('users_businesses')
-        .select('*')
-        .eq('user_id', authData.user.id);
-
-    return {
-        user: authData.user as User,
-        businesses: userBusinesses || [],
-    };
+    return data;
 };
 
 /**

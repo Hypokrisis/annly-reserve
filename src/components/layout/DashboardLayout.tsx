@@ -6,7 +6,6 @@ import {
     Scissors,
     Users,
     Calendar,
-    Settings,
     LogOut,
     Menu,
     X
@@ -18,16 +17,17 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     const location = useLocation();
-    const { user, currentBusiness, logout } = useAuth();
+    const { user, currentBusiness, logout, role } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
-    const navigation = [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Servicios', href: '/dashboard/services', icon: Scissors },
-        { name: 'Barberos', href: '/dashboard/barbers', icon: Users },
-        { name: 'Citas', href: '/dashboard/appointments', icon: Calendar },
-        { name: 'Configuración', href: '/dashboard/settings', icon: Settings },
+    const allNavigation = [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['owner', 'admin', 'staff'] },
+        { name: 'Servicios', href: '/dashboard/services', icon: Scissors, roles: ['owner', 'admin'] },
+        { name: 'Barberos', href: '/dashboard/barbers', icon: Users, roles: ['owner', 'admin'] },
+        { name: 'Citas', href: '/dashboard/appointments', icon: Calendar, roles: ['owner', 'admin', 'staff'] },
     ];
+
+    const navigation = allNavigation.filter(item => item.roles.includes(role || 'staff'));
 
     const handleLogout = async () => {
         try {
