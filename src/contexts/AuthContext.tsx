@@ -12,7 +12,13 @@ interface AuthContextType {
     isEmailConfirmed: boolean;
 
     login: (email: string, password: string) => Promise<void>;
-    signup: (data: { email: string; password: string }) => Promise<void>;
+    signup: (data: {
+        email: string;
+        password: string;
+        businessName: string;
+        slug?: string;
+        phone?: string;
+    }) => Promise<void>;
     logout: () => Promise<void>;
     switchBusiness: (businessId: string) => Promise<void>;
     createBusiness: (name: string, slug: string) => Promise<void>;
@@ -127,7 +133,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    const signup = async (data: { email: string; password: string }) => {
+    const signup = async (data: {
+        email: string;
+        password: string;
+        businessName: string;
+        slug?: string;
+        phone?: string;
+    }) => {
         setLoading(true);
         try {
             await authService.signup(data);

@@ -12,16 +12,65 @@ export interface AuthResponse {
 }
 
 /**
- * Sign up a new user (standard account)
+ * Sign up a new user and automatically create their business
  */
-export const signup = async (data: { email: string; password: string }): Promise<void> => {
-    // Create user in Supabase Auth
-    const { error } = await supabase.auth.signUp({
+export const signup = async (data: {
+    email: string;
+    password: string;
+    businessName: string;
+    slug?: string;
+    phone?: string;
+}): Promise<void> => {
+    // 1. Create user in Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
     });
 
-    if (error) throw error;
+    if (authError) throw authError;
+    const user = authData.user;
+    if (!user) throw new Error("Error al crear usuario");
+
+    let businessId: string | null = null;
+
+    try {
+        // 2. Insert into businesses
+        const { data: business, error: bError } = await supabase
+            .from('businesses')
+            .insert({
+                owner_id: user.id,
+                name: data.businessName,
+                slug: data.slug || data.businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+                phone: data.phone,
+                is_active: true
+            })
+            .select()
+            .single();
+
+        if (bError) throw bError;
+        businessId = business.id;
+
+        // 3. Insert into users_businesses (Membership)
+        const { error: mError } = await supabase
+            .from('users_businesses')
+            .insert({
+                user_id: user.id,
+                business_id: businessId,
+                role: 'admin'
+            });
+
+        if (mError) throw mError;
+
+    } catch (err: any) {
+        console.error("Signup secondary steps failed:", err);
+
+        // Manual Rollback: Attempt to delete the business if membership failed
+        if (businessId) {
+            await supabase.from('businesses').delete().eq('id', businessId);
+        }
+
+        throw new Error(`Error al configurar el negocio: ${err.message || 'Inténtalo de nuevo.'}`);
+    }
 };
 
 /**

@@ -10,6 +10,9 @@ export default function SignupPage() {
         email: '',
         password: '',
         confirmPassword: '',
+        businessName: '',
+        businessSlug: '',
+        businessPhone: '',
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -28,8 +31,8 @@ export default function SignupPage() {
         e.preventDefault();
         setError('');
 
-        if (!formData.email || !formData.password || !formData.confirmPassword) {
-            setError('Por favor completa todos los campos');
+        if (!formData.email || !formData.password || !formData.confirmPassword || !formData.businessName) {
+            setError('Por favor completa los campos obligatorios (*)');
             return;
         }
 
@@ -54,6 +57,9 @@ export default function SignupPage() {
             await signup({
                 email: formData.email,
                 password: formData.password,
+                businessName: formData.businessName,
+                slug: formData.businessSlug,
+                phone: formData.businessPhone,
             });
             setSuccess(true);
         } catch (err: any) {
@@ -77,9 +83,9 @@ export default function SignupPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">¡Cuenta creada!</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">¡Cuenta y negocio creados!</h2>
                     <p className="text-gray-600 mb-8">
-                        Hemos enviado un enlace de confirmación a <strong>{formData.email}</strong>. Por favor, revisa tu correo para activar tu cuenta.
+                        Hemos enviado un enlace de confirmación a <strong>{formData.email}</strong>. Por favor, revisa tu correo para activar tu cuenta y acceder a tu dashboard.
                     </p>
                     <Link
                         to="/login"
@@ -107,61 +113,119 @@ export default function SignupPage() {
                                 {error}
                             </div>
                         )}
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                placeholder="tu@email.com"
-                                disabled={loading}
-                            />
+
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Información de Usuario</h3>
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Email *
+                                </label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                    placeholder="tu@email.com"
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Contraseña *
+                                    </label>
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                        placeholder="••••••••"
+                                        disabled={loading}
+                                    />
+                                    <p className="text-[10px] text-gray-500 mt-1">Mínimo 6 caracteres</p>
+                                </div>
+
+                                <div>
+                                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Confirmar *
+                                    </label>
+                                    <input
+                                        type="password"
+                                        id="confirmPassword"
+                                        name="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                        placeholder="••••••••"
+                                        disabled={loading}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                                Contraseña
-                            </label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                placeholder="••••••••"
-                                disabled={loading}
-                            />
-                            <p className="text-xs text-gray-500 mt-1">Mínimo 6 caracteres</p>
-                        </div>
+                        <div className="space-y-4 pt-4 border-t border-gray-100">
+                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Tu Negocio</h3>
+                            <div>
+                                <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Nombre de la Barbería *
+                                </label>
+                                <input
+                                    type="text"
+                                    id="businessName"
+                                    name="businessName"
+                                    value={formData.businessName}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                    placeholder="Ej: Golden Cuts"
+                                    disabled={loading}
+                                />
+                            </div>
 
-                        <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                                Confirmar Contraseña
-                            </label>
-                            <input
-                                type="password"
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                placeholder="••••••••"
-                                disabled={loading}
-                            />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="businessSlug" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Slug (URL)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="businessSlug"
+                                        name="businessSlug"
+                                        value={formData.businessSlug}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                        placeholder="ej: golden-cuts"
+                                        disabled={loading}
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="businessPhone" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Teléfono
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        id="businessPhone"
+                                        name="businessPhone"
+                                        value={formData.businessPhone}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                        placeholder="809..."
+                                        disabled={loading}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-200"
                         >
-                            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+                            {loading ? 'Creando cuenta...' : 'Comenzar ahora'}
                         </button>
                     </form>
 
