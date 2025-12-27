@@ -48,8 +48,17 @@ const RootRedirect = () => {
 
   // Authenticated and confirmed but no businesses -> still go to dashboard
   // (This shouldn't happen with the trigger, but we handle it gracefully)
+  // Authenticated and confirmed but no businesses
   if (businesses.length === 0) {
-    return <Navigate to="/dashboard" replace />;
+    // Check user intention from signup
+    const intendedRole = localStorage.getItem('intended_role');
+
+    if (intendedRole === 'owner') {
+      return <Navigate to="/create-business" replace />;
+    }
+
+    // Default behavior for Clients: Go to Home
+    return <Navigate to="/home" replace />;
   }
 
   // Fully authenticated with business -> go to dashboard
