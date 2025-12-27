@@ -70,7 +70,7 @@ export default function BusinessSettingsPage() {
                     slug: formData.slug.trim(),
                     phone: formData.phone.trim(),
                     description: formData.description.trim(),
-                    updated_at: new Date().toISOString(),
+                    // updated_at: new Date().toISOString(), // Removed to avoid schema error
                 })
                 .eq('id', currentBusiness.id);
 
