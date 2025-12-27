@@ -25,6 +25,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         { name: 'Servicios', href: '/dashboard/services', icon: Scissors, roles: ['owner', 'admin'] },
         { name: 'Barberos', href: '/dashboard/barbers', icon: Users, roles: ['owner', 'admin'] },
         { name: 'Citas', href: '/dashboard/appointments', icon: Calendar, roles: ['owner', 'admin', 'staff'] },
+        { name: 'Configuración', href: '/dashboard/settings', icon: Menu, roles: ['owner', 'admin'] },
         { name: 'Website / Home', href: '/home', icon: LayoutDashboard, roles: ['owner', 'admin', 'staff'] },
     ];
 

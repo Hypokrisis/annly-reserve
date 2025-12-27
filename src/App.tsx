@@ -21,6 +21,7 @@ import BarbersPage from './pages/dashboard/BarbersPage';
 import SchedulesPage from './pages/dashboard/SchedulesPage';
 import AppointmentsPage from './pages/dashboard/AppointmentsPage';
 import CreateBusinessPage from './pages/dashboard/CreateBusinessPage';
+import BusinessSettingsPage from './pages/dashboard/BusinessSettingsPage';
 
 const RootRedirect = () => {
   const { user, loading, businesses, isEmailConfirmed } = useAuth();
@@ -112,6 +113,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <AppointmentsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/settings"
+                element={
+                  <ProtectedRoute requiredRole={['owner', 'admin']}>
+                    <BusinessSettingsPage />
                   </ProtectedRoute>
                 }
               />
