@@ -18,7 +18,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     requiredRole,
     redirectTo = '/login',
 }) => {
-    const { user, role, loading, loadingMessage, isEmailConfirmed } = useAuth();
+    const { user, role, loading, loadingMessage, isEmailConfirmed, businesses } = useAuth();
 
     // Show loading state while checking auth
     if (loading) {
@@ -60,6 +60,42 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
                             Ya lo confirmé, recargar
                         </button>
                     </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Check if user has a business (for dashboard access)
+    if (businesses.length === 0) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
+                <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-10 text-center border border-gray-100">
+                    <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <h2 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">¿Quieres crear tu barbería?</h2>
+                    <p className="text-gray-600 mb-8 font-medium">
+                        Actualmente tienes una cuenta de cliente. Puedes crear tu barbería y empezar a recibir reservas online.
+                    </p>
+                    <div className="space-y-3">
+                        <button
+                            onClick={() => window.location.href = '/create-business'}
+                            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-black uppercase tracking-wider shadow-xl shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/40 transition-all"
+                        >
+                            Crear Mi Barbería
+                        </button>
+                        <button
+                            onClick={() => window.location.href = '/home'}
+                            className="w-full bg-gray-100 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-200 transition-all"
+                        >
+                            Volver al Inicio
+                        </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-6">
+                        Como cliente, puedes seguir reservando citas en otras barberías
+                    </p>
                 </div>
             </div>
         );

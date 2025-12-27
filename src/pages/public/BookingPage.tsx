@@ -36,6 +36,8 @@ export default function PublicBookingPage() {
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
+    const [userProfile, setUserProfile] = useState<{ full_name?: string; phone?: string } | null>(null);
+    const [loadingProfile, setLoadingProfile] = useState(false);
 
     // Load availability when service, barber, and date are selected
     const { availableSlots, loading: loadingSlots } = useAvailability(
@@ -150,6 +152,39 @@ export default function PublicBookingPage() {
         }
     }, []);
 
+    // Load user profile if logged in
+    useEffect(() => {
+        const loadUserProfile = async () => {
+            if (!user) return;
+
+            setLoadingProfile(true);
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('full_name, phone')
+                    .eq('id', user.id)
+                    .maybeSingle();
+
+                if (!error && data) {
+                    setUserProfile(data);
+                    // Autocomplete customer info from profile
+                    setCustomerInfo(prev => ({
+                        ...prev,
+                        name: data.full_name || prev.name,
+                        email: user.email || prev.email,
+                        phone: data.phone || prev.phone,
+                    }));
+                }
+            } catch (e) {
+                console.error('Error loading profile:', e);
+            } finally {
+                setLoadingProfile(false);
+            }
+        };
+
+        loadUserProfile();
+    }, [user]);
+
     const validateCustomerInfo = (): boolean => {
         const errors: Record<string, string> = {};
         if (!customerInfo.name.trim()) errors.name = 'El nombre es requerido';
@@ -199,7 +234,7 @@ export default function PublicBookingPage() {
                 customer_notes: customerInfo.notes.trim() || undefined,
                 appointment_date: selectedDate,
                 start_time: selectedSlot.time,
-                client_id: user?.id,
+                customer_user_id: user?.id, // Link to authenticated user
             });
 
             localStorage.setItem('annly_customer_data', JSON.stringify({
@@ -237,6 +272,44 @@ export default function PublicBookingPage() {
             <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Negocio no encontrado</p>
         </div>
     );
+
+    // Require login to book
+    if (!user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+                <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 text-center border border-gray-100">
+                    <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <UserIcon size={40} className="text-white" />
+                    </div>
+                    <h2 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">Inicia sesión para reservar</h2>
+                    <p className="text-gray-600 mb-8 font-medium">
+                        Necesitas una cuenta para hacer una reserva. Es rápido y gratis.
+                    </p>
+                    <div className="space-y-3">
+                        <Button
+                            onClick={() => navigate(`/login?returnTo=/book/${slug}`)}
+                            className="w-full rounded-full h-14 text-sm font-black uppercase tracking-widest shadow-xl"
+                        >
+                            Iniciar Sesión
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            onClick={() => navigate('/signup')}
+                            className="w-full rounded-full h-14 text-sm font-black uppercase tracking-widest"
+                        >
+                            Crear Cuenta Gratis
+                        </Button>
+                        <button
+                            onClick={() => navigate('/')}
+                            className="w-full text-sm text-gray-500 hover:text-gray-700 font-medium mt-4 transition"
+                        >
+                            Volver al inicio
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (confirmed) return (
         <div className="min-h-screen flex items-center justify-center bg-black p-4">
@@ -303,10 +376,10 @@ export default function PublicBookingPage() {
                                 key={s.id}
                                 onClick={() => s.id < step && setStep(s.id)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all cursor-pointer whitespace-nowrap ${s.id === step
-                                        ? 'bg-black text-white shadow-lg shadow-black/20'
-                                        : s.id < step
-                                            ? 'text-gray-900 hover:bg-gray-100'
-                                            : 'text-gray-300'
+                                    ? 'bg-black text-white shadow-lg shadow-black/20'
+                                    : s.id < step
+                                        ? 'text-gray-900 hover:bg-gray-100'
+                                        : 'text-gray-300'
                                     }`}
                             >
                                 <span className={`text-[10px] font-black ${s.id === step ? 'text-white' : 'text-inherit'}`}>0{s.id}</span>

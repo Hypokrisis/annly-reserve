@@ -12,31 +12,41 @@ export interface AuthResponse {
 }
 
 /**
- * Sign up a new user using a Supabase trigger to create the business/membership.
- * Pass business data in options.data (metadata).
+ * Sign up a new user (normal customer account)
+ * No business is created - users can upgrade later
  */
 export const signup = async (data: {
     email: string;
     password: string;
-    businessName: string;
-    slug?: string;
+    full_name?: string;
     phone?: string;
 }): Promise<void> => {
-    // We send metadata so the Supabase Trigger can pick it up
-    const { error } = await supabase.auth.signUp({
+    // Create user account
+    const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
-            data: {
-                business_name: data.businessName,
-                business_slug: data.slug || data.businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-                business_phone: data.phone || '',
-            },
             emailRedirectTo: `${window.location.origin}/login`,
         },
     });
 
     if (error) throw error;
+
+    // Create profile if name or phone provided
+    if (authData.user && (data.full_name || data.phone)) {
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+                id: authData.user.id,
+                full_name: data.full_name || '',
+                phone: data.phone || '',
+            });
+
+        if (profileError) {
+            console.warn('Profile creation failed:', profileError);
+            // Don't throw - user is created, profile can be added later
+        }
+    }
 };
 
 /**

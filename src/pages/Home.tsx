@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, Search, LogOut, LayoutDashboard } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -20,8 +20,7 @@ interface BusinessResult {
 }
 
 function Home() {
-  const { user, businesses, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [allBusinesses, setAllBusinesses] = useState<BusinessResult[]>([]);
   const [recentBusinesses, setRecentBusinesses] = useState<BusinessResult[]>([]);
@@ -32,12 +31,6 @@ function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
-  // Redirect to dashboard if logged in and has businesses
-  useEffect(() => {
-    if (user && businesses.length > 0) {
-      navigate('/dashboard');
-    }
-  }, [user, businesses, navigate]);
 
   useEffect(() => {
     loadData();

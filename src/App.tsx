@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { BusinessProvider } from '@/contexts/BusinessContext';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 
@@ -20,6 +20,40 @@ import ServicesPage from './pages/dashboard/ServicesPage';
 import BarbersPage from './pages/dashboard/BarbersPage';
 import SchedulesPage from './pages/dashboard/SchedulesPage';
 import AppointmentsPage from './pages/dashboard/AppointmentsPage';
+import CreateBusinessPage from './pages/dashboard/CreateBusinessPage';
+
+const RootRedirect = () => {
+  const { user, loading, businesses, isEmailConfirmed } = useAuth();
+
+  // Show loading while auth state is being determined
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  // Not authenticated -> go to home
+  if (!user) {
+    return <Navigate to="/home" replace />;
+  }
+
+  // Authenticated but email not confirmed -> ProtectedRoute will handle this
+  // Redirect to dashboard and let ProtectedRoute show the confirmation message
+  if (!isEmailConfirmed) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Authenticated and confirmed but no businesses -> still go to dashboard
+  // (This shouldn't happen with the trigger, but we handle it gracefully)
+  if (businesses.length === 0) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Fully authenticated with business -> go to dashboard
+  return <Navigate to="/dashboard" replace />;
+};
 
 function App() {
   return (
@@ -29,7 +63,8 @@ function App() {
           <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
             <Routes>
               {/* Public routes */}
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<RootRedirect />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/reserve" element={<Reserve />} />
               <Route path="/appointments" element={<Appointments />} />
               <Route path="/book/:slug" element={<BookingPage />} />
@@ -80,6 +115,9 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Create Business route (for users without business) */}
+              <Route path="/create-business" element={<CreateBusinessPage />} />
 
               {/* Catch all - redirect to home */}
               <Route path="*" element={<Navigate to="/" replace />} />

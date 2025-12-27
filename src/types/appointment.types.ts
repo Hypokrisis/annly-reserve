@@ -26,7 +26,7 @@ export interface Appointment {
     updated_at: string;
     cancelled_at?: string;
     cancellation_reason?: string;
-    client_id?: string;
+    customer_user_id?: string; // Link to authenticated user (new SaaS model)
 }
 
 export interface CreateAppointmentData {
@@ -39,7 +39,7 @@ export interface CreateAppointmentData {
     customer_notes?: string;
     appointment_date: string;
     start_time: string;
-    client_id?: string;
+    customer_user_id?: string; // Link to authenticated user
 }
 
 export interface UpdateAppointmentData {
@@ -55,7 +55,7 @@ export interface AppointmentFilters {
     date?: string;
     status?: AppointmentStatus;
     customer_email?: string;
-    client_id?: string;
+    customer_user_id?: string; // Filter by authenticated user
 }
 
 export interface AppointmentWithDetails extends Appointment {

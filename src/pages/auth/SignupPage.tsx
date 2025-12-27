@@ -10,9 +10,8 @@ export default function SignupPage() {
         email: '',
         password: '',
         confirmPassword: '',
-        businessName: '',
-        businessSlug: '',
-        businessPhone: '',
+        full_name: '',
+        phone: '',
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -31,7 +30,7 @@ export default function SignupPage() {
         e.preventDefault();
         setError('');
 
-        if (!formData.email || !formData.password || !formData.confirmPassword || !formData.businessName) {
+        if (!formData.email || !formData.password || !formData.confirmPassword) {
             setError('Por favor completa los campos obligatorios (*)');
             return;
         }
@@ -57,9 +56,8 @@ export default function SignupPage() {
             await signup({
                 email: formData.email,
                 password: formData.password,
-                businessName: formData.businessName,
-                slug: formData.businessSlug,
-                phone: formData.businessPhone,
+                full_name: formData.full_name,
+                phone: formData.phone,
             });
             setSuccess(true);
         } catch (err: any) {
@@ -83,9 +81,9 @@ export default function SignupPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">¡Cuenta y negocio creados!</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">¡Cuenta creada!</h2>
                     <p className="text-gray-600 mb-8">
-                        Hemos enviado un enlace de confirmación a <strong>{formData.email}</strong>. Por favor, revisa tu correo para activar tu cuenta y acceder a tu dashboard.
+                        Hemos enviado un enlace de confirmación a <strong>{formData.email}</strong>. Por favor, revisa tu correo para activar tu cuenta.
                     </p>
                     <Link
                         to="/login"
@@ -103,7 +101,7 @@ export default function SignupPage() {
             <div className="max-w-md w-full">
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold text-indigo-600 mb-2">Annly Reserve</h1>
-                    <p className="text-gray-600">Crea tu cuenta y comienza a gestionar reservas</p>
+                    <p className="text-gray-600">Crea tu cuenta para reservar citas</p>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-xl p-8">
@@ -169,51 +167,35 @@ export default function SignupPage() {
                         </div>
 
                         <div className="space-y-4 pt-4 border-t border-gray-100">
-                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Tu Negocio</h3>
-                            <div>
-                                <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Nombre de la Barbería *
-                                </label>
-                                <input
-                                    type="text"
-                                    id="businessName"
-                                    name="businessName"
-                                    value={formData.businessName}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                    placeholder="Ej: Golden Cuts"
-                                    disabled={loading}
-                                />
-                            </div>
-
+                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Información Personal (Opcional)</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label htmlFor="businessSlug" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Slug (URL)
+                                    <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Nombre Completo
                                     </label>
                                     <input
                                         type="text"
-                                        id="businessSlug"
-                                        name="businessSlug"
-                                        value={formData.businessSlug}
+                                        id="full_name"
+                                        name="full_name"
+                                        value={formData.full_name}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                        placeholder="ej: golden-cuts"
+                                        placeholder="Juan Pérez"
                                         disabled={loading}
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="businessPhone" className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                                         Teléfono
                                     </label>
                                     <input
                                         type="tel"
-                                        id="businessPhone"
-                                        name="businessPhone"
-                                        value={formData.businessPhone}
+                                        id="phone"
+                                        name="phone"
+                                        value={formData.phone}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                        placeholder="809..."
+                                        placeholder="809-123-4567"
                                         disabled={loading}
                                     />
                                 </div>

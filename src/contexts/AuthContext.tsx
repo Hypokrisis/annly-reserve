@@ -16,8 +16,7 @@ interface AuthContextType {
     signup: (data: {
         email: string;
         password: string;
-        businessName: string;
-        slug?: string;
+        full_name?: string;
         phone?: string;
     }) => Promise<void>;
     logout: () => Promise<void>;
@@ -67,34 +66,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const uid = session.user.id;
             setUser(session.user as User);
 
-            // Retry logic to handle Trigger delay
-            let memberships: any[] = [];
-            let attempts = 0;
-            const maxAttempts = 3;
-            const delays = [800, 1200, 1500];
+            // Fetch user businesses (may be empty for normal users)
+            const { data: memberships, error } = await supabase
+                .from("users_businesses")
+                .select(`
+                    *,
+                    business:businesses (*)
+                `)
+                .eq("user_id", uid);
 
-            while (attempts < maxAttempts) {
-                const { data, error } = await supabase
-                    .from("users_businesses")
-                    .select(`
-                        *,
-                        business:businesses (*)
-                    `)
-                    .eq("user_id", uid);
-
-                if (error) throw error;
-
-                if (data && data.length > 0) {
-                    memberships = data;
-                    break;
-                }
-
-                attempts++;
-                if (attempts < maxAttempts) {
-                    setLoadingMessage("Configurando tu cuenta...");
-                    await new Promise(resolve => setTimeout(resolve, delays[attempts - 1]));
-                }
-            }
+            if (error) throw error;
 
             const userBusinesses = (memberships || []).map(m => ({
                 id: m.id,
@@ -158,8 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const signup = async (data: {
         email: string;
         password: string;
-        businessName: string;
-        slug?: string;
+        full_name?: string;
         phone?: string;
     }) => {
         setLoading(true);
