@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/supabaseClient';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
-import { Store, Check, Info } from 'lucide-react';
+import { Store, Check, Info, ArrowLeft } from 'lucide-react';
 
 export default function BusinessSettingsPage() {
+    const navigate = useNavigate();
     const { currentBusiness, user } = useAuth();
     const [formData, setFormData] = useState({
         name: '',
@@ -95,6 +97,16 @@ export default function BusinessSettingsPage() {
 
     return (
         <div className="max-w-4xl mx-auto">
+            <div className="mb-6">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center text-gray-500 hover:text-indigo-600 transition font-medium"
+                >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Volver al Dashboard
+                </button>
+            </div>
+
             <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
