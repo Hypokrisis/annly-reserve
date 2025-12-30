@@ -7,7 +7,32 @@ import { Scissors, ArrowLeft, Sparkles } from 'lucide-react';
 
 export default function CreateBusinessPage() {
     const navigate = useNavigate();
-    const { createBusiness } = useAuth();
+    const { createBusiness, user } = useAuth();
+
+    // Block access for users registered as 'client'
+    const userRole = user?.user_metadata?.role;
+    if (userRole === 'client') {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+                <div className="bg-white p-8 rounded-xl shadow-lg max-w-md text-center border border-gray-100">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Scissors className="text-red-600" size={32} />
+                    </div>
+                    <h2 className="text-xl font-bold mb-2 text-gray-900">Acceso Restringido</h2>
+                    <p className="mb-6 text-gray-600">
+                        Tu cuenta está registrada como <strong>Cliente</strong>.
+                        Solo las cuentas de Dueño pueden crear barberías.
+                    </p>
+                    <Button
+                        onClick={() => navigate('/home')}
+                        className="w-full bg-black text-white rounded-xl py-3"
+                    >
+                        Volver al Inicio
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     const [formData, setFormData] = useState({
         name: '',

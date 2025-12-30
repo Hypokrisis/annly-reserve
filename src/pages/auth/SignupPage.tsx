@@ -62,6 +62,7 @@ export default function SignupPage() {
                 password: formData.password,
                 full_name: formData.full_name,
                 phone: formData.phone,
+                role: userType, // Pass selected role to backend
             });
             // Guardamos la intención del usuario para redirigirlo después del login
             localStorage.setItem('intended_role', userType);
@@ -123,8 +124,8 @@ export default function SignupPage() {
                             type="button"
                             onClick={() => setUserType('client')}
                             className={`flex flex-col items-center justify-center py-4 text-sm font-bold transition-all ${userType === 'client'
-                                    ? 'bg-white text-indigo-600 shadow-sm rounded-xl ring-1 ring-black/5'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+                                ? 'bg-white text-indigo-600 shadow-sm rounded-xl ring-1 ring-black/5'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
                                 }`}
                         >
                             <User className="mb-2" size={24} />
@@ -134,8 +135,8 @@ export default function SignupPage() {
                             type="button"
                             onClick={() => setUserType('owner')}
                             className={`flex flex-col items-center justify-center py-4 text-sm font-bold transition-all ${userType === 'owner'
-                                    ? 'bg-white text-indigo-600 shadow-sm rounded-xl ring-1 ring-black/5'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+                                ? 'bg-white text-indigo-600 shadow-sm rounded-xl ring-1 ring-black/5'
+                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
                                 }`}
                         >
                             <Scissors className="mb-2" size={24} />

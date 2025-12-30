@@ -20,6 +20,7 @@ export const signup = async (data: {
     password: string;
     full_name?: string;
     phone?: string;
+    role?: 'client' | 'owner';
 }): Promise<void> => {
     // Create user account
     const { data: authData, error } = await supabase.auth.signUp({
@@ -27,19 +28,27 @@ export const signup = async (data: {
         password: data.password,
         options: {
             emailRedirectTo: `${window.location.origin}/login`,
+            data: {
+                role: data.role || 'client',
+                full_name: data.full_name,
+                phone: data.phone,
+            }
         },
     });
 
     if (error) throw error;
 
     // Create profile if name or phone provided
-    if (authData.user && (data.full_name || data.phone)) {
+    if (authData.user && (data.full_name || data.phone || data.role)) {
         const { error: profileError } = await supabase
             .from('profiles')
-            .insert({
+            .upsert({ // Changed to upsert to handle potential race conditions or existing profile
                 id: authData.user.id,
                 full_name: data.full_name || '',
                 phone: data.phone || '',
+                // If 'profiles' table has a role column, adding it here would be good, 
+                // but we rely on auth metadata for now as per plan.
+                // Assuming profiles schema is basic.
             });
 
         if (profileError) {

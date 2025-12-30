@@ -18,6 +18,7 @@ interface AuthContextType {
         password: string;
         full_name?: string;
         phone?: string;
+        role?: 'client' | 'owner';
     }) => Promise<void>;
     logout: () => Promise<void>;
     switchBusiness: (businessId: string) => Promise<void>;
@@ -141,6 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password: string;
         full_name?: string;
         phone?: string;
+        role?: 'client' | 'owner';
     }) => {
         setLoading(true);
         try {

@@ -5,6 +5,12 @@ export interface User {
     email: string;
     created_at: string;
     email_confirmed_at?: string;
+    user_metadata?: {
+        role?: 'client' | 'owner';
+        full_name?: string;
+        phone?: string;
+        [key: string]: any;
+    };
 }
 
 export type UserRole = 'owner' | 'admin' | 'staff';
