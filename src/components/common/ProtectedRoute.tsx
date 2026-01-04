@@ -67,6 +67,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     // Check if user has a business (for dashboard access)
     if (businesses.length === 0) {
+        // Check if user is a client - redirect them to home instead of showing business creation
+        const userRole = user?.user_metadata?.role;
+
+        if (userRole === 'client') {
+            return <Navigate to="/home" replace />;
+        }
+
+        // For owners/undefined roles, show the create business prompt
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
                 <div className="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-10 text-center border border-gray-100">
@@ -77,7 +85,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
                     </div>
                     <h2 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">¿Quieres crear tu barbería?</h2>
                     <p className="text-gray-600 mb-8 font-medium">
-                        Actualmente tienes una cuenta de cliente. Puedes crear tu barbería y empezar a recibir reservas online.
+                        Configura tu negocio y empieza a recibir reservas online.
                     </p>
                     <div className="space-y-3">
                         <button
@@ -93,9 +101,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
                             Volver al Inicio
                         </button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-6">
-                        Como cliente, puedes seguir reservando citas en otras barberías
-                    </p>
                 </div>
             </div>
         );
