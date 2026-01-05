@@ -6,10 +6,12 @@ ALTER TABLE public.appointments ADD COLUMN IF NOT EXISTS customer_user_id UUID R
 -- 2. Habilitar RLS en appointments (por si acaso no lo está)
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 
--- 3. Política para que CUALQUIERA (incluyendo clientes) pueda reservar citas
--- Esto es lo que permite que el flujo de BookingPage funcione
+-- 3. Política para que los usuarios AUTENTICADOS puedan reservar sus propias citas
 DROP POLICY IF EXISTS "Public create appointments" ON public.appointments;
-CREATE POLICY "Public create appointments" ON public.appointments FOR INSERT WITH CHECK (true);
+CREATE POLICY "Authenticated create appointments" 
+    ON public.appointments FOR INSERT 
+    TO authenticated
+    WITH CHECK (auth.uid() = customer_user_id);
 
 -- 4. Política para que los clientes VEAN sus propias citas
 -- Usamos customer_user_id para identificar al dueño de la cita

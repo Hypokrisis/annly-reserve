@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { isValidEmail } from '@/utils';
 
 export default function LoginPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { login } = useAuth();
+
+    // Destination logic: root or where they came from
+    const from = location.state?.from?.pathname || '/';
 
     const [formData, setFormData] = useState({
         email: '',
@@ -41,7 +45,7 @@ export default function LoginPage() {
 
         try {
             await login(formData.email, formData.password);
-            navigate('/dashboard');
+            navigate(from, { replace: true });
         } catch (err: any) {
             console.error('Login error:', err);
             setError(err.message || 'Error al iniciar sesión. Verifica tus credenciales.');

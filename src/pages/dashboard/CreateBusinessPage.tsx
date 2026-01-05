@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
@@ -7,8 +7,7 @@ import { Scissors, ArrowLeft, Sparkles } from 'lucide-react';
 
 export default function CreateBusinessPage() {
     const navigate = useNavigate();
-    const { createBusiness, updateUserRole, user, loading: authLoading } = useAuth();
-    const [upgrading, setUpgrading] = useState(false);
+    const { createBusiness } = useAuth();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -17,69 +16,6 @@ export default function CreateBusinessPage() {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-
-    // handleUpgrade function to switch role
-    const handleUpgrade = async () => {
-        if (!confirm('¿Deseas convertir tu cuenta en Dueño? Esto te permitirá crear y administrar tu propia barbería.')) return;
-
-        setUpgrading(true);
-        try {
-            await updateUserRole('owner');
-            // After upgrade, auth state re-boostraps and userRole becomes 'owner'
-            // allowing access to the form.
-        } catch (err: any) {
-            alert('No se pudo actualizar el rol. Intenta de nuevo.');
-        } finally {
-            setUpgrading(false);
-        }
-    };
-
-    // 1. Show loading state if auth is still being determined
-    if (authLoading || upgrading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-            </div>
-        );
-    }
-
-    // 2. Redirect if not logged in
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
-
-    // 3. Block access for users registered as 'client' - use a very safe UI here
-    const userRole = user?.user_metadata?.role;
-    if (userRole === 'client') {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-                <div className="bg-white p-8 rounded-xl shadow-lg max-w-md text-center border border-gray-100">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600 font-bold">
-                        !
-                    </div>
-                    <h2 className="text-xl font-bold mb-2 text-gray-900">Acceso Restringido</h2>
-                    <p className="mb-6 text-gray-600">
-                        Tu cuenta está registrada como <strong>Cliente</strong>.
-                        Solo las cuentas de Dueño pueden crear barberías.
-                    </p>
-                    <div className="space-y-3">
-                        <button
-                            onClick={handleUpgrade}
-                            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl py-3 font-bold shadow-lg shadow-indigo-200"
-                        >
-                            ¡Quiero ser Dueño de Barbería!
-                        </button>
-                        <button
-                            onClick={() => navigate('/home')}
-                            className="w-full bg-gray-100 text-gray-700 rounded-xl py-3 font-semibold hover:bg-gray-200 transition"
-                        >
-                            Volver al Inicio
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
