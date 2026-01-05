@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
@@ -7,32 +7,7 @@ import { Scissors, ArrowLeft, Sparkles } from 'lucide-react';
 
 export default function CreateBusinessPage() {
     const navigate = useNavigate();
-    const { createBusiness, user } = useAuth();
-
-    // Block access for users registered as 'client'
-    const userRole = user?.user_metadata?.role;
-    if (userRole === 'client') {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-                <div className="bg-white p-8 rounded-xl shadow-lg max-w-md text-center border border-gray-100">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Scissors className="text-red-600" size={32} />
-                    </div>
-                    <h2 className="text-xl font-bold mb-2 text-gray-900">Acceso Restringido</h2>
-                    <p className="mb-6 text-gray-600">
-                        Tu cuenta está registrada como <strong>Cliente</strong>.
-                        Solo las cuentas de Dueño pueden crear barberías.
-                    </p>
-                    <Button
-                        onClick={() => navigate('/home')}
-                        className="w-full bg-black text-white rounded-xl py-3"
-                    >
-                        Volver al Inicio
-                    </Button>
-                </div>
-            </div>
-        );
-    }
+    const { createBusiness, user, loading: authLoading } = useAuth();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -41,6 +16,45 @@ export default function CreateBusinessPage() {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // 1. Show loading state if auth is still being determined
+    if (authLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            </div>
+        );
+    }
+
+    // 2. Redirect if not logged in
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
+
+    // 3. Block access for users registered as 'client' - use a very safe UI here
+    const userRole = user?.user_metadata?.role;
+    if (userRole === 'client') {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+                <div className="bg-white p-8 rounded-xl shadow-lg max-w-md text-center border border-gray-100">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600 font-bold">
+                        !
+                    </div>
+                    <h2 className="text-xl font-bold mb-2 text-gray-900">Acceso Restringido</h2>
+                    <p className="mb-6 text-gray-600">
+                        Tu cuenta está registrada como <strong>Cliente</strong>.
+                        Solo las cuentas de Dueño pueden crear barberías.
+                    </p>
+                    <button
+                        onClick={() => navigate('/home')}
+                        className="w-full bg-black text-white rounded-xl py-3 font-semibold hover:bg-gray-800 transition"
+                    >
+                        Volver al Inicio
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
