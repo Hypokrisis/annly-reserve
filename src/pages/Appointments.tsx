@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/supabaseClient';
 import { format } from 'date-fns';
@@ -13,11 +13,10 @@ interface AppointmentType {
     services: {
         name: string;
         price: number;
-        duration: number;
+        duration_minutes: number;
     };
     barbers: {
-        first_name: string;
-        last_name: string;
+        name: string;
     };
     businesses: {
         name: string;
@@ -37,21 +36,31 @@ export default function Appointments() {
         if (!user) return;
         try {
             setLoading(true);
-            const { data, error } = await supabase
+            setError('');
+            const { data, error: fetchError } = await supabase
                 .from('appointments')
                 .select(`
                     id,
                     start_time,
                     status,
-                    services (name, price, duration),
-                    barbers (first_name, last_name),
+                    services (name, price, duration_minutes),
+                    barbers (name),
                     businesses (name, slug)
                 `)
                 .eq('customer_user_id', user.id)
                 .order('start_time', { ascending: false });
 
-            if (error) throw error;
-            setAppointments(data || []);
+            if (fetchError) throw fetchError;
+
+            // Map data to handle Supabase's array return for joins
+            const formatted = (data as any[] || []).map(apt => ({
+                ...apt,
+                services: Array.isArray(apt.services) ? apt.services[0] : apt.services,
+                barbers: Array.isArray(apt.barbers) ? apt.barbers[0] : apt.barbers,
+                businesses: Array.isArray(apt.businesses) ? apt.businesses[0] : apt.businesses,
+            }));
+
+            setAppointments(formatted);
         } catch (err: any) {
             console.error('Error loading appointments:', err);
             setError('No pudimos cargar tus citas.');
@@ -107,6 +116,13 @@ export default function Appointments() {
                     </Link>
                 </div>
 
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3">
+                        <AlertCircle size={20} />
+                        <p className="text-sm font-medium">{error}</p>
+                    </div>
+                )}
+
                 {loading ? (
                     <div className="text-center py-12">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
@@ -130,8 +146,8 @@ export default function Appointments() {
                                             {apt.services?.name || 'Servicio'}
                                         </h3>
                                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${apt.status === 'cancelled'
-                                                ? 'bg-red-100 text-red-700'
-                                                : 'bg-green-100 text-green-700'
+                                            ? 'bg-red-100 text-red-700'
+                                            : 'bg-green-100 text-green-700'
                                             }`}>
                                             {apt.status === 'cancelled' ? 'Cancelada' : 'Confirmada'}
                                         </span>
@@ -143,11 +159,11 @@ export default function Appointments() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Clock size={14} />
-                                            <span>{format(new Date(apt.start_time), 'h:mm a')} ({apt.services?.duration} min)</span>
+                                            <span>{format(new Date(apt.start_time), 'h:mm a')} ({apt.services?.duration_minutes} min)</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <MapPin size={14} />
-                                            <span>{apt.businesses?.name} — {apt.barbers?.first_name}</span>
+                                            <span>{apt.businesses?.name} — {apt.barbers?.name}</span>
                                         </div>
                                     </div>
                                 </div>

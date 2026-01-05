@@ -71,7 +71,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         const userRole = user?.user_metadata?.role;
 
         if (userRole === 'client') {
-            return <Navigate to="/home" replace />;
+            return <Navigate to="/appointments" replace />;
         }
 
         // For owners/undefined roles, show the create business prompt

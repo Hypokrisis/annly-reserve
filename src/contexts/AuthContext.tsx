@@ -23,6 +23,7 @@ interface AuthContextType {
     logout: () => Promise<void>;
     switchBusiness: (businessId: string) => Promise<void>;
     createBusiness: (name: string, slug: string) => Promise<void>;
+    updateUserRole: (newRole: 'client' | 'owner') => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -207,6 +208,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
+    const updateUserRole = async (newRole: 'client' | 'owner') => {
+        setLoading(true);
+        try {
+            const { error } = await supabase.auth.updateUser({
+                data: { role: newRole }
+            });
+
+            if (error) throw error;
+
+            // Update local user state immediately
+            const { data: { user: updatedUser } } = await supabase.auth.getUser();
+            if (updatedUser) {
+                setUser(updatedUser as User);
+            }
+
+            // Re-bootstrap to update roles and businesses
+            await bootstrap();
+        } catch (error) {
+            console.error('Failed to update user role:', error);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const value: AuthContextType = {
         user,
         businesses,
@@ -219,7 +245,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signup,
         logout,
         switchBusiness,
-        createBusiness
+        createBusiness,
+        updateUserRole
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
