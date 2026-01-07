@@ -222,20 +222,20 @@ function Home() {
         Replacing "blurry blobs" with Gold Lines & Circles
         ========================================
       */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        {/* Top Right Circle Outline */}
-        <div className="absolute -top-[20%] -right-[10%] w-[60vw] h-[60vw] rounded-full border border-space-gold/10 opacity-60"></div>
-        <div className="absolute -top-[15%] -right-[5%] w-[50vw] h-[50vw] rounded-full border border-space-gold/5 opacity-40"></div>
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden font-sans">
+        {/* Top Right Circle Outline - Increased Visibility */}
+        <div className="absolute -top-[20%] -right-[10%] w-[60vw] h-[60vw] rounded-full border border-space-gold/20 opacity-80"></div>
+        <div className="absolute -top-[15%] -right-[5%] w-[50vw] h-[50vw] rounded-full border border-space-gold/10 opacity-60"></div>
 
-        {/* Bottom Left Circle Outline */}
-        <div className="absolute -bottom-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full border border-space-gold/10 opacity-60"></div>
+        {/* Bottom Left Circle Outline - Increased Visibility */}
+        <div className="absolute -bottom-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full border border-space-gold/20 opacity-80"></div>
 
-        {/* Geometric Grid / Lines */}
-        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-space-gold/10 to-transparent"></div>
-        <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-transparent via-space-gold/10 to-transparent"></div>
+        {/* Geometric Grid / Lines - Sharp & Visible */}
+        <div className="absolute top-0 left-1/4 w-[1px] h-full bg-gradient-to-b from-transparent via-space-gold/30 to-transparent"></div>
+        <div className="absolute top-0 right-1/4 w-[1px] h-full bg-gradient-to-b from-transparent via-space-gold/30 to-transparent"></div>
 
-        {/* Subtle texture */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#d4af37 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+        {/* Subtle texture - Slightly increased */}
+        <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(#d4af37 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
       </div>
 
       {/* Header Pill - RESTORED */}

@@ -159,17 +159,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const logout = async () => {
         setLoading(true);
         try {
-            await authService.logout();
+            // Attempt Supabase logout but don't block local cleanup if it fails
+            await authService.logout().catch(e => console.warn('Supabase logout warning:', e));
+        } catch (error) {
+            console.error('Logout error (handled):', error);
+        } finally {
+            // Always clear local state
             hardResetClientState();
             setUser(null);
             setBusinesses([]);
             setCurrentBusiness(null);
             setRole(null);
-        } catch (error) {
-            console.error('Logout failed:', error);
-            throw error;
-        } finally {
             setLoading(false);
+            // Force reload to ensure clean slate
+            window.location.href = '/';
         }
     };
 

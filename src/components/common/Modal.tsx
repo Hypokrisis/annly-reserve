@@ -43,31 +43,36 @@ export const Modal: React.FC<ModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-            {/* Backdrop */}
+            {/* Backdrop with Luxury Blur */}
             <div
-                className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+                className="fixed inset-0 bg-space-bg/80 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
             />
 
             {/* Modal */}
             <div className="flex min-h-full items-center justify-center p-4">
                 <div
-                    className={`relative bg-white rounded-2xl shadow-xl ${sizeClasses[size]} w-full`}
+                    className={`relative bg-space-card border border-space-gold/20 rounded-[2rem] shadow-2xl ${sizeClasses[size]} w-full overflow-hidden`}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                        <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+                    {/* Luxury Header */}
+                    <div className="flex items-center justify-between p-6 border-b border-space-border/50 bg-gradient-to-r from-space-card2 to-space-card">
+                        <h2 className="text-2xl font-bold text-white font-serif">{title}</h2>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600 transition"
+                            className="w-10 h-10 flex items-center justify-center rounded-full text-space-muted hover:text-white hover:bg-space-card2 transition-all border border-transparent hover:border-space-gold/20"
                         >
-                            <X size={24} />
+                            <X size={20} />
                         </button>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-6">{children}</div>
+                    {/* Content with subtle texture */}
+                    <div className="p-6 relative">
+                        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#d4af37 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                        <div className="relative z-10 text-space-text">
+                            {children}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
