@@ -4,21 +4,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        'space-bg': '#0a0e1a',
-        'space-card': '#131829',
-        'space-card2': '#1a1f35',
-        'space-text': '#e4e7ec',
-        'space-muted': '#8b92a8',
-        'space-border': '#252b42',
-        'space-primary': '#06b6d4',
-        'space-purple': '#8b5cf6',
+        'space-bg': '#021c17',      // Deep Luxury Green (Global Background)
+        'space-card': '#0a2621',    // Dark Green Card
+        'space-card2': '#12302b',   // Lighter Green Card
+        'space-text': '#f0fdfa',    // Pale Mint/White text
+        'space-muted': '#8fa39f',   // Muted Green-Grey
+        'space-border': '#1d4039',  // Green Border
+        'space-primary': '#d4af37', // Gold (Primary Action)
+        'space-purple': '#bfa15f',  // Secondary Gold (replacing purple usage)
+        'space-pink': '#eaddcf',    // Champagne (replacing pink usage)
         'space-danger': '#ef4444',
         'space-success': '#10b981',
         'space-yellow': '#fbbf24',
-        'space-pink': '#ec4899',
-        'space-luxury': '#0a1f1c', // Deep Luxury Green
-        'space-gold': '#d4af37',   // Classic Gold
-        'space-gold-light': '#f3e5ab' // Champagne Gold
+        'space-luxury': '#0a1f1c', // Keeping for specific overrides if needed
+        'space-gold': '#d4af37',
+        'space-gold-light': '#f3e5ab'
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',
