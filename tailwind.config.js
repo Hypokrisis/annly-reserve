@@ -15,7 +15,10 @@ export default {
         'space-danger': '#ef4444',
         'space-success': '#10b981',
         'space-yellow': '#fbbf24',
-        'space-pink': '#ec4899'
+        'space-pink': '#ec4899',
+        'space-luxury': '#0a1f1c', // Deep Luxury Green
+        'space-gold': '#d4af37',   // Classic Gold
+        'space-gold-light': '#f3e5ab' // Champagne Gold
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',

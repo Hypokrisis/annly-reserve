@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, Search, LogOut, LayoutDashboard, Menu } from 'lucide-react';
+import { MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, Search, LogOut, LayoutDashboard, Menu, ArrowRight } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,10 +30,18 @@ function Home() {
   const [loadingApts, setLoadingApts] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     loadData();
     loadFavorites();
+
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const location = useLocation();
@@ -159,52 +167,51 @@ function Home() {
   const BusinessCard = ({ business, isFavorite }: { business: BusinessResult, isFavorite: boolean }) => (
     <Link
       to={`/book/${business.slug}`}
-      className="group bg-space-card border border-space-border rounded-2xl overflow-hidden hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col h-full relative backdrop-blur-sm cursor-pointer"
+      className="group bg-space-card border border-space-border/50 rounded-none overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col h-full relative"
     >
+      {/* Geometric Accent Line */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-space-gold transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left z-20"></div>
+
       <button
         onClick={(e) => toggleFavorite(e, business.slug)}
-        className="absolute top-3 right-3 z-10 p-2 bg-space-card/80 backdrop-blur-md rounded-full hover:bg-space-card border border-space-border transition shadow-lg hover:scale-110"
+        className="absolute top-3 right-3 z-10 p-2 bg-space-luxury/80 backdrop-blur-md hover:bg-space-luxury border border-space-gold/20 transition shadow-lg"
       >
-        <Heart size={18} className={`transition-colors ${isFavorite ? 'fill-space-danger text-space-danger' : 'text-space-muted hover:text-space-danger'}`} />
+        <Heart size={16} className={`transition-colors ${isFavorite ? 'fill-space-danger text-space-danger' : 'text-space-gold hover:text-space-danger'}`} />
       </button>
 
-      <div className="h-48 bg-space-card2 relative overflow-hidden">
+      <div className="h-56 bg-space-card2 relative overflow-hidden">
         <img
           src={business.banner_url || business.logo_url || `https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800`}
           alt={business.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+          className="w-full h-full object-cover group-hover:scale-105 transition duration-1000 grayscale group-hover:grayscale-0"
           loading="lazy"
           onError={(e) => {
             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800';
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-space-bg via-space-bg/60 to-transparent"></div>
-        <div className="absolute bottom-4 left-4 right-4">
-          <h3 className="text-xl font-bold leading-tight mb-1 text-white">{business.name}</h3>
+        <div className="absolute inset-0 bg-space-luxury/40 group-hover:bg-transparent transition-colors duration-500 mix-blend-multiply"></div>
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-space-luxury to-transparent">
+          <h3 className="text-xl font-bold leading-tight text-white font-serif tracking-wide">{business.name}</h3>
           {business.city && (
-            <div className="flex items-center text-xs text-space-muted font-medium">
-              <MapPin size={12} className="mr-1 text-space-primary" />
+            <div className="flex items-center text-xs text-space-gold mt-1 uppercase tracking-widest font-bold">
+              <MapPin size={10} className="mr-1" />
               {business.city}
             </div>
           )}
         </div>
       </div>
-      <div className="p-5 flex-1 flex flex-col">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-space-success/20 text-space-success text-xs uppercase tracking-wider px-2 py-1 rounded-full font-bold border border-space-success/30">Disponible</span>
-        </div>
-        <p className="text-space-muted text-sm mb-5 line-clamp-2 flex-1">
-          {business.description || 'Reserva tu cita con los mejores profesionales de la zona.'}
+      <div className="p-6 flex-1 flex flex-col bg-space-card relative">
+        <p className="text-space-muted text-sm mb-6 line-clamp-2 flex-1 font-light leading-relaxed">
+          {business.description || 'Experiencia premium de barbería. Reserva tu cita hoy.'}
         </p>
-        <div className="mt-auto pt-4 border-t border-space-border flex items-center justify-between">
+        <div className="mt-auto flex items-center justify-between pt-4 border-t border-space-border/30">
           <div className="flex items-center gap-1">
-            <Star size={14} className="text-space-yellow fill-space-yellow" />
-            <span className="text-sm font-bold text-space-text">4.9</span>
-            <span className="text-xs text-space-muted">(120+)</span>
+            <Star size={12} className="text-space-gold fill-space-gold" />
+            <span className="text-sm font-bold text-white">5.0</span>
           </div>
-          <span className="text-space-primary text-sm font-bold group-hover:underline flex items-center gap-1">
+          <span className="text-space-gold text-xs font-black uppercase tracking-widest group-hover:underline flex items-center gap-2 group-hover:gap-3 transition-all">
             Reservar
-            <Scissors size={14} className="group-hover:rotate-12 transition" />
+            <ArrowRight size={12} />
           </span>
         </div>
       </div>
@@ -214,312 +221,230 @@ function Home() {
   const favoriteBusinesses = allBusinesses.filter(b => favoriteSlugs.includes(b.slug));
 
   return (
-    <div className="min-h-screen bg-space-bg text-space-text">
-      {/* Header Pill */}
-      <nav className="fixed w-full z-50 top-6 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="pill-nav flex justify-between items-center px-4">
-            {/* Logo */}
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo(0, 0)}>
-              <div className="w-10 h-10 bg-gradient-to-br from-space-primary via-space-purple to-space-pink rounded-full flex items-center justify-center text-white shadow-lg animate-pulse-subtle">
-                <Scissors size={22} className="text-white" />
-              </div>
-              <div>
-                <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-space-primary to-space-purple bg-clip-text text-transparent">Spacey</span>
-                <div className="text-[10px] uppercase tracking-widest text-space-muted font-bold">Reserva tu Barbero</div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-space-luxury text-space-text font-sans selection:bg-space-gold selection:text-space-luxury text-sm md:text-base">
 
-            {/* Desktop Nav Links */}
-            <div className="hidden md:flex items-center gap-6">
-              <a href="#" className="text-sm font-medium text-space-muted hover:text-space-text transition">Inicio</a>
-              <a href="#directory" className="text-sm font-medium text-space-muted hover:text-space-text transition">Barberías</a>
-              <a href="#" className="text-sm font-medium text-space-muted hover:text-space-text transition">Servicios</a>
+      {/* Smooth Header */}
+      <nav className={`fixed w-full z-50 top-0 transition-all duration-500 ${scrolled ? 'bg-space-luxury/90 backdrop-blur-md shadow-2xl py-4' : 'bg-transparent py-6'}`}>
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+          {/* Logo */}
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo(0, 0)}>
+            <div className="w-10 h-10 border border-space-gold/50 flex items-center justify-center text-space-gold shadow-[0_0_15px_rgba(212,175,55,0.1)] group-hover:bg-space-gold group-hover:text-space-luxury transition-all duration-500">
+              <Scissors size={20} />
             </div>
+            <div>
+              <span className="text-xl font-bold tracking-tight text-white font-serif uppercase">YourBrand</span>
+            </div>
+          </div>
 
-            {/* Auth Buttons */}
-            <div className="flex items-center gap-3">
-              {user ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                    className="flex items-center gap-2 p-1.5 rounded-full hover:bg-space-card transition border border-transparent hover:border-space-border"
-                  >
-                    <div className="w-8 h-8 bg-gradient-to-r from-space-primary to-space-purple rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                      {user.email?.[0].toUpperCase()}
-                    </div>
-                  </button>
-                  {isAccountMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-space-card rounded-2xl shadow-2xl border border-space-border overflow-hidden py-1 z-50 animate-fade-in">
-                      <div className="px-4 py-3 border-b border-space-border">
-                        <p className="text-xs text-space-muted font-medium uppercase tracking-widest">Mi Cuenta</p>
-                        <p className="text-sm font-bold text-space-text truncate">{user.email}</p>
-                      </div>
-                      <div className="p-1">
-                        <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 text-sm text-space-muted hover:text-space-text hover:bg-space-card2 rounded-xl transition" onClick={() => setIsAccountMenuOpen(false)}>
-                          <LayoutDashboard size={18} className="text-space-primary" />
-                          <span>Ir a mi Dashboard</span>
-                        </Link>
-                        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-space-danger hover:bg-space-danger/10 rounded-xl transition">
-                          <LogOut size={18} />
-                          <span>Cerrar Sesión</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <Link to="/login" className="text-xs font-bold text-space-muted hover:text-space-text transition px-4 py-2 rounded-full border border-space-border hover:border-space-primary bg-space-card2 hover:bg-space-card">
-                    Acceso
-                  </Link>
-                  <Link to="/signup" className="bg-gradient-to-r from-space-primary to-space-purple hover:opacity-90 text-white px-5 py-2 rounded-full font-bold transition text-xs shadow-lg shadow-space-primary/30 hover:shadow-space-primary/50">
-                    Registrar
-                  </Link>
-                </>
-              )}
-            </div>
+          {/* Desktop Nav Links */}
+          <div className="hidden md:flex items-center gap-8">
+            <a href="#" className="text-xs font-bold uppercase tracking-[0.2em] text-space-muted hover:text-space-gold transition-colors duration-300">Inicio</a>
+            <a href="#directory" className="text-xs font-bold uppercase tracking-[0.2em] text-space-muted hover:text-space-gold transition-colors duration-300">Colección</a>
+            <a href="#" className="text-xs font-bold uppercase tracking-[0.2em] text-space-muted hover:text-space-gold transition-colors duration-300">Premium</a>
+          </div>
+
+          {/* Auth Buttons */}
+          <div className="flex items-center gap-4">
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+                  className="flex items-center gap-2"
+                >
+                  <span className="hidden md:block text-xs font-bold uppercase tracking-widest text-space-gold mr-2">Mi Cuenta</span>
+                  <div className="w-8 h-8 rounded-full border border-space-gold/50 flex items-center justify-center text-space-gold text-xs font-bold hover:bg-space-gold hover:text-space-luxury transition-all">
+                    {user.email?.[0].toUpperCase()}
+                  </div>
+                </button>
+                {isAccountMenuOpen && (
+                  <div className="absolute right-0 mt-4 w-64 bg-space-luxury border border-space-gold/20 shadow-2xl p-2 z-50 animate-fade-in flex flex-col gap-1">
+                    <Link to="/dashboard" className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-space-muted hover:bg-space-gold/10 hover:text-white transition-colors flex items-center gap-3">
+                      <LayoutDashboard size={14} /> Dashboard
+                    </Link>
+                    <button onClick={handleLogout} className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-space-danger hover:bg-space-danger/10 transition-colors flex items-center gap-3 w-full text-left">
+                      <LogOut size={14} /> Cerrar Sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <Link to="/login" className="text-xs font-bold uppercase tracking-widest text-white hover:text-space-gold transition-colors">
+                  Login
+                </Link>
+                <Link to="/signup" className="px-6 py-2.5 bg-space-gold text-space-luxury text-xs font-black uppercase tracking-widest hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+                  Register
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-        {/* Background Effects */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-br from-space-bg via-space-card to-space-card2"></div>
-          <div className="absolute top-1/4 left-10 w-72 h-72 bg-gradient-to-br from-space-primary/10 to-space-purple/10 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-gradient-to-br from-space-purple/10 to-space-pink/10 rounded-full blur-3xl animate-float-slow"></div>
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(139, 92, 246, 0.3) 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+      {/* Hero Section - Geometric Luxury */}
+      <div className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-space-luxury">
+        {/* Geometric Background Shapes */}
+        <div className="absolute top-0 right-0 w-[50vw] h-[80vh] bg-space-gold/5 transform rotate-12 translate-x-20 -translate-y-20 rounded-[100px] blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[40vw] h-[60vh] bg-space-luxury transform -rotate-12 -translate-x-20 translate-y-20 border border-space-gold/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+        {/* Geometric Overlay Lines */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+          <div className="absolute top-[10%] left-[5%] w-[1px] h-[300px] bg-space-gold"></div>
+          <div className="absolute top-[10%] left-[5%] w-[300px] h-[1px] bg-space-gold"></div>
+          <div className="absolute bottom-[10%] right-[5%] w-[1px] h-[300px] bg-space-gold"></div>
+          <div className="absolute bottom-[10%] right-[5%] w-[300px] h-[1px] bg-space-gold"></div>
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 w-full max-w-7xl px-4 py-16">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
 
-            {/* Left Column */}
+            {/* Left Content */}
             <div className="animate-slide-in">
-              <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full border border-space-border bg-space-card2">
-                <div className="w-2 h-2 rounded-full bg-space-success animate-pulse"></div>
-                <span className="text-xs font-bold uppercase tracking-widest text-space-success">+5,000 reservas este mes</span>
-              </div>
-
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-tight text-white">
-                Deja de <span className="block text-transparent bg-clip-text bg-gradient-to-r from-space-primary via-space-purple to-space-pink">buscar barberos</span>
-                y empieza a <span className="block text-transparent bg-clip-text bg-gradient-to-r from-space-yellow via-space-primary to-space-purple">reservarlos.</span>
+              <span className="text-space-gold text-xs font-black uppercase tracking-[0.3em] mb-4 block">Minimalist Luxury</span>
+              <h1 className="text-6xl md:text-8xl font-serif text-white mb-8 leading-[0.9]">
+                Elevate <br />
+                <span className="text-space-gold italic">Your Style.</span>
               </h1>
 
-              <p className="text-xl text-space-muted mb-10 max-w-2xl font-light leading-relaxed">
-                Spacey conecta a los mejores profesionales de barbería con clientes que valoran su tiempo. Agenda en segundos, sin llamadas, sin esperas.
+              <p className="text-lg text-space-muted mb-12 max-w-md font-light leading-relaxed border-l border-space-gold/30 pl-6">
+                Experience the art of grooming. Connect with elite barbers who understand that time is your most valuable asset.
               </p>
 
-              {/* Search Box in Hero */}
-              <form onSubmit={handleSearch} className="mb-12 max-w-lg">
-                <div className="flex items-center bg-space-card border border-space-border rounded-full p-2 relative group focus-within:ring-2 focus-within:ring-space-primary/50 transition-all shadow-lg">
-                  <Search className="ml-4 text-space-muted group-focus-within:text-space-primary transition-colors" size={20} />
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="¿Qué servicio buscas? (ej. Corte, Barba)"
-                    className="flex-1 bg-transparent pl-4 text-space-text placeholder-space-muted focus:outline-none text-sm h-12"
-                  />
-                  <button type="submit" className="bg-gradient-to-r from-space-primary to-space-purple text-white px-8 py-3 rounded-full font-bold text-sm hover:opacity-90 transition shadow-lg shadow-space-primary/20">
-                    Buscar
-                  </button>
-                </div>
+              {/* Search Box - Minimalist */}
+              <form onSubmit={handleSearch} className="mb-12 max-w-md relative group">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="SEARCH SERVICES..."
+                  className="w-full bg-transparent border-b border-space-muted/30 py-4 text-white text-sm font-bold uppercase tracking-widest placeholder-space-muted/50 focus:outline-none focus:border-space-gold transition-colors"
+                />
+                <button type="submit" className="absolute right-0 top-1/2 -translate-y-1/2 text-space-gold hover:text-white transition-colors">
+                  <ArrowRight size={24} />
+                </button>
               </form>
+            </div>
 
-              {/* Stats */}
-              <div className="flex flex-wrap gap-8">
-                <div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-space-primary to-space-purple bg-clip-text text-transparent">4.9★</div>
-                  <div className="text-sm text-space-muted">Valoración promedio</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-space-purple to-space-pink bg-clip-text text-transparent">500+</div>
-                  <div className="text-sm text-space-muted">Barberos profesionales</div>
-                </div>
+            {/* Right Content - Abstract Visuals */}
+            <div className="hidden lg:block relative h-[600px] animate-fade-in">
+              <div className="absolute top-0 right-0 w-full h-full border border-space-gold/20 rounded-full opacity-20 animate-spin-slow"></div>
+              <div className="absolute top-10 right-10 w-[90%] h-[90%] border border-space-gold/10 rounded-full opacity-20 animate-spin-reverse-slow"></div>
+
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-[450px] bg-space-card overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=1000&auto=format&fit=crop"
+                  alt="Hero"
+                  className="w-full h-full object-cover grayscale opacity-80 mix-blend-luminosity hover:scale-110 transition-transform duration-[2s]"
+                />
+                <div className="absolute inset-0 border border-space-gold/20"></div>
+              </div>
+
+              <div className="absolute bottom-20 -left-10 bg-space-luxury border border-space-gold/30 p-6 max-w-[200px]">
+                <p className="text-space-gold text-2xl font-serif italic mb-2">"Pure Class."</p>
+                <p className="text-[10px] text-space-muted uppercase tracking-widest">Premium Service</p>
               </div>
             </div>
 
-            {/* Right Column (Visual) */}
-            <div className="animate-fade-in hidden lg:block relative">
-              {/* Floating Elements (Testimonials) */}
-              <div className="absolute -left-4 -top-8 glass-effect border border-space-border rounded-2xl p-5 w-64 shadow-xl z-20 animate-float">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-space-yellow to-orange-500 flex items-center justify-center text-white font-bold">JL</div>
-                  <div>
-                    <div className="font-bold text-white text-sm">José López</div>
-                    <div className="flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map(i => <Star key={i} size={10} className="text-space-yellow fill-space-yellow" />)}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs text-space-muted italic">"Spacey hizo mi vida más fácil. Reservo en 2 minutos y siempre encuentro horario."</p>
-              </div>
-
-              <div className="absolute -right-4 top-12 glass-effect border border-space-border rounded-2xl p-5 w-64 shadow-xl z-10 animate-float-slow">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-space-purple to-space-pink flex items-center justify-center text-white font-bold">MR</div>
-                  <div>
-                    <div className="font-bold text-white text-sm">Miguel Rivera</div>
-                    <div className="flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map(i => <Star key={i} size={10} className="text-space-yellow fill-space-yellow" />)}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs text-space-muted italic">"Me encanta el sistema. Nunca más espero sentado en la barbería."</p>
-              </div>
-
-              {/* Decorative Card */}
-              <div className="glass-effect border border-space-border rounded-3xl p-8 mt-20 shadow-2xl relative z-0">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-space-primary to-space-purple flex items-center justify-center shadow-lg shadow-space-primary/20">
-                    <Search className="text-white" size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-white">Búsqueda inteligente</h3>
-                    <p className="text-sm text-space-muted">Encuentra el barbero perfecto</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {['Corte moderno', 'Barba', 'Tinte', 'Afeitado clásico'].map(tag => (
-                    <span key={tag} className="text-xs px-3 py-1.5 rounded-full bg-space-card2 border border-space-border text-space-muted hover:border-space-primary hover:text-white transition cursor-pointer">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Directory Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-20" id="directory">
+      <div className="bg-space-card relative z-20 py-24" id="directory">
+        <div className="absolute top-0 left-0 w-full h-px bg-space-gold/20"></div>
 
-        {/* Customer Appointments */}
-        {customerAppointments.length > 0 && (
-          <div className="mb-12 animate-fade-in">
-            <div className="bg-space-card border border-space-border rounded-3xl shadow-2xl overflow-hidden backdrop-blur-xl">
-              <div className="bg-gradient-to-r from-space-primary/20 to-space-purple/20 border-b border-space-border px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="text-space-primary" size={20} />
-                  <h2 className="text-lg font-bold text-white">Mis Próximas Citas</h2>
-                </div>
-                <span className="bg-space-primary/20 text-space-primary text-xs font-bold px-2 py-1 rounded-full border border-space-primary/30">
-                  {customerAppointments.length} activa(s)
-                </span>
+        <div className="max-w-7xl mx-auto px-6">
+
+          {/* Customer Appointments Ticket Style */}
+          {customerAppointments.length > 0 && (
+            <div className="mb-20 animate-fade-in">
+              <div className="flex items-end justify-between mb-8 border-b border-space-border/50 pb-4">
+                <h2 className="text-3xl font-serif text-white">Your Appointments</h2>
+                <span className="text-xs font-bold text-space-gold uppercase tracking-widest">Upcoming</span>
               </div>
-              <div className="p-4">
-                {loadingApts ? (
-                  <div className="py-8 flex justify-center"><LoadingSpinner /></div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {customerAppointments.map((apt: any) => (
-                      <div key={apt.id} className="bg-space-card2 rounded-2xl p-5 border border-space-border shadow-sm flex justify-between items-center hover:border-space-primary/50 hover:shadow-lg transition-all group">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-[10px] font-bold text-space-primary uppercase tracking-widest px-2 py-0.5 bg-space-primary/20 rounded-full border border-space-primary/30 truncate max-w-[120px]">{apt.business?.name}</span>
-                            {apt.statusBadge === 'today' && <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest px-2 py-0.5 bg-orange-400/20 rounded-full border border-orange-400/30">Hoy</span>}
-                            {apt.statusBadge === 'late' && <span className="text-[10px] font-bold text-space-danger uppercase tracking-widest px-2 py-0.5 bg-space-danger/20 rounded-full border border-space-danger/30">Atrasada</span>}
-                          </div>
-                          <h4 className="font-bold text-lg mb-1 text-white">{apt.service_name}</h4>
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-space-muted">
-                            <div className="flex items-center gap-1.5"><Calendar size={14} className="text-space-primary" /><span>{formatRelativeTime(apt.appointment_date, apt.start_time)}</span></div>
-                            <div className="flex items-center gap-1.5"><Clock size={14} className="text-space-primary" /><span>{apt.start_time.slice(0, 5)}</span></div>
-                          </div>
-                        </div>
-                        <button onClick={() => handleCancelApt(apt.id)} className="ml-4 w-10 h-10 flex items-center justify-center rounded-full text-space-muted hover:text-space-danger hover:bg-space-danger/10 transition-all border border-transparent hover:border-space-danger/30">
-                          <XCircle size={20} />
-                        </button>
+
+              <div className="grid gap-6">
+                {customerAppointments.map((apt: any) => (
+                  <div key={apt.id} className="group relative bg-space-luxury border border-space-gold/10 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between hover:border-space-gold/30 transition-all duration-500">
+                    <div className="flex items-center gap-6 w-full md:w-auto">
+                      <div className="text-center px-4 border-r border-space-border/50">
+                        <p className="text-xs font-bold text-space-muted uppercase tracking-widest">Date</p>
+                        <p className="text-2xl font-serif text-white mt-1">{apt.start_time.slice(0, 5)}</p>
                       </div>
-                    ))}
+                      <div>
+                        <p className="text-xs font-bold text-space-gold uppercase tracking-widest mb-1">{apt.business?.name}</p>
+                        <p className="text-xl text-white font-light">{apt.service_name}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 md:mt-0 flex items-center gap-6">
+                      <div className="hidden md:block w-32 h-px bg-space-border/50 group-hover:bg-space-gold/50 transition-colors"></div>
+                      <button onClick={() => handleCancelApt(apt.id)} className="text-xs font-bold text-space-muted hover:text-space-danger uppercase tracking-widest transition-colors py-2 px-4 border border-transparent hover:border-space-danger/30">
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {error && <div className="bg-space-danger/10 border border-space-danger/30 text-space-danger px-4 py-3 rounded-xl mb-8 shadow-sm text-center">⚠️ {error}</div>}
-
-        {loading ? (
-          <div className="bg-space-card rounded-3xl p-12 shadow-xl flex flex-col items-center justify-center min-h-[300px] border border-space-border">
-            <LoadingSpinner />
-            <p className="text-space-muted mt-4 animate-pulse">Buscando las mejores barberías...</p>
-          </div>
-        ) : (
-          <div className="space-y-12">
-            {/* Favorites Section */}
-            {favoriteBusinesses.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-6 px-2">
-                  <span className="bg-space-yellow/20 p-2 rounded-lg text-space-yellow border border-space-yellow/30"><Star size={24} className="fill-space-yellow" /></span>
-                  <h2 className="text-2xl font-bold text-white">Tus Favoritas</h2>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {favoriteBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={true} />)}
-                </div>
-              </section>
-            )}
-
-            {/* Recent Section */}
-            {recentBusinesses.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-6 px-2">
-                  <span className="bg-space-primary/20 p-2 rounded-lg text-space-primary border border-space-primary/30"><Clock size={24} /></span>
-                  <h2 className="text-2xl font-bold text-white">Vistos Recientemente</h2>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {recentBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}
-                </div>
-              </section>
-            )}
-
-            {/* All Businesses Section */}
-            <section>
-              <div className="flex items-center gap-3 mb-6 px-2">
-                <h2 className="text-2xl font-bold text-white">Recomendadas para ti</h2>
-                <span className="bg-space-card2 text-space-muted px-3 py-1 rounded-full text-xs font-bold border border-space-border">{allBusinesses.length}</span>
-              </div>
-              {allBusinesses.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {allBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}
-                </div>
-              ) : (
-                <div className="bg-space-card rounded-3xl p-12 text-center border border-dashed border-space-border shadow-sm">
-                  <div className="w-20 h-20 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4 opacity-50"><Scissors size={32} className="text-space-muted" /></div>
-                  <h3 className="text-lg font-bold text-white mb-2">No encontramos barberías</h3>
-                  <p className="text-space-muted max-w-md mx-auto">Parece que no hay negocios registrados o activos en este momento.</p>
-                </div>
+          {loading ? (
+            <div className="h-96 flex flex-col items-center justify-center border border-space-gold/10">
+              <LoadingSpinner />
+              <p className="mt-6 text-xs font-bold uppercase tracking-[0.3em] text-space-gold animate-pulse">Curating Selection...</p>
+            </div>
+          ) : (
+            <div className="space-y-24">
+              {favoriteBusinesses.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-4 mb-10">
+                    <span className="w-12 h-px bg-space-gold"></span>
+                    <h2 className="text-2xl font-serif text-white italic">Favorites</h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {favoriteBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={true} />)}
+                  </div>
+                </section>
               )}
-            </section>
-          </div>
-        )}
+
+              <section>
+                <div className="flex items-center justify-between mb-12">
+                  <div className="flex items-center gap-4">
+                    <span className="w-12 h-px bg-space-gold"></span>
+                    <h2 className="text-2xl font-serif text-white italic">Strictly Curated</h2>
+                  </div>
+                  <span className="text-xs font-bold text-space-muted uppercase tracking-widest">{allBusinesses.length} Locations</span>
+                </div>
+
+                {allBusinesses.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+                    {allBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}
+                  </div>
+                ) : (
+                  <div className="py-24 text-center border border-space-gold/10 bg-space-luxury/50">
+                    <p className="text-space-gold font-serif text-xl italic mb-2">Exclusive.</p>
+                    <p className="text-xs text-space-muted uppercase tracking-widest">No locations available at the moment.</p>
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Footer */}
-      <footer className="mt-20 border-t border-space-border pt-10 pb-6 bg-space-bg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-6 md:mb-0 text-center md:text-left">
-              <div className="flex items-center gap-2 justify-center md:justify-start">
-                <div className="w-9 h-9 bg-gradient-to-br from-space-primary to-space-purple rounded-xl flex items-center justify-center text-white shadow-lg">
-                  <Scissors size={20} />
-                </div>
-                <span className="text-xl font-bold tracking-tight text-white">Spacey</span>
-              </div>
-              <p className="text-space-muted text-sm mt-2">Reserva tu barbero en segundos</p>
-            </div>
-            <div className="text-center md:text-right">
-              <p className="text-space-muted text-sm">b© {new Date().getFullYear()} Spacey. Todos los derechos reservados.</p>
-              <p className="text-space-muted text-xs mt-1">Diseñado con pasión para amantes del buen estilo</p>
-            </div>
+      <footer className="bg-space-luxury border-t border-space-gold/20 pt-20 pb-10">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <h3 className="text-4xl font-serif text-white mb-6">YourBrand</h3>
+          <div className="flex justify-center gap-8 mb-12">
+            {['Instagram', 'Twitter', 'LinkedIn'].map(social => (
+              <a key={social} href="#" className="text-xs font-bold uppercase tracking-widest text-space-muted hover:text-space-gold transition-colors">{social}</a>
+            ))}
           </div>
+          <p className="text-[10px] text-space-muted uppercase tracking-widest">© {new Date().getFullYear()} Spacey Reserve. Minimalist Luxury.</p>
         </div>
       </footer>
+
     </div>
   );
 }

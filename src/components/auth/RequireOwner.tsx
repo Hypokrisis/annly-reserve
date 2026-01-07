@@ -16,8 +16,8 @@ export const RequireOwner: React.FC<RequireOwnerProps> = ({ children }) => {
 
     if (upgrading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="min-h-screen flex items-center justify-center bg-space-luxury">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-space-gold"></div>
             </div>
         );
     }
@@ -37,34 +37,41 @@ export const RequireOwner: React.FC<RequireOwnerProps> = ({ children }) => {
         };
 
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-                <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 text-center border border-gray-100">
-                    <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600">
-                        <Building2 size={40} />
+            <div className="min-h-screen flex items-center justify-center bg-space-luxury p-4 relative overflow-hidden">
+                {/* Luxury Background Effects */}
+                <div className="absolute inset-0 z-0 opacity-10" style={{
+                    backgroundImage: 'radial-gradient(circle at center, #d4af37 1px, transparent 1px)',
+                    backgroundSize: '40px 40px'
+                }}></div>
+                <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-space-gold/5 rounded-full blur-[80px] pointer-events-none"></div>
+
+                <div className="max-w-md w-full bg-space-card/80 backdrop-blur-md rounded-[2rem] shadow-2xl p-10 text-center border border-space-gold/20 relative z-10 animate-fade-in">
+                    <div className="w-20 h-20 bg-gradient-to-br from-space-gold to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white shadow-lg shadow-space-gold/20">
+                        <Building2 size={32} />
                     </div>
-                    <h2 className="text-3xl font-black text-gray-900 mb-3 tracking-tighter">Acceso Exclusivo</h2>
-                    <p className="text-gray-500 mb-8 font-medium">
-                        Este panel es exclusivo para dueños de barberías. ¿Deseas profesionalizar tu negocio y recibir reservas online?
+                    <h2 className="text-3xl font-black text-white mb-3 tracking-tight">Acceso Exclusivo</h2>
+                    <p className="text-space-muted mb-8 font-medium leading-relaxed">
+                        Este panel es solo para dueños. ¿Quieres <span className="text-space-gold font-bold">profesionalizar</span> tu negocio y recibir reservas online?
                     </p>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         <button
                             onClick={handleUpgrade}
-                            className="w-full bg-black text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                            className="w-full bg-gradient-to-r from-space-gold to-yellow-600 text-white py-4 rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-space-gold/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
                         >
-                            <Sparkles size={18} />
+                            <Sparkles size={16} />
                             ¡Quiero ser Dueño!
                         </button>
                         <button
                             onClick={() => navigate('/')}
-                            className="w-full bg-gray-100 text-gray-700 py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all"
+                            className="w-full bg-space-card2 text-space-muted hover:text-white py-4 rounded-xl font-bold hover:bg-space-card border border-transparent hover:border-space-border transition-all text-xs uppercase tracking-widest"
                         >
                             Volver al Inicio
                         </button>
                         <button
                             onClick={logout}
-                            className="w-full flex items-center justify-center gap-2 text-sm text-gray-400 font-bold hover:text-red-500 transition py-2"
+                            className="w-full flex items-center justify-center gap-2 text-xs text-space-danger/70 font-bold hover:text-space-danger transition py-2 uppercase tracking-wide opacity-80 hover:opacity-100"
                         >
-                            <LogOut size={16} />
+                            <LogOut size={14} />
                             Cerrar sesión
                         </button>
                     </div>
