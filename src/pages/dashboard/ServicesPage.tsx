@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Edit2, Scissors, ShieldAlert, Ban } from 'lucide-react';
+import { Plus, Edit2, Scissors, ShieldAlert, Ban, Clock } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/common/Button';
@@ -137,7 +137,7 @@ export default function ServicesPage() {
         return (
             <DashboardLayout>
                 <div className="text-center py-12">
-                    <p className="text-gray-600">No tienes permisos para gestionar servicios.</p>
+                    <p className="text-space-muted">No tienes permisos para gestionar servicios.</p>
                 </div>
             </DashboardLayout>
         );
@@ -145,101 +145,106 @@ export default function ServicesPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-6xl">
+            <div className="animate-fade-in">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
                     <div>
-                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Servicios</h1>
-                        <p className="text-sm text-gray-500 mt-1">Define tu catálogo y precios</p>
+                        <h1 className="text-3xl font-bold text-white tracking-tight">Servicios</h1>
+                        <p className="text-sm text-space-muted mt-1">Define tu catálogo y precios</p>
                     </div>
-                    <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto rounded-full px-8 h-12 shadow-lg shadow-black/5 hover:shadow-black/10 transition-all active:scale-95 flex items-center gap-2">
-                        <Plus size={20} />
-                        <span className="font-bold uppercase text-xs tracking-widest">Nuevo Servicio</span>
+                    <Button
+                        onClick={() => handleOpenModal()}
+                        className="w-full sm:w-auto rounded-xl px-6 h-12 shadow-lg shadow-space-primary/20 hover:shadow-space-primary/30 transition-all active:scale-95 flex items-center gap-2 bg-gradient-to-r from-space-primary to-space-purple border-none"
+                    >
+                        <Plus size={18} />
+                        <span className="font-bold text-sm tracking-wide">Nuevo Servicio</span>
                     </Button>
                 </div>
 
                 {/* Services List */}
                 {loading && services.length === 0 ? (
-                    <LoadingSpinner />
+                    <div className="flex justify-center py-20">
+                        <LoadingSpinner />
+                    </div>
                 ) : services.length === 0 ? (
-                    <div className="bg-white rounded-3xl p-16 text-center border-2 border-dashed border-gray-100 shadow-sm">
-                        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Scissors size={40} className="text-gray-300" />
+                    <div className="bg-space-card rounded-3xl p-16 text-center border border-dashed border-space-border shadow-sm">
+                        <div className="w-20 h-20 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Scissors size={32} className="text-space-muted" />
                         </div>
-                        <h3 className="text-xl font-black text-gray-900 mb-2">
+                        <h3 className="text-xl font-bold text-white mb-2">
                             Catálogo vacío
                         </h3>
-                        <p className="text-gray-500 mb-8 max-w-sm mx-auto">
+                        <p className="text-space-muted mb-8 max-w-sm mx-auto">
                             Empieza agregando un servicio para que tus clientes puedan reservar.
                         </p>
-                        <Button onClick={() => handleOpenModal()} className="rounded-full px-8 py-3">
+                        <Button onClick={() => handleOpenModal()} className="rounded-xl px-8 py-3 bg-space-card2 border border-space-border hover:bg-space-primary hover:text-white hover:border-transparent transition-all">
                             <Plus size={20} className="mr-2" />
                             Crear Servicio
                         </Button>
                     </div>
                 ) : (
-                    <div className="grid gap-6">
+                    <div className="grid gap-4">
                         {services.map((service) => (
                             <div
                                 key={service.id}
-                                className={`bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-xl hover:shadow-black/5 transition-all duration-300 ${!service.is_active ? 'bg-gray-50/50' : ''
+                                className={`bg-space-card rounded-2xl p-6 shadow-lg border border-space-border hover:border-space-primary/50 transition-all duration-300 group ${!service.is_active ? 'opacity-60 saturate-0 hover:opacity-100 hover:saturate-50' : ''
                                     }`}
                             >
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                    <div className="flex-1 flex gap-6 items-start">
-                                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 ${!service.is_active ? 'bg-gray-200 text-gray-400' : 'bg-black text-white'}`}>
-                                            <Scissors size={28} />
+                                    <div className="flex-1 flex gap-5 items-start">
+                                        <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${!service.is_active ? 'bg-space-card2 text-space-muted' : 'bg-gradient-to-br from-space-primary to-space-purple text-white'}`}>
+                                            <Scissors size={24} />
                                         </div>
-                                        <div className="min-w-0">
-                                            <div className="flex items-center gap-3 flex-wrap">
-                                                <h3 className="text-2xl font-black text-gray-900 truncate">
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-3 flex-wrap mb-1">
+                                                <h3 className="text-xl font-bold text-white truncate">
                                                     {service.name}
                                                 </h3>
                                                 {!service.is_active && (
-                                                    <span className="px-3 py-1 bg-gray-100 text-gray-500 text-[10px] uppercase font-bold tracking-widest rounded-full">
+                                                    <span className="px-2 py-0.5 bg-space-card2 text-space-muted border border-space-border text-[10px] uppercase font-bold tracking-widest rounded-full">
                                                         Inactivo
                                                     </span>
                                                 )}
                                             </div>
                                             {service.description && (
-                                                <p className="text-gray-500 mt-2 text-sm leading-relaxed max-w-2xl">{service.description}</p>
+                                                <p className="text-space-muted text-sm leading-relaxed max-w-2xl">{service.description}</p>
                                             )}
-                                            <div className="flex flex-wrap gap-4 mt-4">
-                                                <span className="flex items-center gap-2 text-sm font-bold text-gray-400">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
-                                                    ⏱️ {service.duration_minutes} MIN
+                                            <div className="flex flex-wrap gap-4 mt-3">
+                                                <span className="flex items-center gap-1.5 text-xs font-bold text-space-muted bg-space-card2 px-2 py-1 rounded-lg border border-space-border">
+                                                    <Clock size={12} className="text-space-primary" />
+                                                    {service.duration_minutes} MIN
                                                 </span>
-                                                <span className="flex items-center gap-2 text-sm font-black text-black">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-black"></span>
+                                                <span className="flex items-center gap-1.5 text-xs font-bold text-white bg-space-card2 px-2 py-1 rounded-lg border border-space-border">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-space-success"></span>
                                                     {formatCurrency(service.price)}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 self-end md:self-center">
+                                    <div className="flex items-center gap-2 self-end md:self-center">
                                         <Button
                                             variant="secondary"
                                             onClick={() => handleOpenModal(service)}
-                                            className="rounded-full w-12 h-12 p-0 flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm"
+                                            className="rounded-lg w-10 h-10 p-0 flex items-center justify-center bg-space-card2 hover:bg-space-primary hover:text-white border-transparent text-space-muted transition-colors"
                                             title="Editar"
                                         >
-                                            <Edit2 size={18} />
+                                            <Edit2 size={16} />
                                         </Button>
 
                                         {service.is_active ? (
                                             <Button
                                                 variant="secondary"
                                                 onClick={() => handleDelete(service)}
-                                                className="rounded-full w-12 h-12 p-0 flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm text-gray-600"
+                                                className="rounded-lg w-10 h-10 p-0 flex items-center justify-center bg-space-card2 hover:bg-space-danger/20 hover:text-space-danger border-transparent text-space-muted transition-colors"
                                                 title="Desactivar"
                                             >
-                                                <Ban size={18} />
+                                                <Ban size={16} />
                                             </Button>
                                         ) : (
                                             <Button
                                                 variant="secondary"
                                                 onClick={() => updateService(service.id, { is_active: true })}
-                                                className="rounded-full px-6 h-12 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm text-sm font-bold uppercase tracking-widest"
+                                                className="rounded-lg px-4 h-10 flex items-center justify-center bg-space-card2 hover:bg-space-success/20 hover:text-space-success border-transparent text-space-muted transition-all text-xs font-bold uppercase tracking-widest"
                                             >
                                                 Activar
                                             </Button>
@@ -248,10 +253,10 @@ export default function ServicesPage() {
                                         <Button
                                             variant="ghost"
                                             onClick={() => handleHardDelete(service)}
-                                            className="rounded-full w-12 h-12 p-0 flex items-center justify-center hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
+                                            className="rounded-lg w-10 h-10 p-0 flex items-center justify-center hover:bg-space-danger/10 text-space-muted hover:text-space-danger transition-colors"
                                             title="Eliminar Permanentemente"
                                         >
-                                            <ShieldAlert size={18} />
+                                            <ShieldAlert size={16} />
                                         </Button>
                                     </div>
                                 </div>
@@ -266,57 +271,65 @@ export default function ServicesPage() {
                     onClose={handleCloseModal}
                     title={editingService ? 'Editar Servicio' : 'Nuevo Servicio'}
                 >
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <Input
-                            label="Nombre del Servicio"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            error={formErrors.name}
-                            placeholder="Ej: Corte de pelo"
-                            required
-                        />
+                    <form onSubmit={handleSubmit} className="space-y-5">
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Descripción
-                            </label>
-                            <textarea
-                                value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                rows={3}
-                                placeholder="Descripción opcional del servicio"
+                        <div className="space-y-4">
+                            <Input
+                                label="Nombre del Servicio"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                error={formErrors.name}
+                                placeholder="Ej: Corte de pelo"
+                                required
+                                className="bg-space-bg border-space-border text-space-text"
                             />
+
+                            <div>
+                                <label className="block text-sm font-medium text-space-muted mb-2">
+                                    Descripción
+                                </label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    className="w-full px-4 py-3 bg-space-bg border border-space-border rounded-xl text-space-text placeholder-space-muted/50 focus:ring-2 focus:ring-space-primary focus:border-transparent transition outline-none"
+                                    rows={3}
+                                    placeholder="Descripción opcional del servicio"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <Input
+                                    label="Duración (min)"
+                                    type="number"
+                                    value={formData.duration_minutes}
+                                    onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
+                                    error={formErrors.duration_minutes}
+                                    placeholder="30"
+                                    min="1"
+                                    required
+                                    className="bg-space-bg border-space-border text-space-text"
+                                />
+
+                                <Input
+                                    label="Precio"
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.price}
+                                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                    error={formErrors.price}
+                                    placeholder="500.00"
+                                    min="0"
+                                    required
+                                    className="bg-space-bg border-space-border text-space-text"
+                                />
+                            </div>
                         </div>
 
-                        <Input
-                            label="Duración (minutos)"
-                            type="number"
-                            value={formData.duration_minutes}
-                            onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
-                            error={formErrors.duration_minutes}
-                            placeholder="30"
-                            min="1"
-                            required
-                        />
-
-                        <Input
-                            label="Precio"
-                            type="number"
-                            step="0.01"
-                            value={formData.price}
-                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                            error={formErrors.price}
-                            placeholder="500.00"
-                            min="0"
-                            required
-                        />
-
-                        <div className="flex justify-end gap-3 pt-4">
-                            <Button type="button" variant="secondary" onClick={handleCloseModal}>
+                        <div className="flex justify-end gap-3 pt-6 border-t border-space-border">
+                            <Button type="button" variant="secondary" onClick={handleCloseModal} className="bg-space-card2 hover:bg-space-bg text-space-text border-transparent">
                                 Cancelar
                             </Button>
-                            <Button type="submit" disabled={loading}>
+                            <Button type="submit" disabled={loading} className="bg-gradient-to-r from-space-primary to-space-purple border-none shadow-lg shadow-space-primary/20 hover:opacity-90">
                                 {loading ? 'Guardando...' : editingService ? 'Actualizar' : 'Crear'}
                             </Button>
                         </div>

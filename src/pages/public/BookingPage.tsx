@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Check, ChevronLeft, Home, Calendar as CalendarIcon, Clock, User as UserIcon, Scissors } from 'lucide-react';
+import { Check, ChevronLeft, Home, Calendar as CalendarIcon, Clock, User as UserIcon, Scissors, Star } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -37,7 +37,7 @@ export default function PublicBookingPage() {
     const [submitting, setSubmitting] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
     const [userProfile, setUserProfile] = useState<{ full_name?: string; phone?: string } | null>(null);
-    const [loadingProfile, setLoadingProfile] = useState(false);
+    const [, setLoadingProfile] = useState(false);
 
     // Load availability when service, barber, and date are selected
     const { availableSlots, loading: loadingSlots } = useAvailability(
@@ -262,46 +262,49 @@ export default function PublicBookingPage() {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-space-bg">
             <LoadingSpinner />
         </div>
     );
 
     if (!business) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Negocio no encontrado</p>
+        <div className="min-h-screen flex items-center justify-center bg-space-bg">
+            <p className="text-space-muted font-bold uppercase tracking-widest text-xs">Negocio no encontrado</p>
         </div>
     );
 
     // Require login to book
     if (!user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-                <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 text-center border border-gray-100">
-                    <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="min-h-screen flex items-center justify-center bg-space-bg p-4 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-space-primary/10 via-space-purple/10 to-transparent pointer-events-none"></div>
+                <div className="w-[500px] h-[500px] bg-space-primary/20 rounded-full absolute -top-40 -right-40 blur-[100px] animate-pulse-subtle"></div>
+
+                <div className="max-w-md w-full glass-effect rounded-[2.5rem] shadow-2xl p-10 text-center border border-space-border relative z-10">
+                    <div className="w-20 h-20 bg-gradient-to-br from-space-primary to-space-purple rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-space-primary/30 animate-float">
                         <UserIcon size={40} className="text-white" />
                     </div>
-                    <h2 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">Inicia sesión para reservar</h2>
-                    <p className="text-gray-600 mb-8 font-medium">
-                        Necesitas una cuenta para hacer una reserva. Es rápido y gratis.
+                    <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">Accede para reservar</h2>
+                    <p className="text-space-muted mb-8 font-medium">
+                        Necesitas una cuenta para agendar en <span className="text-white font-bold">{business.name}</span>.
                     </p>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         <Button
                             onClick={() => navigate(`/login?returnTo=/book/${slug}`)}
-                            className="w-full rounded-full h-14 text-sm font-black uppercase tracking-widest shadow-xl"
+                            className="w-full rounded-full h-14 text-sm font-bold uppercase tracking-widest shadow-xl bg-gradient-to-r from-space-primary to-space-purple border-none hover:shadow-space-primary/20 hover:scale-[1.02] transition-all"
                         >
                             Iniciar Sesión
                         </Button>
                         <Button
                             variant="secondary"
                             onClick={() => navigate('/signup')}
-                            className="w-full rounded-full h-14 text-sm font-black uppercase tracking-widest"
+                            className="w-full rounded-full h-14 text-sm font-bold uppercase tracking-widest bg-space-card2 text-white border-transparent hover:bg-space-card hover:border-space-primary/50"
                         >
                             Crear Cuenta Gratis
                         </Button>
                         <button
                             onClick={() => navigate('/')}
-                            className="w-full text-sm text-gray-500 hover:text-gray-700 font-medium mt-4 transition"
+                            className="w-full text-sm text-space-muted hover:text-white font-medium mt-4 transition"
                         >
                             Volver al inicio
                         </button>
@@ -312,36 +315,45 @@ export default function PublicBookingPage() {
     }
 
     if (confirmed) return (
-        <div className="min-h-screen flex items-center justify-center bg-black p-4">
-            <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 text-center">
-                <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-8 animate-in zoom-in duration-500">
-                    <Check size={40} className="text-white" />
+        <div className="min-h-screen flex items-center justify-center bg-space-bg p-4 relative">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-space-success/10 via-space-bg to-space-bg pointer-events-none"></div>
+            <div className="max-w-md w-full glass-effect rounded-[2.5rem] shadow-2xl p-10 text-center border border-space-border relative z-10 animate-fade-in">
+                <div className="w-24 h-24 bg-gradient-to-br from-space-success to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8 animate-in zoom-in duration-500 shadow-xl shadow-space-success/20">
+                    <Check size={48} className="text-white" />
                 </div>
-                <h1 className="text-3xl font-black text-gray-900 mb-4 tracking-tight italic">¡LISTO!</h1>
-                <p className="text-gray-500 mb-8 font-medium">
+                <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-space-muted mb-4 tracking-tight italic">¡LISTO!</h1>
+                <p className="text-space-muted mb-8 font-medium">
                     Tu cita ha sido reservada con éxito.
                 </p>
 
-                <div className="bg-gray-50 rounded-3xl p-6 mb-8 text-left space-y-3">
-                    <div className="flex items-center gap-3 text-sm">
-                        <Scissors size={16} className="text-gray-400" />
-                        <span className="font-bold text-gray-900">{selectedService?.name}</span>
+                <div className="bg-space-card/80 backdrop-blur-md rounded-3xl p-6 mb-8 text-left space-y-4 border border-space-border/50">
+                    <div className="flex items-center gap-4 text-sm">
+                        <div className="w-8 h-8 rounded-full bg-space-bg flex items-center justify-center border border-space-border text-space-primary">
+                            <Scissors size={14} />
+                        </div>
+                        <span className="font-bold text-white">{selectedService?.name}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm">
-                        <UserIcon size={16} className="text-gray-400" />
-                        <span className="font-bold text-gray-900">{selectedSlot?.barber_name}</span>
+                    <div className="flex items-center gap-4 text-sm">
+                        <div className="w-8 h-8 rounded-full bg-space-bg flex items-center justify-center border border-space-border text-space-purple">
+                            <UserIcon size={14} />
+                        </div>
+                        <span className="font-bold text-white">{selectedSlot?.barber_name}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm">
-                        <CalendarIcon size={16} className="text-gray-400" />
-                        <span className="font-bold text-gray-900">{selectedDate && formatDate(parseDate(selectedDate))}</span>
+                    <div className="flex items-center gap-4 text-sm">
+                        <div className="w-8 h-8 rounded-full bg-space-bg flex items-center justify-center border border-space-border text-space-pink">
+                            <CalendarIcon size={14} />
+                        </div>
+                        <span className="font-bold text-white">{selectedDate && formatDate(parseDate(selectedDate))}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm">
-                        <Clock size={16} className="text-gray-400" />
-                        <span className="font-bold text-gray-900">{selectedSlot && formatTimeDisplay(selectedSlot.time)}</span>
+                    <div className="flex items-center gap-4 text-sm">
+                        <div className="w-8 h-8 rounded-full bg-space-bg flex items-center justify-center border border-space-border text-space-yellow">
+                            <Clock size={14} />
+                        </div>
+                        <span className="font-bold text-white">{selectedSlot && formatTimeDisplay(selectedSlot.time)}</span>
                     </div>
                 </div>
 
-                <Button onClick={() => navigate('/')} className="w-full rounded-full h-14 text-sm font-black uppercase tracking-widest shadow-xl shadow-black/10">
+                <Button onClick={() => navigate('/')} className="w-full rounded-full h-14 text-sm font-black uppercase tracking-widest shadow-xl bg-space-card hover:bg-space-card2 border border-space-border hover:border-space-primary/50 text-white">
                     Volver al Inicio
                 </Button>
             </div>
@@ -357,69 +369,76 @@ export default function PublicBookingPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 pb-32">
-            <div className="max-w-2xl mx-auto">
+        <div className="min-h-screen bg-space-bg py-12 px-4 pb-32 relative overflow-x-hidden">
+            {/* Background ambients */}
+            <div className="fixed -top-40 -left-40 w-96 h-96 bg-space-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="fixed top-40 -right-40 w-80 h-80 bg-space-purple/5 rounded-full blur-[80px] pointer-events-none"></div>
+
+            <div className="max-w-2xl mx-auto relative z-10 transition-all duration-500 ease-in-out">
                 {/* Header Section */}
-                <header className="text-center mb-12">
-                    <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tighter uppercase italic">{business.name}</h1>
-                    <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
-                        <span className="w-2 h-2 rounded-full bg-black animate-pulse"></span>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Reservas Online</p>
+                <header className="text-center mb-12 animate-fade-in">
+                    <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-space-muted to-white mb-4 tracking-tighter uppercase italic drop-shadow-lg">{business.name}</h1>
+                    <div className="inline-flex items-center gap-2 bg-space-card/80 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-space-border/50">
+                        <span className="w-2 h-2 rounded-full bg-space-success animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">Reservas Online</p>
                     </div>
                 </header>
 
-                {/* New Progress Steps */}
-                <div className="flex justify-center mb-12">
-                    <div className="flex items-center gap-3 bg-white p-2 rounded-full shadow-sm border border-gray-100 max-w-full overflow-x-auto no-scrollbar">
+                {/* Progress Steps */}
+                <div className="flex justify-center mb-12 animate-fade-in delay-100">
+                    <div className="flex items-center gap-2 bg-space-card/50 backdrop-blur-md p-2 rounded-full shadow-lg border border-space-border/50 max-w-full overflow-x-auto no-scrollbar scroll-smooth">
                         {steps.map((s) => (
                             <div
                                 key={s.id}
                                 onClick={() => s.id < step && setStep(s.id)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all cursor-pointer whitespace-nowrap ${s.id === step
-                                    ? 'bg-black text-white shadow-lg shadow-black/20'
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-full transition-all cursor-pointer whitespace-nowrap border ${s.id === step
+                                    ? 'bg-space-primary text-white shadow-lg shadow-space-primary/20 border-space-primary'
                                     : s.id < step
-                                        ? 'text-gray-900 hover:bg-gray-100'
-                                        : 'text-gray-300'
+                                        ? 'bg-space-card text-white hover:bg-space-card2 border-space-border'
+                                        : 'text-space-muted border-transparent'
                                     }`}
                             >
-                                <span className={`text-[10px] font-black ${s.id === step ? 'text-white' : 'text-inherit'}`}>0{s.id}</span>
-                                <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">{s.label}</span>
+                                <span className="text-[10px] font-black">{`0${s.id}`}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">{s.label}</span>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div className="bg-white rounded-[2.5rem] shadow-xl shadow-black/5 p-8 border border-gray-100">
+                <div className="glass-effect rounded-[2.5rem] shadow-2xl p-6 md:p-10 border border-space-border/50 relative overflow-hidden min-h-[500px] flex flex-col justify-center animate-fade-in delay-200">
+                    {/* Decorative blur inside card */}
+                    <div className="absolute -top-20 -right-20 w-64 h-64 bg-space-primary/5 rounded-full blur-[60px] pointer-events-none"></div>
+
                     {/* Step 1: Select Service */}
                     {step === 1 && (
-                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="animate-in fade-in slide-in-from-right-8 duration-500 relative z-10 w-full">
                             <div className="text-center mb-10">
-                                <h2 className="text-2xl font-black text-gray-900 tracking-tight italic uppercase mb-2">Escoge un servicio</h2>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">¿Qué haremos hoy?</p>
+                                <h2 className="text-3xl font-bold text-white tracking-tight mb-2">Escoge un servicio</h2>
+                                <p className="text-xs font-bold text-space-muted uppercase tracking-widest">¿Qué haremos hoy?</p>
                             </div>
                             <div className="grid gap-4">
                                 {services.map((service) => (
                                     <button
                                         key={service.id}
                                         onClick={() => handleServiceSelect(service)}
-                                        className="group p-6 bg-white border border-gray-100 rounded-3xl hover:border-black hover:shadow-2xl hover:shadow-black/5 transition-all duration-300 text-left flex items-center justify-between"
+                                        className="group p-5 bg-space-card/50 hover:bg-space-card border border-space-border/50 hover:border-space-primary/50 rounded-3xl transition-all duration-300 text-left flex items-center justify-between backdrop-blur-sm"
                                     >
                                         <div className="flex-1">
-                                            <h3 className="text-lg font-black text-gray-900 mb-1 group-hover:italic transition-all">
+                                            <h3 className="text-lg font-bold text-white mb-1 group-hover:text-space-primary transition-colors">
                                                 {service.name}
                                             </h3>
                                             <div className="flex items-center gap-3">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                                                <span className="text-[10px] font-bold text-space-muted uppercase tracking-widest flex items-center gap-1 bg-space-bg px-2 py-1 rounded-lg border border-space-border">
                                                     <Clock size={10} /> {service.duration_minutes} MIN
                                                 </span>
-                                                <span className="w-1 h-1 rounded-full bg-gray-200"></span>
-                                                <span className="text-sm font-black text-black">
+                                                <span className="text-sm font-bold text-white flex items-center gap-1">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-space-success"></span>
                                                     {formatCurrency(service.price)}
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
-                                            <Check size={18} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="w-12 h-12 rounded-2xl bg-space-bg flex items-center justify-center group-hover:bg-space-primary group-hover:text-white transition-all border border-space-border group-hover:border-transparent shadow-lg">
+                                            <Scissors size={20} className="group-hover:scale-110 transition-transform" />
                                         </div>
                                     </button>
                                 ))}
@@ -429,18 +448,19 @@ export default function PublicBookingPage() {
 
                     {/* Step 2: Select Barber */}
                     {step === 2 && selectedService && (
-                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="animate-in fade-in slide-in-from-right-8 duration-500 relative z-10 w-full">
                             <div className="text-center mb-10">
-                                <h2 className="text-2xl font-black text-gray-900 tracking-tight italic uppercase mb-2">Elige a tu barbero</h2>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Servicio: {selectedService.name}</p>
+                                <h2 className="text-3xl font-bold text-white tracking-tight mb-2">Elige a tu barbero</h2>
+                                <p className="text-xs font-bold text-space-muted uppercase tracking-widest">Servicio: <span className="text-white">{selectedService.name}</span></p>
                             </div>
                             <div className="grid gap-4">
                                 <button
                                     onClick={() => handleBarberSelect(null)}
-                                    className="p-6 bg-black text-white rounded-3xl shadow-xl shadow-black/20 hover:scale-[1.02] transition-all text-center mb-2"
+                                    className="p-6 bg-gradient-to-r from-space-primary to-space-purple text-white rounded-3xl shadow-lg shadow-space-primary/20 hover:scale-[1.02] transition-all text-center mb-2 active:scale-95"
                                 >
+                                    <div className="flex justify-center mb-2"><Star size={24} className="fill-white" /></div>
                                     <h3 className="text-sm font-black uppercase tracking-[0.2em]">Cualquiera disponible</h3>
-                                    <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase">Ahorra tiempo y hazlo rápido</p>
+                                    <p className="text-[10px] text-white/70 font-bold mt-1 uppercase">Lo antes posible</p>
                                 </button>
 
                                 {barbers
@@ -453,17 +473,17 @@ export default function PublicBookingPage() {
                                         <button
                                             key={barber.id}
                                             onClick={() => handleBarberSelect(barber)}
-                                            className="group p-6 bg-white border border-gray-100 rounded-3xl hover:border-black hover:shadow-2xl hover:shadow-black/5 transition-all duration-300 text-left flex items-center gap-6"
+                                            className="group p-5 bg-space-card/50 hover:bg-space-card border border-space-border/50 hover:border-space-purple/50 rounded-3xl transition-all duration-300 text-left flex items-center gap-6 backdrop-blur-sm"
                                         >
-                                            <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all shrink-0">
+                                            <div className="w-14 h-14 bg-space-bg rounded-2xl flex items-center justify-center group-hover:bg-space-purple group-hover:text-white transition-all shrink-0 border border-space-border shadow-lg">
                                                 <UserIcon size={24} />
                                             </div>
                                             <div className="flex-1">
-                                                <h3 className="text-lg font-black text-gray-900 group-hover:italic transition-all">
+                                                <h3 className="text-lg font-bold text-white group-hover:text-space-purple transition-colors">
                                                     {barber.name}
                                                 </h3>
                                                 {barber.bio && (
-                                                    <p className="text-xs text-gray-500 line-clamp-1 mt-1 font-medium">{barber.bio}</p>
+                                                    <p className="text-xs text-space-muted line-clamp-1 mt-1 font-medium">{barber.bio}</p>
                                                 )}
                                             </div>
                                         </button>
@@ -474,11 +494,11 @@ export default function PublicBookingPage() {
 
                     {/* Step 3: Select Date */}
                     {step === 3 && selectedService && (
-                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="animate-in fade-in slide-in-from-right-8 duration-500 relative z-10 w-full">
                             <div className="text-center mb-10">
-                                <h2 className="text-2xl font-black text-gray-900 tracking-tight italic uppercase mb-2">Reserva el día</h2>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                    Con {selectedBarber?.name || 'Cualquier barbero'}
+                                <h2 className="text-3xl font-bold text-white tracking-tight mb-2">Reserva el día</h2>
+                                <p className="text-xs font-bold text-space-muted uppercase tracking-widest">
+                                    Con <span className="text-white">{selectedBarber?.name || 'Cualquier barbero'}</span>
                                 </p>
                             </div>
 
@@ -490,9 +510,9 @@ export default function PublicBookingPage() {
                                     <button
                                         key={quickDate.value}
                                         onClick={() => handleDateSelect(quickDate.value)}
-                                        className={`px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest transition-all min-h-[56px] ${selectedDate === quickDate.value
-                                            ? 'bg-black text-white shadow-xl shadow-black/20 scale-105'
-                                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                        className={`px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all min-h-[60px] border ${selectedDate === quickDate.value
+                                            ? 'bg-space-primary text-white shadow-lg shadow-space-primary/20 scale-105 border-space-primary'
+                                            : 'bg-space-card hover:bg-space-card2 text-space-muted hover:text-white border-space-border'
                                             }`}
                                     >
                                         {quickDate.label}
@@ -501,16 +521,17 @@ export default function PublicBookingPage() {
                             </div>
 
                             <div className="max-w-xs mx-auto text-center">
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">O elige una fecha específica</label>
-                                <div className="relative">
+                                <label className="block text-[10px] font-black text-space-muted uppercase tracking-[0.2em] mb-4">O elige una fecha específica</label>
+                                <div className="relative group">
                                     <Input
                                         type="date"
                                         value={selectedDate}
                                         onChange={(e) => handleDateSelect(e.target.value)}
                                         min={getMinDate()}
                                         max={getMaxDate()}
-                                        className="text-center font-black uppercase text-sm h-14 rounded-full bg-gray-50 border-transparent focus:bg-white focus:border-black transition-all"
+                                        className="text-center font-bold uppercase text-sm h-14 rounded-2xl bg-space-card border-space-border text-white focus:ring-space-purple focus:border-transparent transition-all hover:bg-space-card2 cursor-pointer"
                                     />
+                                    <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-space-muted pointer-events-none group-hover:text-white transition-colors" size={18} />
                                 </div>
                             </div>
                         </div>
@@ -518,10 +539,10 @@ export default function PublicBookingPage() {
 
                     {/* Step 4: Select Time */}
                     {step === 4 && selectedService && selectedDate && (
-                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="animate-in fade-in slide-in-from-right-8 duration-500 relative z-10 w-full">
                             <div className="text-center mb-10">
-                                <h2 className="text-2xl font-black text-gray-900 tracking-tight italic uppercase mb-2">Escoge la hora</h2>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                <h2 className="text-3xl font-bold text-white tracking-tight mb-2">Escoge la hora</h2>
+                                <p className="text-xs font-bold text-space-muted uppercase tracking-widest bg-space-bg inline-block px-3 py-1 rounded-lg border border-space-border">
                                     {formatDate(parseDate(selectedDate))}
                                 </p>
                             </div>
@@ -530,30 +551,30 @@ export default function PublicBookingPage() {
                                 <div className="py-20 flex justify-center"><LoadingSpinner /></div>
                             ) : availableSlots.length === 0 ? (
                                 <div className="text-center py-12">
-                                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">No hay horarios disponibles</p>
+                                    <p className="text-sm font-bold text-space-muted uppercase tracking-widest mb-6 border border-space-danger/20 bg-space-danger/5 p-4 rounded-xl">No hay horarios disponibles para esta fecha</p>
                                     <Button
                                         variant="secondary"
                                         onClick={() => setStep(3)}
-                                        className="rounded-full px-8 h-12 text-[10px] font-black uppercase tracking-widest"
+                                        className="rounded-full px-8 h-12 text-[10px] font-black uppercase tracking-widest bg-space-card hover:bg-space-card2 text-white border-transparent"
                                     >
                                         Cambiar Fecha
                                     </Button>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-2">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                     {availableSlots.map((slot, index) => (
                                         <button
                                             key={index}
                                             onClick={() => handleSlotSelect(slot)}
-                                            className={`min-h-[72px] p-4 rounded-3xl border-2 transition-all flex flex-col items-center justify-center ${selectedSlot?.time === slot.time
-                                                ? 'border-black bg-black text-white shadow-xl shadow-black/20'
-                                                : 'border-transparent bg-gray-50 hover:bg-gray-100 hover:border-gray-200'
+                                            className={`py-4 px-2 rounded-2xl border transition-all flex flex-col items-center justify-center gap-1 ${selectedSlot?.time === slot.time
+                                                ? 'border-space-primary bg-space-primary text-white shadow-lg shadow-space-primary/20 scale-105 z-10'
+                                                : 'border-space-border bg-space-card/60 hover:bg-space-card hover:border-space-primary/30 text-white'
                                                 }`}
                                         >
-                                            <span className="font-black text-lg italic tracking-tight leading-none mb-1">
+                                            <span className="font-bold text-lg leading-none">
                                                 {formatTimeDisplay(slot.time)}
                                             </span>
-                                            <span className={`text-[9px] font-bold uppercase tracking-widest truncate w-full text-center ${selectedSlot?.time === slot.time ? 'text-gray-400' : 'text-gray-400'}`}>
+                                            <span className={`text-[9px] font-bold uppercase tracking-widest truncate w-full text-center opacity-70`}>
                                                 {slot.barber_name}
                                             </span>
                                         </button>
@@ -565,25 +586,30 @@ export default function PublicBookingPage() {
 
                     {/* Step 5: Customer Info */}
                     {step === 5 && selectedSlot && (
-                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="animate-in fade-in slide-in-from-right-8 duration-500 relative z-10 w-full">
                             <div className="text-center mb-8">
-                                <h2 className="text-2xl font-black text-gray-900 tracking-tight italic uppercase mb-2">Tus datos</h2>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Finalizar reserva</p>
+                                <h2 className="text-3xl font-bold text-white tracking-tight mb-2">Tus datos</h2>
+                                <p className="text-xs font-bold text-space-muted uppercase tracking-widest">Finalizar reserva</p>
                             </div>
 
-                            <div className="bg-black text-white rounded-[2rem] p-6 mb-8 flex flex-wrap gap-6 items-center justify-center text-center sm:text-left">
+                            <div className="bg-space-card2 border border-space-border rounded-[2rem] p-6 mb-8 flex flex-col sm:flex-row gap-6 items-center justify-center text-center sm:text-left shadow-lg">
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Servicio & Barbero</p>
-                                    <p className="text-sm font-bold leading-tight">{selectedService?.name} con {selectedSlot.barber_name}</p>
+                                    <p className="text-[10px] font-black text-space-muted uppercase tracking-widest">Servicio</p>
+                                    <p className="text-sm font-bold leading-tight text-white">{selectedService?.name}</p>
                                 </div>
-                                <div className="w-px h-8 bg-gray-800 hidden sm:block"></div>
+                                <div className="hidden sm:block w-px h-8 bg-space-border"></div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Cita</p>
-                                    <p className="text-sm font-bold leading-tight">{formatDate(parseDate(selectedDate))} @ {formatTimeDisplay(selectedSlot.time)}</p>
+                                    <p className="text-[10px] font-black text-space-muted uppercase tracking-widest">Barbero</p>
+                                    <p className="text-sm font-bold leading-tight text-white">{selectedSlot.barber_name}</p>
+                                </div>
+                                <div className="hidden sm:block w-px h-8 bg-space-border"></div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-space-muted uppercase tracking-widest">Horario</p>
+                                    <p className="text-sm font-bold leading-tight text-white">{formatDate(parseDate(selectedDate))} <span className="text-space-primary">@</span> {formatTimeDisplay(selectedSlot.time)}</p>
                                 </div>
                             </div>
 
-                            <div className="space-y-6">
+                            <div className="space-y-5">
                                 <Input
                                     label="Nombre Completo"
                                     value={customerInfo.name}
@@ -591,7 +617,7 @@ export default function PublicBookingPage() {
                                     error={formErrors.name}
                                     placeholder="Ej: Juan Pérez"
                                     required
-                                    className="h-14 rounded-2xl bg-gray-50 border-transparent focus:bg-white focus:border-black transition-all"
+                                    className="h-14 rounded-2xl bg-space-bg border-space-border text-white focus:ring-space-purple focus:border-transparent transition-all placeholder-space-muted/30"
                                 />
 
                                 <div className="grid sm:grid-cols-2 gap-4">
@@ -603,7 +629,7 @@ export default function PublicBookingPage() {
                                         error={formErrors.email}
                                         placeholder="juan@ejemplo.com"
                                         required
-                                        className="h-14 rounded-2xl bg-gray-50 border-transparent focus:bg-white focus:border-black transition-all"
+                                        className="h-14 rounded-2xl bg-space-bg border-space-border text-white focus:ring-space-purple focus:border-transparent transition-all placeholder-space-muted/30"
                                     />
                                     <Input
                                         label="Teléfono"
@@ -613,16 +639,16 @@ export default function PublicBookingPage() {
                                         error={formErrors.phone}
                                         placeholder="(809) 555-5555"
                                         required
-                                        className="h-14 rounded-2xl bg-gray-50 border-transparent focus:bg-white focus:border-black transition-all"
+                                        className="h-14 rounded-2xl bg-space-bg border-space-border text-white focus:ring-space-purple focus:border-transparent transition-all placeholder-space-muted/30"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Notas (Opcional)</label>
+                                    <label className="block text-[10px] font-black text-space-muted uppercase tracking-widest mb-2 ml-1">Notas (Opcional)</label>
                                     <textarea
                                         value={customerInfo.notes}
                                         onChange={(e) => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
-                                        className="w-full px-4 py-4 bg-gray-50 border-transparent rounded-2xl focus:ring-2 focus:ring-black focus:bg-white focus:border-transparent transition-all text-sm font-medium"
+                                        className="w-full px-4 py-4 bg-space-bg border border-space-border rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-space-purple focus:border-transparent transition-all text-sm font-medium placeholder-space-muted/30"
                                         rows={3}
                                         placeholder="¿Alguna preferencia?"
                                     />
@@ -632,7 +658,7 @@ export default function PublicBookingPage() {
                             <Button
                                 onClick={handleSubmit}
                                 disabled={submitting}
-                                className="w-full mt-10 rounded-full h-16 text-sm font-black uppercase tracking-[0.2em] bg-black text-white shadow-2xl shadow-black/20 hover:scale-[1.02] active:scale-95 transition-all"
+                                className="w-full mt-10 rounded-full h-16 text-sm font-black uppercase tracking-[0.2em] bg-gradient-to-r from-space-primary to-space-purple text-white shadow-2xl shadow-space-primary/30 hover:scale-[1.02] active:scale-95 transition-all border-none"
                             >
                                 {submitting ? 'Confirmando...' : 'Confirmar Cita'}
                             </Button>
@@ -643,10 +669,10 @@ export default function PublicBookingPage() {
 
             {/* Bottom Floating Navigation for Mobile UX */}
             {step > 1 && (
-                <div className="fixed bottom-8 left-0 right-0 px-6 flex justify-between items-center z-50 pointer-events-none sm:hidden">
+                <div className="fixed bottom-8 left-0 right-0 px-6 flex justify-between items-center z-50 pointer-events-none sm:hidden animate-fade-in-up">
                     <button
                         onClick={() => setStep(prev => prev - 1)}
-                        className="pointer-events-auto bg-white/90 backdrop-blur-md text-black w-14 h-14 rounded-full shadow-2xl border border-gray-100 flex items-center justify-center hover:bg-gray-50 transition active:scale-90"
+                        className="pointer-events-auto bg-space-card2/80 backdrop-blur-md text-white w-14 h-14 rounded-full shadow-2xl border border-space-border flex items-center justify-center hover:bg-space-card transition active:scale-90"
                         title="Atrás"
                     >
                         <ChevronLeft size={24} />
@@ -654,7 +680,7 @@ export default function PublicBookingPage() {
 
                     <button
                         onClick={() => navigate('/')}
-                        className="pointer-events-auto bg-black text-white px-8 h-14 rounded-full shadow-2xl flex items-center gap-3 font-black uppercase tracking-widest text-[10px] hover:bg-gray-900 transition active:scale-95"
+                        className="pointer-events-auto bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 h-14 rounded-full shadow-2xl flex items-center gap-3 font-black uppercase tracking-widest text-[10px] hover:bg-white/20 transition active:scale-95"
                     >
                         <Home size={18} />
                         Principal

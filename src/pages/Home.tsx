@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, Search, LogOut, LayoutDashboard } from 'lucide-react';
+import { MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, Search, LogOut, LayoutDashboard, Menu } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,7 +30,6 @@ function Home() {
   const [loadingApts, setLoadingApts] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
-
 
   useEffect(() => {
     loadData();
@@ -160,16 +159,16 @@ function Home() {
   const BusinessCard = ({ business, isFavorite }: { business: BusinessResult, isFavorite: boolean }) => (
     <Link
       to={`/book/${business.slug}`}
-      className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full relative"
+      className="group bg-space-card border border-space-border rounded-2xl overflow-hidden hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col h-full relative backdrop-blur-sm cursor-pointer"
     >
       <button
         onClick={(e) => toggleFavorite(e, business.slug)}
-        className="absolute top-3 right-3 z-10 p-2 bg-black/40 backdrop-blur-md rounded-full hover:bg-black/60 transition shadow-sm border border-white/20"
+        className="absolute top-3 right-3 z-10 p-2 bg-space-card/80 backdrop-blur-md rounded-full hover:bg-space-card border border-space-border transition shadow-lg hover:scale-110"
       >
-        <Heart size={18} className={`${isFavorite ? 'fill-red-500 text-red-500' : 'text-white hover:text-red-400'}`} />
+        <Heart size={18} className={`transition-colors ${isFavorite ? 'fill-space-danger text-space-danger' : 'text-space-muted hover:text-space-danger'}`} />
       </button>
 
-      <div className="h-48 bg-gray-200 relative overflow-hidden">
+      <div className="h-48 bg-space-card2 relative overflow-hidden">
         <img
           src={business.banner_url || business.logo_url || `https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800`}
           alt={business.name}
@@ -179,31 +178,34 @@ function Home() {
             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800';
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-        <div className="absolute bottom-4 left-4 right-4 text-white">
-          <h3 className="text-xl font-bold leading-tight mb-1">{business.name}</h3>
+        <div className="absolute inset-0 bg-gradient-to-t from-space-bg via-space-bg/60 to-transparent"></div>
+        <div className="absolute bottom-4 left-4 right-4">
+          <h3 className="text-xl font-bold leading-tight mb-1 text-white">{business.name}</h3>
           {business.city && (
-            <div className="flex items-center text-xs text-gray-300 font-medium">
-              <MapPin size={12} className="mr-1 text-indigo-400" />
+            <div className="flex items-center text-xs text-space-muted font-medium">
+              <MapPin size={12} className="mr-1 text-space-primary" />
               {business.city}
             </div>
           )}
         </div>
       </div>
-      <div className="p-5 flex-1 flex flex-col bg-white">
+      <div className="p-5 flex-1 flex flex-col">
         <div className="flex items-center gap-2 mb-3">
-          <span className="bg-green-100 text-green-700 text-[10px] uppercase tracking-wider px-2 py-1 rounded-full font-bold">Disponible</span>
+          <span className="bg-space-success/20 text-space-success text-xs uppercase tracking-wider px-2 py-1 rounded-full font-bold border border-space-success/30">Disponible</span>
         </div>
-        <p className="text-gray-600 text-sm mb-5 line-clamp-2 flex-1">
+        <p className="text-space-muted text-sm mb-5 line-clamp-2 flex-1">
           {business.description || 'Reserva tu cita con los mejores profesionales de la zona.'}
         </p>
-        <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
+        <div className="mt-auto pt-4 border-t border-space-border flex items-center justify-between">
           <div className="flex items-center gap-1">
-            <Star size={14} className="text-yellow-400 fill-yellow-400" />
-            <span className="text-sm font-bold text-gray-900">4.9</span>
-            <span className="text-xs text-gray-400">(120+)</span>
+            <Star size={14} className="text-space-yellow fill-space-yellow" />
+            <span className="text-sm font-bold text-space-text">4.9</span>
+            <span className="text-xs text-space-muted">(120+)</span>
           </div>
-          <span className="text-indigo-600 text-sm font-bold group-hover:underline">Reservar</span>
+          <span className="text-space-primary text-sm font-bold group-hover:underline flex items-center gap-1">
+            Reservar
+            <Scissors size={14} className="group-hover:rotate-12 transition" />
+          </span>
         </div>
       </div>
     </Link>
@@ -212,40 +214,53 @@ function Home() {
   const favoriteBusinesses = allBusinesses.filter(b => favoriteSlugs.includes(b.slug));
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      <nav className="fixed w-full z-50 transition-all duration-300 bg-white/90 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
-              <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center text-white shadow-lg">
-                <Scissors size={20} />
+    <div className="min-h-screen bg-space-bg text-space-text">
+      {/* Header Pill */}
+      <nav className="fixed w-full z-50 top-6 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="pill-nav flex justify-between items-center px-4">
+            {/* Logo */}
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo(0, 0)}>
+              <div className="w-10 h-10 bg-gradient-to-br from-space-primary via-space-purple to-space-pink rounded-full flex items-center justify-center text-white shadow-lg animate-pulse-subtle">
+                <Scissors size={22} className="text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900 tracking-tight">AnnlyReserve</span>
+              <div>
+                <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-space-primary to-space-purple bg-clip-text text-transparent">Spacey</span>
+                <div className="text-[10px] uppercase tracking-widest text-space-muted font-bold">Reserva tu Barbero</div>
+              </div>
             </div>
 
+            {/* Desktop Nav Links */}
+            <div className="hidden md:flex items-center gap-6">
+              <a href="#" className="text-sm font-medium text-space-muted hover:text-space-text transition">Inicio</a>
+              <a href="#directory" className="text-sm font-medium text-space-muted hover:text-space-text transition">Barberías</a>
+              <a href="#" className="text-sm font-medium text-space-muted hover:text-space-text transition">Servicios</a>
+            </div>
+
+            {/* Auth Buttons */}
             <div className="flex items-center gap-3">
               {user ? (
                 <div className="relative">
                   <button
                     onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                    className="flex items-center gap-2 p-1.5 rounded-full hover:bg-gray-100 transition border border-gray-100"
+                    className="flex items-center gap-2 p-1.5 rounded-full hover:bg-space-card transition border border-transparent hover:border-space-border"
                   >
-                    <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-8 h-8 bg-gradient-to-r from-space-primary to-space-purple rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
                       {user.email?.[0].toUpperCase()}
                     </div>
                   </button>
                   {isAccountMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden py-1 z-50">
-                      <div className="px-4 py-3 border-b border-gray-50">
-                        <p className="text-xs text-gray-400 font-medium uppercase tracking-widest">Mi Cuenta</p>
-                        <p className="text-sm font-bold text-gray-900 truncate">{user.email}</p>
+                    <div className="absolute right-0 mt-2 w-56 bg-space-card rounded-2xl shadow-2xl border border-space-border overflow-hidden py-1 z-50 animate-fade-in">
+                      <div className="px-4 py-3 border-b border-space-border">
+                        <p className="text-xs text-space-muted font-medium uppercase tracking-widest">Mi Cuenta</p>
+                        <p className="text-sm font-bold text-space-text truncate">{user.email}</p>
                       </div>
                       <div className="p-1">
-                        <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition" onClick={() => setIsAccountMenuOpen(false)}>
-                          <LayoutDashboard size={18} className="text-indigo-600" />
+                        <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2.5 text-sm text-space-muted hover:text-space-text hover:bg-space-card2 rounded-xl transition" onClick={() => setIsAccountMenuOpen(false)}>
+                          <LayoutDashboard size={18} className="text-space-primary" />
                           <span>Ir a mi Dashboard</span>
                         </Link>
-                        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl transition">
+                        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-space-danger hover:bg-space-danger/10 rounded-xl transition">
                           <LogOut size={18} />
                           <span>Cerrar Sesión</span>
                         </button>
@@ -254,62 +269,171 @@ function Home() {
                   )}
                 </div>
               ) : (
-                <div className="flex flex-row items-center gap-1.5">
-                  <Link to="/login" className="text-[10px] sm:text-xs font-bold text-gray-500 hover:text-black transition uppercase tracking-tighter px-2 py-1.5 border border-gray-100 rounded-lg whitespace-nowrap">Acceso</Link>
-                  <Link to="/signup" className="bg-black hover:bg-gray-800 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold transition text-[10px] sm:text-xs shadow-sm uppercase tracking-tight whitespace-nowrap">Registrar</Link>
-                </div>
+                <>
+                  <Link to="/login" className="text-xs font-bold text-space-muted hover:text-space-text transition px-4 py-2 rounded-full border border-space-border hover:border-space-primary bg-space-card2 hover:bg-space-card">
+                    Acceso
+                  </Link>
+                  <Link to="/signup" className="bg-gradient-to-r from-space-primary to-space-purple hover:opacity-90 text-white px-5 py-2 rounded-full font-bold transition text-xs shadow-lg shadow-space-primary/30 hover:shadow-space-primary/50">
+                    Registrar
+                  </Link>
+                </>
               )}
             </div>
           </div>
         </div>
       </nav>
 
-      <div className="relative h-[400px] md:h-[500px] flex items-center justify-center bg-gray-900 overflow-hidden pt-16">
-        <div className="absolute inset-0 z-0">
-          <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop" alt="Barber" className="w-full h-full object-cover opacity-60" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-gray-50"></div>
+      {/* Hero Section */}
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        {/* Background Effects */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-br from-space-bg via-space-card to-space-card2"></div>
+          <div className="absolute top-1/4 left-10 w-72 h-72 bg-gradient-to-br from-space-primary/10 to-space-purple/10 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-gradient-to-br from-space-purple/10 to-space-pink/10 rounded-full blur-3xl animate-float-slow"></div>
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(139, 92, 246, 0.3) 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
         </div>
-        <div className="relative z-10 w-full max-w-4xl px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight drop-shadow-lg">Descubre y reserva <br className="hidden md:block" /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-white">los mejores barberos</span></h1>
-          <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl mx-auto font-light leading-relaxed">Sin llamadas. Sin esperas. Agenda tu estilo en segundos.</p>
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto relative group px-2">
-            <div className="relative flex items-center bg-white rounded-2xl md:rounded-full p-1.5 shadow-2xl transition-transform group-hover:scale-[1.01]">
-              <Search className="absolute left-4 md:left-6 text-gray-400" size={20} />
-              <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="¿Qué servicio buscas?" className="w-full pl-10 md:pl-14 pr-24 md:pr-36 py-3 rounded-full text-gray-900 placeholder-gray-400 focus:outline-none text-sm md:text-base" />
-              <button type="submit" className="absolute right-1.5 bg-black hover:bg-gray-800 text-white px-5 md:px-8 py-2.5 md:py-3 rounded-xl md:rounded-full font-semibold transition shadow-md text-sm md:text-base">Buscar</button>
+
+        {/* Content */}
+        <div className="relative z-10 w-full max-w-7xl px-4 py-16">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+
+            {/* Left Column */}
+            <div className="animate-slide-in">
+              <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full border border-space-border bg-space-card2">
+                <div className="w-2 h-2 rounded-full bg-space-success animate-pulse"></div>
+                <span className="text-xs font-bold uppercase tracking-widest text-space-success">+5,000 reservas este mes</span>
+              </div>
+
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-tight text-white">
+                Deja de <span className="block text-transparent bg-clip-text bg-gradient-to-r from-space-primary via-space-purple to-space-pink">buscar barberos</span>
+                y empieza a <span className="block text-transparent bg-clip-text bg-gradient-to-r from-space-yellow via-space-primary to-space-purple">reservarlos.</span>
+              </h1>
+
+              <p className="text-xl text-space-muted mb-10 max-w-2xl font-light leading-relaxed">
+                Spacey conecta a los mejores profesionales de barbería con clientes que valoran su tiempo. Agenda en segundos, sin llamadas, sin esperas.
+              </p>
+
+              {/* Search Box in Hero */}
+              <form onSubmit={handleSearch} className="mb-12 max-w-lg">
+                <div className="flex items-center bg-space-card border border-space-border rounded-full p-2 relative group focus-within:ring-2 focus-within:ring-space-primary/50 transition-all shadow-lg">
+                  <Search className="ml-4 text-space-muted group-focus-within:text-space-primary transition-colors" size={20} />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="¿Qué servicio buscas? (ej. Corte, Barba)"
+                    className="flex-1 bg-transparent pl-4 text-space-text placeholder-space-muted focus:outline-none text-sm h-12"
+                  />
+                  <button type="submit" className="bg-gradient-to-r from-space-primary to-space-purple text-white px-8 py-3 rounded-full font-bold text-sm hover:opacity-90 transition shadow-lg shadow-space-primary/20">
+                    Buscar
+                  </button>
+                </div>
+              </form>
+
+              {/* Stats */}
+              <div className="flex flex-wrap gap-8">
+                <div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-space-primary to-space-purple bg-clip-text text-transparent">4.9★</div>
+                  <div className="text-sm text-space-muted">Valoración promedio</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-space-purple to-space-pink bg-clip-text text-transparent">500+</div>
+                  <div className="text-sm text-space-muted">Barberos profesionales</div>
+                </div>
+              </div>
             </div>
-          </form>
+
+            {/* Right Column (Visual) */}
+            <div className="animate-fade-in hidden lg:block relative">
+              {/* Floating Elements (Testimonials) */}
+              <div className="absolute -left-4 -top-8 glass-effect border border-space-border rounded-2xl p-5 w-64 shadow-xl z-20 animate-float">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-space-yellow to-orange-500 flex items-center justify-center text-white font-bold">JL</div>
+                  <div>
+                    <div className="font-bold text-white text-sm">José López</div>
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map(i => <Star key={i} size={10} className="text-space-yellow fill-space-yellow" />)}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-space-muted italic">"Spacey hizo mi vida más fácil. Reservo en 2 minutos y siempre encuentro horario."</p>
+              </div>
+
+              <div className="absolute -right-4 top-12 glass-effect border border-space-border rounded-2xl p-5 w-64 shadow-xl z-10 animate-float-slow">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-space-purple to-space-pink flex items-center justify-center text-white font-bold">MR</div>
+                  <div>
+                    <div className="font-bold text-white text-sm">Miguel Rivera</div>
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map(i => <Star key={i} size={10} className="text-space-yellow fill-space-yellow" />)}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-space-muted italic">"Me encanta el sistema. Nunca más espero sentado en la barbería."</p>
+              </div>
+
+              {/* Decorative Card */}
+              <div className="glass-effect border border-space-border rounded-3xl p-8 mt-20 shadow-2xl relative z-0">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-space-primary to-space-purple flex items-center justify-center shadow-lg shadow-space-primary/20">
+                    <Search className="text-white" size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-white">Búsqueda inteligente</h3>
+                    <p className="text-sm text-space-muted">Encuentra el barbero perfecto</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {['Corte moderno', 'Barba', 'Tinte', 'Afeitado clásico'].map(tag => (
+                    <span key={tag} className="text-xs px-3 py-1.5 rounded-full bg-space-card2 border border-space-border text-space-muted hover:border-space-primary hover:text-white transition cursor-pointer">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 -mt-12 md:-mt-20 relative z-20" id="directory">
+      {/* Directory Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-20" id="directory">
+
+        {/* Customer Appointments */}
         {customerAppointments.length > 0 && (
-          <div className="mb-12">
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-indigo-50">
-              <div className="bg-indigo-600 px-6 py-4 flex items-center justify-between text-white">
-                <div className="flex items-center gap-2"><Calendar size={20} /><h2 className="text-lg font-bold">Mis Próximas Citas</h2></div>
-                <span className="bg-white/20 text-xs font-bold px-2 py-1 rounded-full">{customerAppointments.length} activa(s)</span>
+          <div className="mb-12 animate-fade-in">
+            <div className="bg-space-card border border-space-border rounded-3xl shadow-2xl overflow-hidden backdrop-blur-xl">
+              <div className="bg-gradient-to-r from-space-primary/20 to-space-purple/20 border-b border-space-border px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="text-space-primary" size={20} />
+                  <h2 className="text-lg font-bold text-white">Mis Próximas Citas</h2>
+                </div>
+                <span className="bg-space-primary/20 text-space-primary text-xs font-bold px-2 py-1 rounded-full border border-space-primary/30">
+                  {customerAppointments.length} activa(s)
+                </span>
               </div>
-              <div className="p-2 md:p-4">
-                {loadingApts ? <div className="py-8 flex justify-center"><LoadingSpinner /></div> : (
+              <div className="p-4">
+                {loadingApts ? (
+                  <div className="py-8 flex justify-center"><LoadingSpinner /></div>
+                ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {customerAppointments.map((apt: any) => (
-                      <div key={apt.id} className="bg-white rounded-2xl p-5 border border-indigo-50 shadow-sm flex justify-between items-center group hover:border-indigo-200 transition-all">
+                      <div key={apt.id} className="bg-space-card2 rounded-2xl p-5 border border-space-border shadow-sm flex justify-between items-center hover:border-space-primary/50 hover:shadow-lg transition-all group">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest px-2 py-0.5 bg-indigo-50 rounded-full">{apt.business?.name}</span>
-                            {apt.statusBadge === 'today' && <span className="text-[10px] font-bold text-orange-600 uppercase tracking-widest px-2 py-0.5 bg-orange-50 rounded-full">Hoy</span>}
-                            {apt.statusBadge === 'late' && <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest px-2 py-0.5 bg-red-50 rounded-full">Atrasada</span>}
-                            {apt.statusBadge === 'expired' && <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-2 py-0.5 bg-gray-50 rounded-full">Expirada</span>}
-                            {apt.statusBadge === 'upcoming' && <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest px-2 py-0.5 bg-green-50 rounded-full">Próxima</span>}
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-[10px] font-bold text-space-primary uppercase tracking-widest px-2 py-0.5 bg-space-primary/20 rounded-full border border-space-primary/30 truncate max-w-[120px]">{apt.business?.name}</span>
+                            {apt.statusBadge === 'today' && <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest px-2 py-0.5 bg-orange-400/20 rounded-full border border-orange-400/30">Hoy</span>}
+                            {apt.statusBadge === 'late' && <span className="text-[10px] font-bold text-space-danger uppercase tracking-widest px-2 py-0.5 bg-space-danger/20 rounded-full border border-space-danger/30">Atrasada</span>}
                           </div>
-                          <h4 className="font-bold text-gray-900 text-lg mb-1">{apt.service_name}</h4>
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
-                            <div className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-400" /><span>{formatRelativeTime(apt.appointment_date, apt.start_time)}</span></div>
-                            <div className="flex items-center gap-1.5"><Clock size={14} className="text-indigo-400" /><span>{apt.start_time.slice(0, 5)}</span></div>
+                          <h4 className="font-bold text-lg mb-1 text-white">{apt.service_name}</h4>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-space-muted">
+                            <div className="flex items-center gap-1.5"><Calendar size={14} className="text-space-primary" /><span>{formatRelativeTime(apt.appointment_date, apt.start_time)}</span></div>
+                            <div className="flex items-center gap-1.5"><Clock size={14} className="text-space-primary" /><span>{apt.start_time.slice(0, 5)}</span></div>
                           </div>
                         </div>
-                        <button onClick={() => handleCancelApt(apt.id)} className="ml-4 w-11 h-11 flex items-center justify-center rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all"><XCircle size={22} /></button>
+                        <button onClick={() => handleCancelApt(apt.id)} className="ml-4 w-10 h-10 flex items-center justify-center rounded-full text-space-muted hover:text-space-danger hover:bg-space-danger/10 transition-all border border-transparent hover:border-space-danger/30">
+                          <XCircle size={20} />
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -319,35 +443,56 @@ function Home() {
           </div>
         )}
 
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-8 shadow-sm">⚠️ {error}</div>}
+        {error && <div className="bg-space-danger/10 border border-space-danger/30 text-space-danger px-4 py-3 rounded-xl mb-8 shadow-sm text-center">⚠️ {error}</div>}
 
         {loading ? (
-          <div className="bg-white rounded-3xl p-12 shadow-xl flex flex-col items-center justify-center min-h-[300px]">
-            <LoadingSpinner /><p className="text-gray-500 mt-4 animate-pulse">Buscando las mejores barberías...</p>
+          <div className="bg-space-card rounded-3xl p-12 shadow-xl flex flex-col items-center justify-center min-h-[300px] border border-space-border">
+            <LoadingSpinner />
+            <p className="text-space-muted mt-4 animate-pulse">Buscando las mejores barberías...</p>
           </div>
         ) : (
           <div className="space-y-12">
+            {/* Favorites Section */}
             {favoriteBusinesses.length > 0 && (
               <section>
-                <div className="flex items-center gap-3 mb-6 px-2"><span className="bg-yellow-100 p-2 rounded-lg text-yellow-600"><Star size={24} className="fill-yellow-600" /></span><h2 className="text-2xl font-bold text-gray-900">Tus Favoritas</h2></div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">{favoriteBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={true} />)}</div>
+                <div className="flex items-center gap-3 mb-6 px-2">
+                  <span className="bg-space-yellow/20 p-2 rounded-lg text-space-yellow border border-space-yellow/30"><Star size={24} className="fill-space-yellow" /></span>
+                  <h2 className="text-2xl font-bold text-white">Tus Favoritas</h2>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {favoriteBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={true} />)}
+                </div>
               </section>
             )}
+
+            {/* Recent Section */}
             {recentBusinesses.length > 0 && (
               <section>
-                <div className="flex items-center gap-3 mb-6 px-2"><span className="bg-indigo-100 p-2 rounded-lg text-indigo-600"><Clock size={24} /></span><h2 className="text-2xl font-bold text-gray-900">Vistos Recientemente</h2></div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">{recentBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}</div>
+                <div className="flex items-center gap-3 mb-6 px-2">
+                  <span className="bg-space-primary/20 p-2 rounded-lg text-space-primary border border-space-primary/30"><Clock size={24} /></span>
+                  <h2 className="text-2xl font-bold text-white">Vistos Recientemente</h2>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {recentBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}
+                </div>
               </section>
             )}
+
+            {/* All Businesses Section */}
             <section>
-              <div className="flex items-center gap-3 mb-6 px-2"><h2 className="text-2xl font-bold text-gray-900">Recomendadas para ti</h2><span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold">{allBusinesses.length}</span></div>
+              <div className="flex items-center gap-3 mb-6 px-2">
+                <h2 className="text-2xl font-bold text-white">Recomendadas para ti</h2>
+                <span className="bg-space-card2 text-space-muted px-3 py-1 rounded-full text-xs font-bold border border-space-border">{allBusinesses.length}</span>
+              </div>
               {allBusinesses.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">{allBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {allBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}
+                </div>
               ) : (
-                <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-gray-300 shadow-sm">
-                  <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 opacity-50"><Scissors size={32} /></div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">No encontramos barberías</h3>
-                  <p className="text-gray-500 max-w-md mx-auto">Parece que no hay negocios registrados o activos en este momento.</p>
+                <div className="bg-space-card rounded-3xl p-12 text-center border border-dashed border-space-border shadow-sm">
+                  <div className="w-20 h-20 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4 opacity-50"><Scissors size={32} className="text-space-muted" /></div>
+                  <h3 className="text-lg font-bold text-white mb-2">No encontramos barberías</h3>
+                  <p className="text-space-muted max-w-md mx-auto">Parece que no hay negocios registrados o activos en este momento.</p>
                 </div>
               )}
             </section>
@@ -355,14 +500,24 @@ function Home() {
         )}
       </div>
 
-      <footer className="bg-white border-t border-gray-100 py-16 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
-          <div>
-            <div className="flex items-center gap-2 justify-center md:justify-start mb-4"><div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white"><Scissors size={16} /></div><span className="text-lg font-bold text-gray-900">AnnlyReserve</span></div>
-            <p className="text-gray-500 text-sm max-w-xs">La plataforma líder para reservar citas de belleza y bienestar en tu ciudad.</p>
+      {/* Footer */}
+      <footer className="mt-20 border-t border-space-border pt-10 pb-6 bg-space-bg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-6 md:mb-0 text-center md:text-left">
+              <div className="flex items-center gap-2 justify-center md:justify-start">
+                <div className="w-9 h-9 bg-gradient-to-br from-space-primary to-space-purple rounded-xl flex items-center justify-center text-white shadow-lg">
+                  <Scissors size={20} />
+                </div>
+                <span className="text-xl font-bold tracking-tight text-white">Spacey</span>
+              </div>
+              <p className="text-space-muted text-sm mt-2">Reserva tu barbero en segundos</p>
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-space-muted text-sm">b© {new Date().getFullYear()} Spacey. Todos los derechos reservados.</p>
+              <p className="text-space-muted text-xs mt-1">Diseñado con pasión para amantes del buen estilo</p>
+            </div>
           </div>
-          <div className="flex gap-8 text-sm font-medium text-gray-600"><a href="#" className="hover:text-black">Explorar</a><a href="#" className="hover:text-black">Para Negocios</a><a href="#" className="hover:text-black">Ayuda</a></div>
-          <p className="text-gray-400 text-xs">&copy; {new Date().getFullYear()} AnnlyReserve Inc.</p>
         </div>
       </footer>
     </div>

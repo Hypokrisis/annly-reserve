@@ -7,6 +7,7 @@ import { useSchedule } from '@/hooks/useSchedule';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getDayName } from '@/utils';
 import type { Barber } from '@/types';
+import { Calendar, Clock, Copy, ChevronDown, Check } from 'lucide-react';
 
 interface DaySchedule {
     dayOfWeek: number;
@@ -110,7 +111,7 @@ export default function SchedulesPage() {
         return (
             <DashboardLayout>
                 <div className="text-center py-12">
-                    <p className="text-gray-600">No tienes permisos para gestionar horarios.</p>
+                    <p className="text-space-muted">No tienes permisos para gestionar horarios.</p>
                 </div>
             </DashboardLayout>
         );
@@ -118,61 +119,72 @@ export default function SchedulesPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-4xl">
+            <div className="max-w-4xl animate-fade-in">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Horarios</h1>
-                    <p className="text-gray-600 mt-1">Configura los horarios de trabajo</p>
+                    <h1 className="text-3xl font-bold text-white tracking-tight">Horarios</h1>
+                    <p className="text-sm text-space-muted mt-1">Configura los horarios de trabajo</p>
                 </div>
 
                 {/* Barber Selector */}
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                <div className="bg-space-card rounded-2xl p-6 shadow-lg border border-space-border mb-8">
+                    <label className="block text-sm font-medium text-space-muted mb-3">
                         Selecciona un barbero
                     </label>
-                    <select
-                        value={selectedBarber?.id || ''}
-                        onChange={(e) => {
-                            const barber = barbers.find(b => b.id === e.target.value);
-                            setSelectedBarber(barber || null);
-                        }}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    >
-                        <option value="">-- Selecciona un barbero --</option>
-                        {barbers.filter(b => b.is_active).map((barber) => (
-                            <option key={barber.id} value={barber.id}>
-                                {barber.name}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="relative">
+                        <select
+                            value={selectedBarber?.id || ''}
+                            onChange={(e) => {
+                                const barber = barbers.find(b => b.id === e.target.value);
+                                setSelectedBarber(barber || null);
+                            }}
+                            className="w-full pl-4 pr-10 py-3 bg-space-bg border border-space-border rounded-xl text-white focus:ring-2 focus:ring-space-primary focus:border-transparent outline-none appearance-none cursor-pointer"
+                        >
+                            <option value="">-- Selecciona un barbero --</option>
+                            {barbers.filter(b => b.is_active).map((barber) => (
+                                <option key={barber.id} value={barber.id} className="bg-space-card text-white">
+                                    {barber.name}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-space-muted pointer-events-none" size={18} />
+                    </div>
                 </div>
 
                 {/* Schedule Editor */}
                 {selectedBarber ? (
                     loading ? (
-                        <LoadingSpinner />
+                        <div className="flex justify-center py-12">
+                            <LoadingSpinner />
+                        </div>
                     ) : (
                         <div className="space-y-4">
                             {weekSchedule.map((day) => (
                                 <div
                                     key={day.dayOfWeek}
-                                    className="bg-white rounded-xl p-6 shadow-sm border border-gray-200"
+                                    className={`rounded-2xl p-6 shadow-sm border transition-all duration-300 ${day.isActive
+                                        ? 'bg-space-card border-space-border shadow-lg shadow-space-primary/5'
+                                        : 'bg-space-card/40 border-space-border/50'
+                                        }`}
                                 >
-                                    <div className="flex items-center justify-between mb-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                                         <div className="flex items-center gap-4">
-                                            <label className="flex items-center gap-3 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={day.isActive}
-                                                    onChange={() => handleToggleDay(day.dayOfWeek)}
-                                                    className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
-                                                />
-                                                <span className="text-lg font-semibold text-gray-900">
+                                            <label className="flex items-center gap-3 cursor-pointer group">
+                                                <div className={`w-6 h-6 rounded-md flex items-center justify-center border transition-colors ${day.isActive ? 'bg-space-primary border-space-primary' : 'bg-transparent border-space-muted'}`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={day.isActive}
+                                                        onChange={() => handleToggleDay(day.dayOfWeek)}
+                                                        className="hidden"
+                                                    />
+                                                    {day.isActive && <Check size={14} className="text-white" />}
+                                                </div>
+                                                <span className={`text-lg font-bold transition-colors ${day.isActive ? 'text-white' : 'text-space-muted group-hover:text-space-text'}`}>
                                                     {getDayName(day.dayOfWeek)}
                                                 </span>
                                             </label>
                                             {!day.isActive && (
-                                                <span className="text-sm text-gray-500">(Cerrado)</span>
+                                                <span className="text-xs text-space-muted bg-space-card2 px-2 py-0.5 rounded border border-space-border uppercase font-bold tracking-wider opacity-60">Cerrado</span>
                                             )}
                                         </div>
                                         <Button
@@ -180,33 +192,35 @@ export default function SchedulesPage() {
                                             size="sm"
                                             onClick={() => handleCopyToAll(day.dayOfWeek)}
                                             disabled={!day.isActive}
+                                            className={`text-xs ${day.isActive ? 'text-space-primary hover:text-white hover:bg-space-primary/20' : 'text-space-muted opacity-50 cursor-not-allowed'}`}
                                         >
+                                            <Copy size={14} className="mr-1.5" />
                                             Copiar a todos
                                         </Button>
                                     </div>
 
                                     {day.isActive && (
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 gap-4 animate-fade-in text-space-text">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Hora de inicio
+                                                <label className="flex items-center gap-2 text-xs font-bold text-space-muted uppercase tracking-wider mb-2">
+                                                    <Clock size={12} /> Inicio
                                                 </label>
                                                 <input
                                                     type="time"
                                                     value={day.startTime}
                                                     onChange={(e) => handleTimeChange(day.dayOfWeek, 'startTime', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                    className="w-full px-4 py-2 bg-space-bg border border-space-border rounded-lg text-white focus:ring-2 focus:ring-space-primary focus:border-transparent outline-none transition-colors"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Hora de cierre
+                                                <label className="flex items-center gap-2 text-xs font-bold text-space-muted uppercase tracking-wider mb-2">
+                                                    <Clock size={12} /> Cierre
                                                 </label>
                                                 <input
                                                     type="time"
                                                     value={day.endTime}
                                                     onChange={(e) => handleTimeChange(day.dayOfWeek, 'endTime', e.target.value)}
-                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                    className="w-full px-4 py-2 bg-space-bg border border-space-border rounded-lg text-white focus:ring-2 focus:ring-space-primary focus:border-transparent outline-none transition-colors"
                                                 />
                                             </div>
                                         </div>
@@ -215,10 +229,11 @@ export default function SchedulesPage() {
                             ))}
 
                             {/* Save Button */}
-                            <div className="flex justify-end gap-3 pt-4">
+                            <div className="flex justify-end gap-3 pt-6 sticky bottom-4 z-10">
                                 <Button
                                     onClick={handleSave}
                                     disabled={!hasChanges || loading}
+                                    className={`shadow-xl px-8 py-4 text-base transition-all ${!hasChanges ? 'opacity-50 cursor-not-allowed bg-space-card2 text-space-muted' : 'bg-gradient-to-r from-space-primary to-space-purple hover:scale-105 hover:shadow-space-primary/20 border-none'}`}
                                 >
                                     {loading ? 'Guardando...' : 'Guardar Horarios'}
                                 </Button>
@@ -226,8 +241,11 @@ export default function SchedulesPage() {
                         </div>
                     )
                 ) : (
-                    <div className="bg-white rounded-xl p-12 text-center">
-                        <p className="text-gray-600">
+                    <div className="bg-space-card/50 rounded-2xl p-12 text-center border-2 border-dashed border-space-border">
+                        <div className="w-16 h-16 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Calendar size={32} className="text-space-muted" />
+                        </div>
+                        <p className="text-space-muted">
                             Selecciona un barbero para configurar sus horarios
                         </p>
                     </div>

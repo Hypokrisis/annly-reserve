@@ -33,120 +33,122 @@ export default function App() {
     <AuthProvider>
       <BusinessProvider>
         <Router>
-          <Routes>
-            {/* PUBLIC */}
-            <Route path="/" element={<Home />} />
-            <Route path="/reserve" element={<Reserve />} />
-            <Route path="/appointments" element={<Appointments />} />
-            <Route path="/book/:slug" element={<BookingPage />} />
+          <div className="min-h-screen bg-space-bg text-space-text font-sans">
+            <Routes>
+              {/* PUBLIC */}
+              <Route path="/" element={<Home />} />
+              <Route path="/reserve" element={<Reserve />} />
+              <Route path="/appointments" element={<Appointments />} />
+              <Route path="/book/:slug" element={<BookingPage />} />
 
-            {/* AUTH */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              {/* AUTH */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-            {/* DASHBOARD */}
-            <Route
-              path="/dashboard"
-              element={
-                <AuthGuard>
-                  <RequireOwner>
-                    <RequireBusiness>
-                      <DashboardHome />
-                    </RequireBusiness>
-                  </RequireOwner>
-                </AuthGuard>
-              }
-            />
+              {/* DASHBOARD */}
+              <Route
+                path="/dashboard"
+                element={
+                  <AuthGuard>
+                    <RequireOwner>
+                      <RequireBusiness>
+                        <DashboardHome />
+                      </RequireBusiness>
+                    </RequireOwner>
+                  </AuthGuard>
+                }
+              />
 
-            <Route
-              path="/dashboard/services"
-              element={
-                <AuthGuard>
-                  <RequireOwner>
-                    <RequireBusiness>
-                      <RequireRole requiredRole={['owner', 'admin']}>
-                        <ServicesPage />
-                      </RequireRole>
-                    </RequireBusiness>
-                  </RequireOwner>
-                </AuthGuard>
-              }
-            />
+              <Route
+                path="/dashboard/services"
+                element={
+                  <AuthGuard>
+                    <RequireOwner>
+                      <RequireBusiness>
+                        <RequireRole requiredRole={['owner', 'admin']}>
+                          <ServicesPage />
+                        </RequireRole>
+                      </RequireBusiness>
+                    </RequireOwner>
+                  </AuthGuard>
+                }
+              />
 
-            <Route
-              path="/dashboard/barbers"
-              element={
-                <AuthGuard>
-                  <RequireOwner>
-                    <RequireBusiness>
-                      <RequireRole requiredRole={['owner', 'admin']}>
-                        <BarbersPage />
-                      </RequireRole>
-                    </RequireBusiness>
-                  </RequireOwner>
-                </AuthGuard>
-              }
-            />
+              <Route
+                path="/dashboard/barbers"
+                element={
+                  <AuthGuard>
+                    <RequireOwner>
+                      <RequireBusiness>
+                        <RequireRole requiredRole={['owner', 'admin']}>
+                          <BarbersPage />
+                        </RequireRole>
+                      </RequireBusiness>
+                    </RequireOwner>
+                  </AuthGuard>
+                }
+              />
 
-            <Route
-              path="/dashboard/schedules"
-              element={
-                <AuthGuard>
-                  <RequireOwner>
-                    <RequireBusiness>
-                      <RequireRole requiredRole={['owner', 'admin']}>
-                        <SchedulesPage />
-                      </RequireRole>
-                    </RequireBusiness>
-                  </RequireOwner>
-                </AuthGuard>
-              }
-            />
+              <Route
+                path="/dashboard/schedules"
+                element={
+                  <AuthGuard>
+                    <RequireOwner>
+                      <RequireBusiness>
+                        <RequireRole requiredRole={['owner', 'admin']}>
+                          <SchedulesPage />
+                        </RequireRole>
+                      </RequireBusiness>
+                    </RequireOwner>
+                  </AuthGuard>
+                }
+              />
 
-            <Route
-              path="/dashboard/appointments"
-              element={
-                <AuthGuard>
-                  <RequireOwner>
-                    <RequireBusiness>
-                      <AppointmentsPage />
-                    </RequireBusiness>
-                  </RequireOwner>
-                </AuthGuard>
-              }
-            />
+              <Route
+                path="/dashboard/appointments"
+                element={
+                  <AuthGuard>
+                    <RequireOwner>
+                      <RequireBusiness>
+                        <AppointmentsPage />
+                      </RequireBusiness>
+                    </RequireOwner>
+                  </AuthGuard>
+                }
+              />
 
-            <Route
-              path="/dashboard/settings"
-              element={
-                <AuthGuard>
-                  <RequireOwner>
-                    <RequireBusiness>
-                      <RequireRole requiredRole={['owner', 'admin']}>
-                        <BusinessSettingsPage />
-                      </RequireRole>
-                    </RequireBusiness>
-                  </RequireOwner>
-                </AuthGuard>
-              }
-            />
+              <Route
+                path="/dashboard/settings"
+                element={
+                  <AuthGuard>
+                    <RequireOwner>
+                      <RequireBusiness>
+                        <RequireRole requiredRole={['owner', 'admin']}>
+                          <BusinessSettingsPage />
+                        </RequireRole>
+                      </RequireBusiness>
+                    </RequireOwner>
+                  </AuthGuard>
+                }
+              />
 
-            {/* CREATE BUSINESS */}
-            <Route
-              path="/create-business"
-              element={
-                <AuthGuard>
-                  <RequireOwner>
-                    <CreateBusinessPage />
-                  </RequireOwner>
-                </AuthGuard>
-              }
-            />
+              {/* CREATE BUSINESS */}
+              <Route
+                path="/create-business"
+                element={
+                  <AuthGuard>
+                    <RequireOwner>
+                      <CreateBusinessPage />
+                    </RequireOwner>
+                  </AuthGuard>
+                }
+              />
 
-            {/* FALLBACK */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              {/* FALLBACK */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
         </Router>
       </BusinessProvider>
     </AuthProvider>
