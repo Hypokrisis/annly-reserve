@@ -6,7 +6,7 @@ import { Input } from '@/components/common/Input';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAvailability } from '@/hooks/useAvailability';
 import { formatCurrency, formatDate, parseDate, formatTimeDisplay, isValidEmail, isValidPhone } from '@/utils';
-import * as appointmentsService from '@/services/appointments.service';
+import { createAppointment } from '@/lib/appointments';
 import { supabase } from '@/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Business, Service, Barber } from '@/types';
@@ -209,6 +209,7 @@ export default function PublicBookingPage() {
         setSubmitting(true);
 
         try {
+            // Check for existing active appointments
             const { data: existingActive } = await supabase
                 .from('appointments')
                 .select('id')
@@ -224,17 +225,21 @@ export default function PublicBookingPage() {
                 return;
             }
 
-            await appointmentsService.createAppointment({
+            // Use the new helper that enforces correct schema and auth
+            await createAppointment({
                 business_id: business.id,
                 barber_id: selectedSlot.barber_id,
                 service_id: selectedService.id,
+
+                // Date and Time
+                appointment_date: selectedDate,
+                start_time: selectedSlot.time,
+
+                // Customer Info (Mapping 'name' to 'customer_name' strictly)
                 customer_name: customerInfo.name.trim(),
                 customer_email: customerInfo.email.toLowerCase().trim(),
                 customer_phone: customerInfo.phone.trim(),
                 customer_notes: customerInfo.notes.trim() || undefined,
-                appointment_date: selectedDate,
-                start_time: selectedSlot.time,
-                customer_user_id: user?.id, // Link to authenticated user
             });
 
             localStorage.setItem('annly_customer_data', JSON.stringify({
