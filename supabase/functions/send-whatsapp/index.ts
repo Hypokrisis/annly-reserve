@@ -3,6 +3,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { encode } from "https://deno.land/std@0.168.0/encoding/base64.ts" // Standard library for base64
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -10,155 +11,215 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+    // Handle CORS preflight
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
 
     try {
-        // 1. SECURITY: Verify X-WEBHOOK-SECRET
-        const secret = req.headers.get('X-WEBHOOK-SECRET')
-        const expectedSecret = Deno.env.get('WEBHOOK_SECRET')
+        // 1. INIT SUPABASE CLIENT
+        const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
-        if (!expectedSecret || secret !== expectedSecret) {
-            console.error("⛔ Unauthorized: Invalid or missing X-WEBHOOK-SECRET")
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
+        if (!supabaseUrl || !supabaseKey) {
+            console.error("Missing SUPABASE env vars");
+            return new Response(JSON.stringify({ error: "Configuration Error" }), { status: 500, headers: corsHeaders });
         }
 
-        const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        )
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
-        const body = await req.json()
-        const { record } = body
-
-        if (!record || !record.id) {
-            console.error("⛔ Invalid Payload: No record ID")
-            return new Response(JSON.stringify({ error: 'No record found' }), {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 400,
-            })
-        }
-
-        console.log(`Processing job ${record.id} for business ${record.business_id}`)
-
-        // 2. LOCKING (Anti-Duplicados)
-        // Intentamos "reclamar" el trabajo. Solo si está 'pending'.
-        const { data: job, error: claimError } = await supabaseClient
+        // 2. FETCH PENDING JOBS - Limit 5
+        const { data: jobs, error: fetchError } = await supabase
             .from('notification_jobs')
-            .update({ status: 'processing', processed_at: new Date().toISOString() })
-            .eq('id', record.id)
-            .eq('status', 'pending') // STRICT LOCKING
-            .select()
-            .single()
-
-        if (claimError || !job) {
-            console.warn(`⚠️ Job ${record.id} could not be claimed (Already processing/completed or not pending).`)
-            return new Response(JSON.stringify({ message: 'Job already claimed or not pending' }), { headers: corsHeaders, status: 200 })
-        }
-
-        // 3. OBTENER CONFIGURACIÓN
-        const { data: settings, error: settingsError } = await supabaseClient
-            .from('whatsapp_settings')
             .select('*')
-            .eq('business_id', record.business_id)
-            .single()
+            .eq('status', 'pending')
+            .lte('run_after', new Date().toISOString())
+            .limit(5);
 
-        // Manejo de estado 'skipped' si no hay config o no hay destinatario
-        if (settingsError || !settings || !settings.is_active || !settings.recipient_phone) {
-            const reason = !settings ? 'Missing Settings' : (!settings.is_active ? 'Not Active' : 'No Recipient Phone')
-            console.warn(`⏭️ Skipping Job ${record.id}: ${reason}`)
+        if (fetchError) throw fetchError;
 
-            await supabaseClient.from('notification_jobs')
-                .update({ status: 'skipped', error_message: `Skipped: ${reason}` })
-                .eq('id', record.id)
-
-            return new Response(JSON.stringify({ message: 'Skipped', reason }), { headers: corsHeaders, status: 200 })
+        if (!jobs || jobs.length === 0) {
+            return new Response(JSON.stringify({ message: 'No pending jobs found' }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 200,
+            });
         }
 
-        // 4. PREPARAR ENVÍO
-        const payload = record.payload
-        const phoneId = settings.phone_number_id
-        const token = settings.access_token
-        const recipientPhone = settings.recipient_phone // MVP: Enviar SIEMPRE al teléfono configurado (Dueño)
+        console.log(`Processing ${jobs.length} pending jobs...`);
 
-        console.log(`Sending ${record.event_type} message to ${recipientPhone}`)
+        const results = [];
 
-        // Construir Mensaje
-        const messageBody = buildMessage(record.event_type, payload)
+        // 3. PROCESS EACH JOB
+        for (const job of jobs) {
+            try {
+                // A. LOCK JOB (Optimistic Locking to 'processing')
+                const { error: lockError } = await supabase
+                    .from('notification_jobs')
+                    .update({ status: 'processing', processed_at: new Date().toISOString() })
+                    .eq('id', job.id)
+                    .eq('status', 'pending');
 
-        // 5. LLAMADA A META GRAPH API
-        const response = await fetch(
-            `https://graph.facebook.com/v17.0/${phoneId}/messages`,
-            {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    messaging_product: 'whatsapp',
-                    to: recipientPhone,
-                    type: 'text',
-                    text: { body: messageBody },
-                }),
+                if (lockError) {
+                    console.warn(`Skipping job ${job.id} (already locked)`);
+                    continue;
+                }
+
+                // B. PREPARE TWILIO AUTH & CONFIG
+                const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+                const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+                const fromNumber = Deno.env.get('TWILIO_WHATSAPP_NUMBER');
+
+                if (!accountSid || !authToken || !fromNumber) {
+                    throw new Error("Missing Twilio Secrets (SID, TOKEN, or NUMBER)");
+                }
+
+                // C. RECIPIENT FORMATTING (E.164 Enforcement)
+                let toPhone = job.to_phone || "";
+                toPhone = toPhone.replace(/\s+/g, '').trim(); // Remove spaces
+
+                // Add +1 if missing for PR/US numbers (heuristic)
+                // Assuming PR/US numbers are 10 digits starting with 7 or 9 or 8
+                if (/^[0-9]{10}$/.test(toPhone)) {
+                    toPhone = "+1" + toPhone;
+                } else if (!toPhone.startsWith("+")) {
+                    toPhone = "+" + toPhone;
+                }
+
+                // Ensure 'whatsapp:' prefix for Twilio
+                const toTwilio = toPhone.startsWith('whatsapp:') ? toPhone : `whatsapp:${toPhone}`;
+                const messageBody = buildMessage(job.event_type, job.payload);
+
+                console.log(`Job ${job.id}: Sending to ${toTwilio}`);
+
+                // D. SEND REQUEST TO TWILIO API
+                const authHeader = `Basic ${encode(accountSid + ":" + authToken)}`;
+
+                const params = new URLSearchParams();
+                params.append('To', toTwilio);
+                params.append('From', fromNumber);
+                params.append('Body', messageBody);
+
+                const twilioResp = await fetch(
+                    `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Authorization': authHeader
+                        },
+                        body: params,
+                    }
+                );
+
+                const responseStatus = twilioResp.status;
+                const responseText = await twilioResp.text(); // Read body once
+                let responseData;
+
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch (e) {
+                    responseData = { body: responseText };
+                }
+
+                // Logging for observability
+                console.log(`Twilio Response [${responseStatus}]:`, JSON.stringify(responseData));
+
+                // E. HANDLE ERRORS
+                if (!twilioResp.ok) {
+                    const errorCode = responseData.code; // Twilio error code
+                    const errorMessage = responseData.message || responseText;
+
+                    // CHECK FOR PERMANENT AUTH ERRORS (OAuth / Credentials)
+                    // 20003: Authenticate, 20404: Not Found (wrong SID), 21211: Invalid Phone Number
+                    if (responseStatus === 401 || responseStatus === 403 || errorCode === 20003 || errorCode === 20404) {
+                        throw new Error(`PERMANENT_AUTH_ERROR: ${errorMessage}`);
+                    }
+
+                    if (errorCode === 21211) { // Invalid number
+                        throw new Error(`PERMANENT_INVALID_NUMBER: ${errorMessage}`);
+                    }
+
+                    throw new Error(`Twilio API Error (${responseStatus}): ${errorMessage}`);
+                }
+
+                // F. SUCCESS
+                await supabase
+                    .from('notification_jobs')
+                    .update({
+                        status: 'completed',
+                        last_error: null,
+                        payload: { ...job.payload, twilio_sid: responseData.sid }
+                    })
+                    .eq('id', job.id);
+
+                results.push({ id: job.id, status: 'success', sid: responseData.sid });
+
+            } catch (err: any) {
+                console.error(`Job ${job.id} Failed:`, err.message);
+
+                // RETRY LOGIC WITH BACKOFF
+                const currentAttempts = (job.attempts || 0) + 1;
+                const maxAttempts = 5;
+                let newStatus = 'pending';
+                let nextRun = new Date(); // Default: immediate retry (logic below adjusts)
+
+                // If fatal error, mark as failed_permanent immediately
+                if (err.message.includes("PERMANENT")) {
+                    newStatus = 'failed_permanent';
+                } else if (currentAttempts >= maxAttempts) {
+                    newStatus = 'failed'; // Max retries reached
+                } else {
+                    // Incremental Backoff: 2^attempt * 1 minute (1m, 2m, 4m, 8m...)
+                    const backoffMinutes = Math.pow(2, currentAttempts - 1);
+                    nextRun = new Date(Date.now() + backoffMinutes * 60 * 1000);
+                    newStatus = 'pending';
+                }
+
+                // Updates job status
+                await supabase
+                    .from('notification_jobs')
+                    .update({
+                        status: newStatus,
+                        last_error: err.message,
+                        attempts: currentAttempts,
+                        run_after: nextRun.toISOString()
+                    })
+                    .eq('id', job.id);
+
+                results.push({ id: job.id, status: 'error', error: err.message });
             }
-        )
-
-        const whatsappData = await response.json()
-
-        if (!response.ok) {
-            console.error('⛔ WhatsApp API Error:', JSON.stringify(whatsappData))
-
-            // Manejo de Error + Retry Count
-            await supabaseClient.from('notification_jobs').update({
-                status: 'failed',
-                error_message: JSON.stringify(whatsappData),
-                retry_count: (record.retry_count || 0) + 1
-            }).eq('id', record.id)
-
-            // Retornamos 200 para que Supabase Webhook no reintente indefinidamente si es error de lógica,
-            // o 500 si queremos que Supabase insista. 
-            // Para este MVP, marcamos como failed en DB y retornamos 200 OK al webhook para "cerrar" el evento.
-            return new Response(JSON.stringify({ error: whatsappData }), { headers: corsHeaders, status: 200 })
         }
 
-        // 6. ÉXITO
-        console.log(`✅ Message sent for Job ${record.id}`)
-        await supabaseClient.from('notification_jobs')
-            .update({ status: 'completed', error_message: null })
-            .eq('id', record.id)
-
-        return new Response(JSON.stringify({ success: true, meta_id: whatsappData.messages?.[0]?.id }), {
+        return new Response(JSON.stringify({ success: true, processed: results }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
-        })
+        });
 
     } catch (error: any) {
-        console.error("🔥 System Error:", error)
+        console.error("System Critical Error:", error);
         return new Response(JSON.stringify({ error: error.message }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 500,
-        })
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
     }
 })
 
-// Helper de Mensajes
+// Helper Message Builder (Templates)
 function buildMessage(type: string, data: any): string {
-    const { barber_name, service_name, appointment_date, start_time, customer_name, old_date, old_time } = data
+    const { barber_name, service_name, appointment_date, start_time, customer_name, old_date, old_time } = data;
 
-    // Wording solicitado
+    // Format cleaner text for WhatsApp
     if (type === 'created') {
-        return `📅 *Nueva cita creada*\n\nHola, se ha agendado una nueva cita.\n\n👤 Cliente: ${customer_name}\n💈 Barbero: ${barber_name}\n✂️ Servicio: ${service_name}\n🗓 Fecha: ${appointment_date}\n⏰ Hora: ${start_time}`
+        return `📅 *Nueva Cita*\n👤 ${customer_name}\n✂️ ${service_name}\n🕒 ${appointment_date} @ ${start_time}`;
     }
 
     if (type === 'cancelled') {
-        return `❌ *Cita Cancelada*\n\nLa cita de ${customer_name} para el ${appointment_date} ha sido cancelada.`
+        return `❌ *Cita Cancelada*\n👤 ${customer_name}\n📅 ${appointment_date}`;
     }
 
     if (type === 'rescheduled') {
-        return `⚠️ *Cita Reprogramada*\n\nCambio para la cita de ${customer_name}:\n\nAntes: ${old_date} ${old_time}\nAhora: *${appointment_date} ${start_time}*`
+        return `✏️ *Cambio de Cita*\n👤 ${customer_name}\n⏮️ Antes: ${old_date} ${old_time}\n⏭️ Ahora: *${appointment_date} ${start_time}*`;
     }
 
-    return 'Notificación de Annly Reserve'
+    return `Nueva notificación de Annly Reserve para ${barber_name}`;
 }
