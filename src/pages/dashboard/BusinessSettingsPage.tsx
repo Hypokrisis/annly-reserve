@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/supabaseClient';
-import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Store, Check, Info, ArrowLeft } from 'lucide-react';
 
 export default function BusinessSettingsPage() {
     const navigate = useNavigate();
-    const { currentBusiness, user } = useAuth();
+    const { currentBusiness } = useAuth();
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
@@ -96,11 +95,11 @@ export default function BusinessSettingsPage() {
     if (!currentBusiness) return <div>Cargando...</div>;
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto animate-fade-up">
             <div className="mb-6">
                 <button
                     onClick={() => navigate('/dashboard')}
-                    className="flex items-center text-gray-500 hover:text-indigo-600 transition font-medium"
+                    className="flex items-center text-space-muted hover:text-space-primary transition font-medium"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Volver al Dashboard
@@ -108,22 +107,19 @@ export default function BusinessSettingsPage() {
             </div>
 
             <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
+                <div className="w-12 h-12 bg-space-primary-light rounded-2xl flex items-center justify-center text-space-primary">
+                    <Store size={24} />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-black text-gray-900">Configuración del Negocio</h1>
-                    <p className="text-gray-500">Administra la información pública de tu barbería</p>
+                    <h1 className="page-title m-0">Configuración del Negocio</h1>
+                    <p className="page-subtitle mt-1">Administra la información pública de tu barbería</p>
                 </div>
             </div>
 
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+            <div className="card p-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {message && (
-                        <div className={`p-4 rounded-xl text-sm font-medium flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                        <div className={`p-4 rounded-xl text-sm font-medium flex items-center gap-2 ${message.type === 'success' ? 'bg-space-success/10 text-space-success' : 'bg-space-danger/10 text-space-danger'
                             }`}>
                             {message.type === 'success' ? <Check size={18} /> : <Info size={18} />}
                             {message.text}
@@ -139,9 +135,8 @@ export default function BusinessSettingsPage() {
                                     value={formData.name}
                                     onChange={handleChange}
                                     required
-                                    className="h-12"
                                 />
-                                <p className="text-xs text-gray-500 mt-1 ml-1">
+                                <p className="text-xs text-space-muted mt-1 ml-1">
                                     El nombre visible para tus clientes.
                                 </p>
                             </div>
@@ -152,7 +147,6 @@ export default function BusinessSettingsPage() {
                                     name="phone"
                                     value={formData.phone}
                                     onChange={handleChange}
-                                    className="h-12"
                                 />
                             </div>
                         </div>
@@ -165,35 +159,35 @@ export default function BusinessSettingsPage() {
                                     value={formData.slug}
                                     onChange={handleChange}
                                     required
-                                    className="h-12 font-mono text-sm"
+                                    className="font-mono text-sm"
                                 />
-                                <p className="text-xs text-gray-500 mt-1 ml-1">
-                                    Tus clientes reservan en: <strong>annly.com/book/{formData.slug}</strong>
+                                <p className="text-xs text-space-muted mt-1 ml-1">
+                                    Tus clientes reservan en: <strong>annly.com/book/{formData.slug || '...'}</strong>
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Descripción / Bio</label>
+                        <label className="input-label">Descripción / Bio</label>
                         <textarea
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
                             rows={3}
-                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent transition-all resize-none"
+                            className="input-field resize-none"
                             placeholder="Describe tu barbería en pocas palabras..."
                         />
                     </div>
 
-                    <div className="pt-4 border-t border-gray-100 flex justify-end">
-                        <Button
+                    <div className="pt-4 border-t border-space-border flex justify-end">
+                        <button
                             type="submit"
                             disabled={loading}
-                            className="w-full sm:w-auto px-8 h-12 rounded-xl text-sm font-black uppercase tracking-widest bg-black text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                            className="btn-primary w-full sm:w-auto px-8"
                         >
                             {loading ? 'Guardando...' : 'Guardar Cambios'}
-                        </Button>
+                        </button>
                     </div>
                 </form>
             </div>

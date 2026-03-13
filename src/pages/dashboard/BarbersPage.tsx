@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Plus, Edit2, Users as UsersIcon, ShieldAlert, UserMinus } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
 import { Input } from '@/components/common/Input';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -158,123 +157,87 @@ export default function BarbersPage() {
 
     return (
         <DashboardLayout>
-            <div className="animate-fade-in">
+            <div className="animate-fade-up">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-white tracking-tight">Barberos</h1>
-                        <p className="text-sm text-space-muted mt-1">Coordina tu equipo y disponibilidad</p>
+                        <h1 className="page-title">Equipo</h1>
+                        <p className="page-subtitle">Coordina tu equipo y disponibilidad</p>
                     </div>
-                    <Button
-                        onClick={() => handleOpenModal()}
-                        className="w-full sm:w-auto rounded-xl px-6 h-12 shadow-lg shadow-space-purple/20 hover:shadow-space-purple/30 transition-all active:scale-95 flex items-center gap-2 bg-gradient-to-r from-space-purple to-space-pink border-none"
-                    >
-                        <Plus size={18} />
-                        <span className="font-bold text-sm tracking-wide">Añadir Barbero</span>
-                    </Button>
+                    <button onClick={() => handleOpenModal()}
+                        className="btn-primary w-full sm:w-auto">
+                        <Plus size={16} />
+                        Añadir Barbero
+                    </button>
                 </div>
 
                 {/* Barbers List */}
                 {loading && barbers.length === 0 ? (
-                    <div className="flex justify-center py-20">
-                        <LoadingSpinner />
-                    </div>
+                    <div className="flex justify-center py-20"><LoadingSpinner /></div>
                 ) : barbers.length === 0 ? (
-                    <div className="bg-space-card rounded-3xl p-16 text-center border border-dashed border-space-border shadow-sm">
-                        <div className="w-20 h-20 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <UsersIcon size={32} className="text-space-muted" />
+                    <div className="bg-white rounded-2xl p-16 text-center border-2 border-dashed border-space-border">
+                        <div className="w-14 h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <UsersIcon size={28} className="text-space-muted" />
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-2">
-                            Equipo vacío
-                        </h3>
-                        <p className="text-space-muted mb-8 max-w-sm mx-auto">
-                            Comienza agregando a tu primer barbero para empezar a recibir citas.
+                        <h3 className="text-lg font-bold text-space-text mb-2">Equipo vacío</h3>
+                        <p className="text-space-muted text-sm mb-6 max-w-xs mx-auto">
+                            Agrega tu primer barbero para empezar a recibir citas.
                         </p>
-                        <Button onClick={() => handleOpenModal()} className="rounded-xl px-8 py-3 bg-space-card2 border border-space-border hover:bg-space-purple hover:text-white hover:border-transparent transition-all">
-                            <Plus size={20} className="mr-2" />
-                            Crear Barbero
-                        </Button>
+                        <button onClick={() => handleOpenModal()} className="btn-primary">
+                            <Plus size={16} />Crear Barbero
+                        </button>
                     </div>
                 ) : (
-                    <div className="grid gap-4">
+                    <div className="space-y-3">
                         {barbers.map((barber) => (
-                            <div
-                                key={barber.id}
-                                className={`bg-space-card rounded-2xl p-6 shadow-lg border border-space-border hover:border-space-purple/50 transition-all duration-300 group ${!barber.is_active ? 'opacity-60 saturate-0 hover:opacity-100 hover:saturate-50' : ''
-                                    }`}
+                            <div key={barber.id}
+                                className={`card p-5 transition-all duration-200 hover:shadow-card-lg group
+                                    ${!barber.is_active ? 'opacity-60' : ''}`}
                             >
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                    <div className="flex-1 flex gap-5 items-start">
-                                        <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${!barber.is_active ? 'bg-space-card2 text-space-muted' : 'bg-gradient-to-br from-space-purple to-space-pink text-white'}`}>
-                                            <UsersIcon size={24} />
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div className="flex gap-4 items-start flex-1">
+                                        {/* Avatar */}
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-lg font-bold
+                                            ${barber.is_active ? 'bg-space-primary-light text-space-primary' : 'bg-space-card2 text-space-muted'}`}
+                                        >
+                                            {barber.name.charAt(0)}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-3 flex-wrap mb-1">
-                                                <h3 className="text-xl font-bold text-white truncate">
-                                                    {barber.name}
-                                                </h3>
+                                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                                <h3 className="font-bold text-space-text truncate">{barber.name}</h3>
                                                 {!barber.is_active && (
-                                                    <span className="px-2 py-0.5 bg-space-card2 text-space-muted border border-space-border text-[10px] uppercase font-bold tracking-widest rounded-full">
-                                                        Inactivo
-                                                    </span>
+                                                    <span className="badge-gray">Inactivo</span>
                                                 )}
                                             </div>
-                                            {barber.bio && (
-                                                <p className="text-space-muted text-sm leading-relaxed max-w-2xl">{barber.bio}</p>
-                                            )}
-                                            <div className="flex flex-wrap gap-4 mt-3">
-                                                {barber.email && (
-                                                    <span className="flex items-center gap-2 text-xs font-medium text-space-muted">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-space-primary"></span>
-                                                        {barber.email}
-                                                    </span>
-                                                )}
-                                                {barber.phone && (
-                                                    <span className="flex items-center gap-2 text-xs font-medium text-space-muted">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-space-primary"></span>
-                                                        {barber.phone}
-                                                    </span>
-                                                )}
+                                            {barber.bio && <p className="text-space-muted text-sm truncate">{barber.bio}</p>}
+                                            <div className="flex flex-wrap gap-3 mt-1">
+                                                {barber.email && <span className="text-xs text-space-muted">{barber.email}</span>}
+                                                {barber.phone && <span className="text-xs text-space-muted">{barber.phone}</span>}
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 self-end md:self-center">
-                                        <Button
-                                            variant="secondary"
-                                            onClick={() => handleOpenModal(barber)}
-                                            className="rounded-lg w-10 h-10 p-0 flex items-center justify-center bg-space-card2 hover:bg-space-primary hover:text-white border-transparent text-space-muted transition-colors"
-                                            title="Editar"
-                                        >
-                                            <Edit2 size={16} />
-                                        </Button>
-
+                                        <button onClick={() => handleOpenModal(barber)}
+                                            className="btn-ghost w-9 h-9 p-0 rounded-xl" title="Editar">
+                                            <Edit2 size={15} />
+                                        </button>
                                         {barber.is_active ? (
-                                            <Button
-                                                variant="secondary"
-                                                onClick={() => handleDelete(barber)}
-                                                className="rounded-lg w-10 h-10 p-0 flex items-center justify-center bg-space-card2 hover:bg-space-danger/20 hover:text-space-danger border-transparent text-space-muted transition-colors"
-                                                title="Desactivar"
-                                            >
-                                                <UserMinus size={16} />
-                                            </Button>
+                                            <button onClick={() => handleDelete(barber)}
+                                                className="w-9 h-9 p-0 rounded-xl text-space-muted hover:text-space-danger hover:bg-red-50 transition flex items-center justify-center"
+                                                title="Desactivar">
+                                                <UserMinus size={15} />
+                                            </button>
                                         ) : (
-                                            <Button
-                                                variant="secondary"
-                                                onClick={() => updateBarber(barber.id, { is_active: true })}
-                                                className="rounded-lg px-4 h-10 flex items-center justify-center bg-space-card2 hover:bg-space-success/20 hover:text-space-success border-transparent text-space-muted transition-all text-xs font-bold uppercase tracking-widest"
-                                            >
+                                            <button onClick={() => updateBarber(barber.id, { is_active: true })}
+                                                className="px-3 h-9 rounded-xl text-xs font-semibold text-space-success bg-green-50 hover:bg-space-success hover:text-white transition">
                                                 Activar
-                                            </Button>
+                                            </button>
                                         )}
-
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => handleHardDelete(barber)}
-                                            className="rounded-lg w-10 h-10 p-0 flex items-center justify-center hover:bg-space-danger/10 text-space-muted hover:text-space-danger transition-colors"
-                                            title="Eliminar Permanentemente"
-                                        >
-                                            <ShieldAlert size={16} />
-                                        </Button>
+                                        <button onClick={() => handleHardDelete(barber)}
+                                            className="w-9 h-9 p-0 rounded-xl text-space-muted hover:text-space-danger hover:bg-red-50 transition flex items-center justify-center"
+                                            title="Eliminar permanentemente">
+                                            <ShieldAlert size={15} />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -283,100 +246,61 @@ export default function BarbersPage() {
                 )}
 
                 {/* Create/Edit Modal */}
-                <Modal
-                    isOpen={isModalOpen}
-                    onClose={handleCloseModal}
-                    title={editingBarber ? 'Editar Barbero' : 'Nuevo Barbero'}
-                    size="lg"
-                >
+                <Modal isOpen={isModalOpen} onClose={handleCloseModal}
+                    title={editingBarber ? 'Editar Barbero' : 'Nuevo Barbero'} size="lg">
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <Input
-                            label="Nombre"
-                            value={formData.name}
+                        <Input label="Nombre" value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            error={formErrors.name}
-                            placeholder="Ej: Juan Pérez"
-                            required
-                            className="bg-space-bg border-space-border text-space-text"
-                        />
+                            error={formErrors.name} placeholder="Ej: Juan Pérez" required />
 
-                        <Input
-                            label="ID de Usuario vinculado (opcional)"
-                            value={formData.user_id}
+                        <Input label="ID de Usuario vinculado (opcional)" value={formData.user_id}
                             onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
-                            placeholder="UUID del usuario para acceso al dashboard"
-                            className="bg-space-bg border-space-border text-space-text"
-                        />
+                            placeholder="UUID del usuario" />
 
-                        <Input
-                            label="Email"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            placeholder="juan@ejemplo.com"
-                            className="bg-space-bg border-space-border text-space-text"
-                        />
-
-                        <Input
-                            label="Teléfono"
-                            type="tel"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            placeholder="(809) 555-5555"
-                            className="bg-space-bg border-space-border text-space-text"
-                        />
-
-                        <div>
-                            <label className="block text-sm font-medium text-space-muted mb-2">
-                                Biografía
-                            </label>
-                            <textarea
-                                value={formData.bio}
-                                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                className="w-full px-4 py-3 bg-space-bg border border-space-border rounded-xl text-space-text placeholder-space-muted/50 focus:ring-2 focus:ring-space-purple focus:border-transparent transition outline-none"
-                                rows={3}
-                                placeholder="Información sobre el barbero"
-                            />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <Input label="Email" type="email" value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                placeholder="juan@ejemplo.com" />
+                            <Input label="Teléfono" type="tel" value={formData.phone}
+                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                placeholder="(809) 555-5555" />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-space-muted mb-2">
-                                Servicios que ofrece <span className="text-space-danger">*</span>
-                            </label>
+                            <label className="input-label">Biografía</label>
+                            <textarea value={formData.bio}
+                                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                                className="input-field" rows={3} placeholder="Información sobre el barbero" />
+                        </div>
+
+                        <div>
+                            <label className="input-label">Servicios que ofrece <span className="text-space-danger">*</span></label>
                             {services.length === 0 ? (
-                                <p className="text-sm text-space-muted">
-                                    No hay servicios disponibles. Crea servicios primero.
-                                </p>
+                                <p className="text-sm text-space-muted">No hay servicios. Crea servicios primero.</p>
                             ) : (
-                                <div className="space-y-2 max-h-48 overflow-y-auto border border-space-border rounded-xl p-3 bg-space-bg">
+                                <div className="space-y-1 max-h-44 overflow-y-auto border border-space-border rounded-xl p-3 bg-space-bg">
                                     {services.map((service) => (
-                                        <label
-                                            key={service.id}
-                                            className="flex items-center gap-3 p-2 hover:bg-space-card2 rounded-lg cursor-pointer transition-colors"
-                                        >
-                                            <input
-                                                type="checkbox"
+                                        <label key={service.id}
+                                            className="flex items-center gap-3 p-2 hover:bg-white rounded-lg cursor-pointer transition">
+                                            <input type="checkbox"
                                                 checked={selectedServices.includes(service.id)}
                                                 onChange={() => toggleService(service.id)}
-                                                className="w-4 h-4 text-space-purple rounded bg-space-card border-space-border focus:ring-space-purple"
-                                            />
+                                                className="w-4 h-4 text-space-primary rounded border-space-border focus:ring-space-primary" />
                                             <span className="text-sm text-space-text">{service.name}</span>
                                         </label>
                                     ))}
                                 </div>
                             )}
-                            {formErrors.services && (
-                                <p className="mt-1 text-sm text-space-danger">{formErrors.services}</p>
-                            )}
+                            {formErrors.services && <p className="mt-1 text-sm text-space-danger">{formErrors.services}</p>}
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-6 border-t border-space-border">
-                            <Button type="button" variant="secondary" onClick={handleCloseModal} className="bg-space-card2 hover:bg-space-bg text-space-text border-transparent">
+                        <div className="flex justify-end gap-3 pt-4 border-t border-space-border">
+                            <button type="button" onClick={handleCloseModal} className="btn-secondary">
                                 Cancelar
-                            </Button>
-                            <Button type="submit" disabled={loading} className="bg-gradient-to-r from-space-purple to-space-pink border-none shadow-lg shadow-space-purple/20 hover:opacity-90">
+                            </button>
+                            <button type="submit" disabled={loading} className="btn-primary">
                                 {loading ? 'Guardando...' : editingBarber ? 'Actualizar' : 'Crear'}
-                            </Button>
+                            </button>
                         </div>
                     </form>
                 </Modal>

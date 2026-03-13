@@ -16,21 +16,21 @@ export const Input: React.FC<InputProps> = ({
     return (
         <div className="w-full">
             {label && (
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-space-text mb-2">
                     {label}
-                    {props.required && <span className="text-red-500 ml-1">*</span>}
+                    {props.required && <span className="text-space-danger ml-1">*</span>}
                 </label>
             )}
             <input
-                className={`w-full px-4 py-2 min-h-[44px] border ${error ? 'border-red-500' : 'border-gray-300'
-                    } rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition ${className}`}
+                className={`w-full px-4 py-2 min-h-[44px] bg-white text-space-text outline-none border ${error ? 'border-space-danger' : 'border-space-border'
+                    } rounded-xl focus:ring-2 focus:ring-space-primary focus:border-transparent transition ${className}`}
                 {...props}
             />
             {error && (
-                <p className="mt-1 text-sm text-red-600">{error}</p>
+                <p className="mt-1 text-sm text-space-danger">{error}</p>
             )}
             {helperText && !error && (
-                <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+                <p className="mt-1 text-sm text-space-muted">{helperText}</p>
             )}
         </div>
     );

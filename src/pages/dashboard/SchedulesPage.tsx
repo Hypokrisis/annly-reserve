@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Button } from '@/components/common/Button';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useBarbers } from '@/hooks/useBarbers';
 import { useSchedule } from '@/hooks/useSchedule';
@@ -119,18 +118,16 @@ export default function SchedulesPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-4xl animate-fade-in">
+            <div className="max-w-4xl animate-fade-up">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-white tracking-tight">Horarios</h1>
-                    <p className="text-sm text-space-muted mt-1">Configura los horarios de trabajo</p>
+                    <h1 className="page-title">Horarios</h1>
+                    <p className="page-subtitle">Configura los horarios de trabajo de tu equipo</p>
                 </div>
 
                 {/* Barber Selector */}
-                <div className="bg-space-card rounded-2xl p-6 shadow-lg border border-space-border mb-8">
-                    <label className="block text-sm font-medium text-space-muted mb-3">
-                        Selecciona un barbero
-                    </label>
+                <div className="card p-5 mb-6">
+                    <label className="input-label">Selecciona un barbero</label>
                     <div className="relative">
                         <select
                             value={selectedBarber?.id || ''}
@@ -138,90 +135,68 @@ export default function SchedulesPage() {
                                 const barber = barbers.find(b => b.id === e.target.value);
                                 setSelectedBarber(barber || null);
                             }}
-                            className="w-full pl-4 pr-10 py-3 bg-space-bg border border-space-border rounded-xl text-white focus:ring-2 focus:ring-space-primary focus:border-transparent outline-none appearance-none cursor-pointer"
+                            className="input-field appearance-none cursor-pointer"
                         >
                             <option value="">-- Selecciona un barbero --</option>
                             {barbers.filter(b => b.is_active).map((barber) => (
-                                <option key={barber.id} value={barber.id} className="bg-space-card text-white">
-                                    {barber.name}
-                                </option>
+                                <option key={barber.id} value={barber.id}>{barber.name}</option>
                             ))}
                         </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-space-muted pointer-events-none" size={18} />
+                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-space-muted pointer-events-none" size={16} />
                     </div>
                 </div>
 
                 {/* Schedule Editor */}
                 {selectedBarber ? (
                     loading ? (
-                        <div className="flex justify-center py-12">
-                            <LoadingSpinner />
-                        </div>
+                        <div className="flex justify-center py-12"><LoadingSpinner /></div>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {weekSchedule.map((day) => (
-                                <div
-                                    key={day.dayOfWeek}
-                                    className={`rounded-2xl p-6 shadow-sm border transition-all duration-300 ${day.isActive
-                                        ? 'bg-space-card border-space-border shadow-lg shadow-space-primary/5'
-                                        : 'bg-space-card/40 border-space-border/50'
-                                        }`}
-                                >
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                                        <div className="flex items-center gap-4">
-                                            <label className="flex items-center gap-3 cursor-pointer group">
-                                                <div className={`w-6 h-6 rounded-md flex items-center justify-center border transition-colors ${day.isActive ? 'bg-space-primary border-space-primary' : 'bg-transparent border-space-muted'}`}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={day.isActive}
-                                                        onChange={() => handleToggleDay(day.dayOfWeek)}
-                                                        className="hidden"
-                                                    />
-                                                    {day.isActive && <Check size={14} className="text-white" />}
+                                <div key={day.dayOfWeek}
+                                    className={`card p-5 transition-all ${day.isActive ? 'border-space-primary/30' : 'opacity-70'}`}>
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <label className="flex items-center gap-2.5 cursor-pointer">
+                                                <div onClick={() => handleToggleDay(day.dayOfWeek)}
+                                                    className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors cursor-pointer
+                                                        ${day.isActive ? 'bg-space-primary border-space-primary' : 'border-gray-300'}`}>
+                                                    {day.isActive && <Check size={12} className="text-white" />}
                                                 </div>
-                                                <span className={`text-lg font-bold transition-colors ${day.isActive ? 'text-white' : 'text-space-muted group-hover:text-space-text'}`}>
+                                                <span className={`font-semibold transition-colors ${day.isActive ? 'text-space-text' : 'text-space-muted'}`}>
                                                     {getDayName(day.dayOfWeek)}
                                                 </span>
                                             </label>
                                             {!day.isActive && (
-                                                <span className="text-xs text-space-muted bg-space-card2 px-2 py-0.5 rounded border border-space-border uppercase font-bold tracking-wider opacity-60">Cerrado</span>
+                                                <span className="badge-gray">Cerrado</span>
                                             )}
                                         </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
+                                        <button
                                             onClick={() => handleCopyToAll(day.dayOfWeek)}
                                             disabled={!day.isActive}
-                                            className={`text-xs ${day.isActive ? 'text-space-primary hover:text-white hover:bg-space-primary/20' : 'text-space-muted opacity-50 cursor-not-allowed'}`}
-                                        >
-                                            <Copy size={14} className="mr-1.5" />
-                                            Copiar a todos
-                                        </Button>
+                                            className={`text-xs flex items-center gap-1.5 transition
+                                                ${day.isActive ? 'text-space-primary hover:text-space-primary-dark' : 'text-space-muted opacity-40 cursor-not-allowed'}`}>
+                                            <Copy size={12} /> Copiar a todos
+                                        </button>
                                     </div>
 
                                     {day.isActive && (
-                                        <div className="grid grid-cols-2 gap-4 animate-fade-in text-space-text">
+                                        <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="flex items-center gap-2 text-xs font-bold text-space-muted uppercase tracking-wider mb-2">
-                                                    <Clock size={12} /> Inicio
+                                                <label className="input-label flex items-center gap-1.5">
+                                                    <Clock size={11} /> Inicio
                                                 </label>
-                                                <input
-                                                    type="time"
-                                                    value={day.startTime}
+                                                <input type="time" value={day.startTime}
                                                     onChange={(e) => handleTimeChange(day.dayOfWeek, 'startTime', e.target.value)}
-                                                    className="w-full px-4 py-2 bg-space-bg border border-space-border rounded-lg text-white focus:ring-2 focus:ring-space-primary focus:border-transparent outline-none transition-colors"
-                                                />
+                                                    className="input-field" />
                                             </div>
                                             <div>
-                                                <label className="flex items-center gap-2 text-xs font-bold text-space-muted uppercase tracking-wider mb-2">
-                                                    <Clock size={12} /> Cierre
+                                                <label className="input-label flex items-center gap-1.5">
+                                                    <Clock size={11} /> Cierre
                                                 </label>
-                                                <input
-                                                    type="time"
-                                                    value={day.endTime}
+                                                <input type="time" value={day.endTime}
                                                     onChange={(e) => handleTimeChange(day.dayOfWeek, 'endTime', e.target.value)}
-                                                    className="w-full px-4 py-2 bg-space-bg border border-space-border rounded-lg text-white focus:ring-2 focus:ring-space-primary focus:border-transparent outline-none transition-colors"
-                                                />
+                                                    className="input-field" />
                                             </div>
                                         </div>
                                     )}
@@ -229,24 +204,21 @@ export default function SchedulesPage() {
                             ))}
 
                             {/* Save Button */}
-                            <div className="flex justify-end gap-3 pt-6 sticky bottom-4 z-10">
-                                <Button
-                                    onClick={handleSave}
-                                    disabled={!hasChanges || loading}
-                                    className={`shadow-xl px-8 py-4 text-base transition-all ${!hasChanges ? 'opacity-50 cursor-not-allowed bg-space-card2 text-space-muted' : 'bg-gradient-to-r from-space-primary to-space-purple hover:scale-105 hover:shadow-space-primary/20 border-none'}`}
-                                >
+                            <div className="flex justify-end pt-4">
+                                <button onClick={handleSave} disabled={!hasChanges || loading}
+                                    className={`btn-primary ${!hasChanges || loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                     {loading ? 'Guardando...' : 'Guardar Horarios'}
-                                </Button>
+                                </button>
                             </div>
                         </div>
                     )
                 ) : (
-                    <div className="bg-space-card/50 rounded-2xl p-12 text-center border-2 border-dashed border-space-border">
-                        <div className="w-16 h-16 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Calendar size={32} className="text-space-muted" />
+                    <div className="bg-white rounded-2xl p-12 text-center border-2 border-dashed border-space-border">
+                        <div className="w-14 h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Calendar size={28} className="text-space-muted" />
                         </div>
-                        <p className="text-space-muted">
-                            Selecciona un barbero para configurar sus horarios
+                        <p className="text-space-muted text-sm">
+                            Selecciona un barbero para ver sus horarios
                         </p>
                     </div>
                 )}

@@ -9,7 +9,9 @@ import {
     LogOut,
     Menu,
     X,
-    Settings
+    Settings,
+    Globe,
+    Clock
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -22,12 +24,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
     const allNavigation = [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['owner', 'admin', 'staff'] },
-        { name: 'Servicios', href: '/dashboard/services', icon: Scissors, roles: ['owner', 'admin'] },
-        { name: 'Barberos', href: '/dashboard/barbers', icon: Users, roles: ['owner', 'admin'] },
-        { name: 'Citas', href: '/dashboard/appointments', icon: Calendar, roles: ['owner', 'admin', 'staff'] },
-        { name: 'Configuración', href: '/dashboard/settings', icon: Settings, roles: ['owner', 'admin'] },
-        { name: 'Ver Web Pública', href: '/', icon: LayoutDashboard, roles: ['owner', 'admin', 'staff'] },
+        { name: 'Dashboard',      href: '/dashboard',              icon: LayoutDashboard, roles: ['owner', 'admin', 'staff'] },
+        { name: 'Servicios',      href: '/dashboard/services',     icon: Scissors,        roles: ['owner', 'admin'] },
+        { name: 'Equipo',         href: '/dashboard/barbers',      icon: Users,           roles: ['owner', 'admin'] },
+        { name: 'Horarios',       href: '/dashboard/schedules',    icon: Clock,           roles: ['owner', 'admin'] },
+        { name: 'Citas',          href: '/dashboard/appointments', icon: Calendar,        roles: ['owner', 'admin', 'staff'] },
+        { name: 'Configuración',  href: '/dashboard/settings',     icon: Settings,        roles: ['owner', 'admin'] },
+        { name: 'Ver Página',     href: '/',                       icon: Globe,           roles: ['owner', 'admin', 'staff'] },
     ];
 
     const navigation = allNavigation.filter(item => item.roles.includes(role || 'staff'));
@@ -41,111 +44,125 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         }
     };
 
+    const initials = currentBusiness?.name?.substring(0, 2).toUpperCase() || 'SP';
+
     return (
         <div className="min-h-screen bg-space-bg text-space-text flex">
-            {/* Mobile Header */}
-            <header className="lg:hidden bg-space-card/80 backdrop-blur-md border-b border-space-border fixed top-0 w-full z-40 h-16 flex items-center justify-between px-4">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-space-primary to-space-purple rounded-lg flex items-center justify-center text-white shadow-lg">
-                        <Scissors size={16} />
+
+            {/* ── Mobile Header ────────────────────────────────── */}
+            <header className="lg:hidden bg-white border-b border-space-border fixed top-0 w-full z-40 h-16 flex items-center justify-between px-4 shadow-card">
+                <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 bg-space-primary rounded-lg flex items-center justify-center shadow-btn">
+                        <Scissors size={15} className="text-white" />
                     </div>
-                    <h1 className="text-lg font-bold text-white">Spacey</h1>
+                    <span className="font-bold text-space-text text-lg tracking-tight">Spacey</span>
                 </div>
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="p-2 text-space-muted hover:text-white hover:bg-space-card2 rounded-lg transition"
+                    className="p-2 text-space-muted hover:text-space-primary hover:bg-space-card2 rounded-xl transition"
+                    aria-label="Toggle menu"
                 >
-                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
                 </button>
             </header>
 
-            {/* Backdrop for mobile menu */}
+            {/* ── Mobile Backdrop ───────────────────────────────── */}
             {isMobileMenuOpen && (
                 <div
-                    className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
+                    className="fixed inset-0 bg-space-text/30 backdrop-blur-sm z-40 lg:hidden"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
 
-            {/* Sidebar */}
-            <aside className={`fixed lg:sticky top-0 inset-y-0 left-0 w-72 bg-space-card border-r border-space-border z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 overflow-y-auto ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-                }`}>
-                <div className="flex flex-col min-h-screen">
-                    {/* Logo */}
-                    <div className="p-6 border-b border-space-border">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-space-primary to-space-purple rounded-xl flex items-center justify-center text-white shadow-lg shadow-space-primary/20">
-                                <Scissors size={20} />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-white tracking-tight">Spacey</h1>
-                                <p className="text-[10px] text-space-muted uppercase tracking-widest font-bold">Dashboard</p>
-                            </div>
-                            <button className="lg:hidden ml-auto" onClick={() => setIsMobileMenuOpen(false)}>
-                                <X size={20} className="text-space-muted hover:text-white" />
-                            </button>
+            {/* ── Sidebar ───────────────────────────────────────── */}
+            <aside className={`
+                fixed lg:sticky top-0 inset-y-0 left-0 w-64 
+                bg-white border-r border-space-border z-50 
+                flex flex-col h-screen
+                transform transition-transform duration-300 ease-in-out
+                lg:translate-x-0 overflow-y-auto
+                ${isMobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}
+            `}>
+                {/* Logo */}
+                <div className="h-16 px-5 flex items-center border-b border-space-border flex-shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-space-primary rounded-xl flex items-center justify-center shadow-btn flex-shrink-0">
+                            <Scissors size={18} className="text-white" />
                         </div>
-                        {currentBusiness && (
-                            <div className="mt-6 p-3 bg-space-card2 rounded-xl border border-space-border flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-space-bg flex items-center justify-center text-space-primary border border-space-border">
-                                    <span className="text-xs font-bold">{currentBusiness.name.substring(0, 2).toUpperCase()}</span>
-                                </div>
-                                <div className="truncate">
-                                    <p className="text-xs text-space-muted font-medium">Gestionando:</p>
-                                    <p className="text-sm font-bold text-white truncate">{currentBusiness.name}</p>
-                                </div>
-                            </div>
-                        )}
+                        <div>
+                            <p className="font-bold text-space-text leading-tight">Spacey</p>
+                            <p className="text-[10px] text-space-muted font-medium tracking-widest uppercase">Dashboard</p>
+                        </div>
                     </div>
+                    <button className="lg:hidden ml-auto p-1 text-space-muted hover:text-space-primary" onClick={() => setIsMobileMenuOpen(false)}>
+                        <X size={18} />
+                    </button>
+                </div>
 
-                    {/* Navigation */}
-                    <nav className="flex-1 p-4 space-y-1">
-                        {navigation.map((item) => {
-                            const isActive = location.pathname === item.href;
-                            const Icon = item.icon;
-
-                            return (
-                                <Link
-                                    key={item.name}
-                                    to={item.href}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className={`flex items-center px-4 py-3.5 rounded-xl transition group relative overflow-hidden ${isActive
-                                        ? 'text-white font-bold bg-space-card2 border border-space-border shadow-lg'
-                                        : 'text-space-muted hover:text-white hover:bg-space-card2/50 hover:shadow-md border border-transparent'
-                                        }`}
-                                >
-                                    {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-space-primary rounded-l-xl"></div>}
-                                    <Icon size={20} className={`mr-3 transition-colors ${isActive ? 'text-space-primary' : 'text-space-muted group-hover:text-space-primary'}`} />
-                                    {item.name}
-                                </Link>
-                            );
-                        })}
-                    </nav>
-
-                    {/* User section */}
-                    <div className="p-4 border-t border-space-border bg-space-bg/30">
-                        <div className="flex items-center justify-between">
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[10px] uppercase font-bold text-space-muted tracking-widest mb-0.5">Usuario</p>
-                                <p className="text-sm font-bold text-white truncate">
-                                    {user?.email}
-                                </p>
-                            </div>
-                            <button
-                                onClick={handleLogout}
-                                className="ml-3 p-2.5 text-space-muted hover:text-space-danger hover:bg-space-danger/10 rounded-xl transition border border-transparent hover:border-space-danger/20"
-                                title="Cerrar sesión"
-                            >
-                                <LogOut size={18} />
-                            </button>
+                {/* Business Badge */}
+                {currentBusiness && (
+                    <div className="mx-4 mt-4 p-3 bg-space-card2 rounded-xl border border-space-border flex items-center gap-3 flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-space-primary flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                            {initials}
                         </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] text-space-muted font-semibold uppercase tracking-wider">Negocio</p>
+                            <p className="text-sm font-semibold text-space-text truncate">{currentBusiness.name}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Navigation */}
+                <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+                    <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-widest text-space-muted/70">Menú</p>
+                    {navigation.map((item) => {
+                        const isActive = location.pathname === item.href;
+                        const Icon = item.icon;
+                        return (
+                            <Link
+                                key={item.name}
+                                to={item.href}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={`
+                                    flex items-center gap-3 px-3 py-2.5 rounded-xl 
+                                    text-sm font-medium transition-all duration-150
+                                    ${isActive
+                                        ? 'bg-space-primary text-white shadow-btn'
+                                        : 'text-space-muted hover:text-space-primary hover:bg-space-card2'
+                                    }
+                                `}
+                            >
+                                <Icon size={18} className="flex-shrink-0" />
+                                {item.name}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                {/* User Footer */}
+                <div className="px-4 py-3 border-t border-space-border flex-shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-space-primary-light flex items-center justify-center text-space-primary font-bold text-xs flex-shrink-0">
+                            {user?.email?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-space-text truncate">{user?.email}</p>
+                            <p className="text-[10px] text-space-muted capitalize">{role}</p>
+                        </div>
+                        <button
+                            onClick={handleLogout}
+                            className="p-2 text-space-muted hover:text-space-danger hover:bg-red-50 rounded-xl transition flex-shrink-0"
+                            title="Cerrar sesión"
+                        >
+                            <LogOut size={16} />
+                        </button>
                     </div>
                 </div>
             </aside>
 
-            {/* Main content */}
-            <main className="flex-1 p-4 md:p-8 pt-20 lg:pt-8 overflow-y-auto max-w-full">
-                <div className="max-w-7xl mx-auto">
+            {/* ── Main Content ──────────────────────────────────── */}
+            <main className="flex-1 min-w-0 overflow-y-auto pt-16 lg:pt-0">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
                     {children}
                 </div>
             </main>
