@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     LayoutDashboard,
@@ -20,6 +20,7 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { user, currentBusiness, logout, role } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
@@ -38,7 +39,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     const handleLogout = async () => {
         try {
             await logout();
-            window.location.href = '/login';
+            setIsMobileMenuOpen(false);
+            navigate('/login');
         } catch (error) {
             console.error('Logout error:', error);
         }
@@ -49,8 +51,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     return (
         <div className="min-h-screen bg-space-bg text-space-text flex">
 
-            {/* ── Mobile Header ────────────────────────────────── */}
-            <header className="lg:hidden bg-white border-b border-space-border fixed top-0 w-full z-40 h-16 flex items-center justify-between px-4 shadow-card">
+            {/* ── Mobile Header (Pill Bar) ───────────────────── */}
+            <header className="lg:hidden fixed top-3 left-3 right-3 z-40 h-14 bg-white/95 backdrop-blur-md rounded-2xl border border-space-border shadow-card flex items-center justify-between px-4">
                 <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 bg-space-primary rounded-lg flex items-center justify-center shadow-btn">
                         <Scissors size={15} className="text-white" />
@@ -140,7 +142,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 </nav>
 
                 {/* User Footer */}
-                <div className="px-4 py-3 border-t border-space-border flex-shrink-0">
+                <div className="px-4 py-3 border-t border-space-border flex-shrink-0 pb-safe sm:pb-3 mb-6 lg:mb-0">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-space-primary-light flex items-center justify-center text-space-primary font-bold text-xs flex-shrink-0">
                             {user?.email?.charAt(0).toUpperCase()}
@@ -161,7 +163,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             </aside>
 
             {/* ── Main Content ──────────────────────────────────── */}
-            <main className="flex-1 min-w-0 overflow-y-auto pt-16 lg:pt-0">
+            <main className="flex-1 min-w-0 overflow-y-auto pt-20 lg:pt-0">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
                     {children}
                 </div>

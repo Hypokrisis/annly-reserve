@@ -57,7 +57,7 @@ export default function DashboardHome() {
 
                 {/* ── Header ──────────────────────────────────── */}
                 <div className="mb-8">
-                    <h1 className="page-title">
+                    <h1 className="page-title text-3xl">
                         Hola, <span className="text-space-primary">{user?.email?.split('@')[0]}</span> 👋
                     </h1>
                     <p className="page-subtitle flex items-center gap-2 mt-1">
@@ -92,31 +92,31 @@ export default function DashboardHome() {
                 </div>
 
                 {/* ── Public Link Banner ──────────────────────── */}
-                <div className="rounded-2xl bg-space-primary p-6 md:p-8 mb-8 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-12 -mt-12" />
-                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full -ml-8 -mb-8" />
-                    <div className="relative">
-                        <h2 className="text-lg font-bold text-white mb-1">Tu Página de Reservas</h2>
-                        <p className="text-white/70 text-sm mb-5">Comparte este link en Instagram, WhatsApp o tu web</p>
+                <div className="rounded-[2rem] bg-space-text p-6 md:p-8 mb-8 relative overflow-hidden shadow-card-lg border border-space-border/20">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-space-primary/20 rounded-full blur-3xl -mr-10 -mt-10" />
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-space-primary/20 rounded-full blur-3xl -ml-10 -mb-10" />
+                    <div className="relative z-10">
+                        <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Tu Página de Reservas</h2>
+                        <p className="text-space-border text-sm mb-6 max-w-xl leading-relaxed">Comparte este link en Instagram, WhatsApp o tu web para que tus clientes reserven al instante.</p>
 
                         <div className="flex flex-col sm:flex-row gap-3">
-                            <div className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm text-white/90 font-mono truncate">
+                            <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white/90 font-mono truncate shadow-inner">
                                 {window.location.origin}/book/{business?.slug}
                             </div>
                             <div className="flex gap-2">
                                 <button
                                     onClick={handleCopyLink}
-                                    className="flex items-center gap-2 px-4 py-3 bg-white/15 hover:bg-white/25 text-white border border-white/20 rounded-xl text-sm font-semibold transition"
+                                    className="flex items-center gap-2 px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl text-sm font-semibold transition"
                                 >
-                                    {copied ? <Check size={15} /> : <Copy size={15} />}
+                                    {copied ? <Check size={16} /> : <Copy size={16} />}
                                     {copied ? 'Copiado' : 'Copiar'}
                                 </button>
                                 <a
                                     href={`/book/${business?.slug}`}
                                     target="_blank" rel="noopener noreferrer"
-                                    className="flex items-center gap-2 px-4 py-3 bg-white text-space-primary rounded-xl text-sm font-bold transition hover:bg-white/90"
+                                    className="flex items-center gap-2 px-5 py-3.5 bg-space-primary hover:bg-space-primary-dark text-white rounded-xl text-sm font-bold shadow-btn transition"
                                 >
-                                    <ExternalLink size={15} />
+                                    <ExternalLink size={16} />
                                     Visitar
                                 </a>
                             </div>
@@ -136,11 +136,11 @@ export default function DashboardHome() {
                                 key={to} to={to}
                                 className="card-hover p-5 group ring-1 ring-transparent transition-all duration-200"
                             >
-                                <div className={`w-10 h-10 bg-space-bg rounded-xl flex items-center justify-center mb-4 ring-2 ring-transparent transition-all ${ring}`}>
-                                    <Icon size={20} className={`text-space-muted transition-colors ${color}`} />
+                                <div className={`w-12 h-12 bg-space-card2 rounded-xl flex items-center justify-center mb-4 transition-all ${ring}`}>
+                                    <Icon size={24} className={`text-space-primary transition-colors ${color}`} />
                                 </div>
-                                <h3 className="font-bold text-space-text text-sm mb-1">{label}</h3>
-                                <p className="text-xs text-space-muted mb-3">{desc}</p>
+                                <h3 className="font-bold text-space-text text-base mb-1">{label}</h3>
+                                <p className="text-xs text-space-muted mb-4">{desc}</p>
                                 <div className="flex items-center text-xs font-semibold text-space-primary opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
                                     Gestionar <ArrowRight size={12} className="ml-1" />
                                 </div>

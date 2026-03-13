@@ -4,27 +4,27 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
-        // ── New light green palette (inspired by user's swatch) ──────────────
-        'space-bg':           '#f4f9f6',   // Light mint background
-        'space-card':         '#ffffff',   // White cards
-        'space-card2':        '#eaf4ef',   // Subtle tinted card
-        'space-text':         '#1a2e28',   // Dark forest text
-        'space-muted':        '#6b8f80',   // Muted teal-grey
-        'space-border':       '#cce3d8',   // Soft green border
-        'space-primary':      '#4a8463',   // Medium forest green (CTA, active)
-        'space-primary-dark': '#2d6349',   // Darker hover green
-        'space-primary-light':'#b3d9c5',   // Light green (badge bg, icon bg)
-        'space-purple':       '#6aac8a',   // Secondary green accent
-        'space-pink':         '#9dc48b',   // Soft lime accent
-        'space-danger':       '#e05252',   // Red danger
-        'space-success':      '#3d9970',   // Green success
-        'space-yellow':       '#d4ac0d',   // Amber/yellow
-        'space-luxury':       '#2d6349',
-        'space-gold':         '#4a8463',
-        'space-gold-light':   '#b3d9c5',
+        // ── Refined light green palette (based on user image) ──────────────
+        'space-bg':           '#f5f7f2',   // Very light warm/greenish off-white
+        'space-card':         '#ffffff',   // White
+        'space-card2':        '#ecf4cc',   // Lightest cream/yellow-green 
+        'space-text':         '#22321c',   // Deepest green for text
+        'space-muted':        '#7ba06c',   // Mid green (darkest from image)
+        'space-border':       '#c6e9bc',   // Light border
+        'space-primary':      '#7ba06c',   // Main brand green
+        'space-primary-dark': '#5e7d50',   // Hover state for primary
+        'space-primary-light':'#a5cc90',   // Lighter brand green
+        'space-purple':       '#a5cc90',   // Accent
+        'space-pink':         '#c6e9bc',   // Accent
+        'space-danger':       '#e05252',   
+        'space-success':      '#3d9970',   
+        'space-yellow':       '#d4ac0d',   
+        'space-luxury':       '#5e7d50',
+        'space-gold':         '#7ba06c',
+        'space-gold-light':   '#a5cc90',
       },
       borderRadius: {
         'xl':  '0.75rem',
