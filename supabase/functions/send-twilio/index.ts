@@ -260,21 +260,22 @@ serve(async (req) => {
                     logs.push({ target: 'customer', status: 'skipped', error: 'Missing phone' });
                 }
 
-                // ── BARBER: SMS only (no WhatsApp template for barber) ─────
-                if (barberPhone) {
-                    if (smsNumber) {
-                        try {
-                            const res = await sendSMS(barberPhone, barberSmsBody);
-                            logs.push({ target: 'barber', sid: res.sid, status: 'sent', channel: 'sms' });
-                        } catch (smsErr: any) {
-                            logs.push({ target: 'barber', status: 'failed', error: smsErr.message });
-                        }
-                    } else {
-                        logs.push({ target: 'barber', status: 'skipped', error: 'TWILIO_SMS_NUMBER not set' });
-                    }
-                } else {
-                    logs.push({ target: 'barber', status: 'skipped', error: 'Missing phone' });
-                }
+                // ── BARBER: Disabled to save costs (Opt-in later) ────────
+                // if (barberPhone) {
+                //     if (smsNumber) {
+                //         try {
+                //             const res = await sendSMS(barberPhone, barberSmsBody);
+                //             logs.push({ target: 'barber', sid: res.sid, status: 'sent', channel: 'sms' });
+                //         } catch (smsErr: any) {
+                //             logs.push({ target: 'barber', status: 'failed', error: smsErr.message });
+                //         }
+                //     } else {
+                //         logs.push({ target: 'barber', status: 'skipped', error: 'TWILIO_SMS_NUMBER not set' });
+                //     }
+                // } else {
+                //     logs.push({ target: 'barber', status: 'skipped', error: 'Missing phone' });
+                // }
+                logs.push({ target: 'barber', status: 'skipped', error: 'Barber notifications disabled' });
 
                 // ── F. EVALUATE & COMPLETE ──────────────────────────────────
                 const attempted = logs.filter(l => l.status !== 'skipped');
