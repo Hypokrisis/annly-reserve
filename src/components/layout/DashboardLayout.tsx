@@ -52,19 +52,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         <div className="min-h-screen bg-space-bg text-space-text flex">
 
             {/* ── Mobile Header (Pill Bar) ───────────────────── */}
-            <header className="lg:hidden fixed top-3 left-3 right-3 z-40 h-14 bg-white/95 backdrop-blur-md rounded-2xl border border-space-border shadow-card flex items-center justify-between px-4">
+            <header className="lg:hidden fixed top-4 left-4 right-4 z-40 h-16 bg-white/95 backdrop-blur-md rounded-full border border-space-border shadow-lg flex items-center justify-between px-6">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 bg-space-primary rounded-lg flex items-center justify-center shadow-btn">
-                        <Scissors size={15} className="text-white" />
+                    <div className="w-9 h-9 bg-space-primary rounded-full flex items-center justify-center shadow-btn">
+                        <Scissors size={18} className="text-white" />
                     </div>
-                    <span className="font-bold text-space-text text-lg tracking-tight">Spacey</span>
+                    <span className="font-bold text-space-text text-lg tracking-tight uppercase">Spacey</span>
                 </div>
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="p-2 text-space-muted hover:text-space-primary hover:bg-space-card2 rounded-xl transition"
+                    className="p-2.5 text-space-muted hover:text-space-primary hover:bg-space-card2 rounded-full transition"
                     aria-label="Toggle menu"
                 >
-                    {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
             </header>
 
@@ -142,21 +142,21 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 </nav>
 
                 {/* User Footer */}
-                <div className="px-4 py-3 border-t border-space-border flex-shrink-0 pb-safe sm:pb-3 mb-6 lg:mb-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-space-primary-light flex items-center justify-center text-space-primary font-bold text-xs flex-shrink-0">
+                <div className="px-3 py-4 border-t border-space-border flex-shrink-0 pb-safe sm:pb-4 mb-6 lg:mb-0">
+                    <div className="flex items-center gap-3 bg-space-card2 p-3 rounded-2xl border border-space-border/50">
+                        <div className="w-10 h-10 rounded-full bg-space-primary-light flex items-center justify-center text-space-primary font-black text-sm flex-shrink-0 shadow-sm border border-space-primary/10">
                             {user?.email?.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-space-text truncate">{user?.email}</p>
-                            <p className="text-[10px] text-space-muted capitalize">{role}</p>
+                            <p className="text-xs font-bold text-space-text truncate">{user?.email}</p>
+                            <p className="text-[10px] text-space-muted font-bold uppercase tracking-widest">{role}</p>
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="p-2 text-space-muted hover:text-space-danger hover:bg-red-50 rounded-xl transition flex-shrink-0"
+                            className="p-3 bg-white text-space-danger hover:text-white hover:bg-space-danger rounded-xl transition flex-shrink-0 shadow-sm border border-space-border/50"
                             title="Cerrar sesión"
                         >
-                            <LogOut size={16} />
+                            <LogOut size={18} />
                         </button>
                     </div>
                 </div>

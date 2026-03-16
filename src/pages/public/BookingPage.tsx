@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Check, ChevronLeft, Home, Calendar as CalendarIcon, Clock, User as UserIcon, Scissors, Star } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
@@ -297,12 +297,9 @@ export default function PublicBookingPage() {
                         >
                             Crear Cuenta Gratis
                         </Button>
-                        <button
-                            onClick={() => navigate('/')}
-                            className="w-full text-sm text-space-muted hover:text-space-text font-medium mt-4 transition"
-                        >
+                        <Link to="/" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-space-primary text-white font-bold rounded-full shadow-lg hover:scale-105 transition-all text-sm uppercase tracking-widest">
                             Volver al inicio
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -348,9 +345,9 @@ export default function PublicBookingPage() {
                     </div>
                 </div>
 
-                <button onClick={() => navigate('/')} className="btn-primary w-full h-14 uppercase tracking-widest font-black text-sm">
+                <Link to="/" className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-white border-2 border-space-primary text-space-primary font-black rounded-full hover:bg-space-primary hover:text-white transition-all shadow-md uppercase tracking-widest text-sm w-full">
                     Volver al Inicio
-                </button>
+                </Link>
             </div>
         </div>
     );

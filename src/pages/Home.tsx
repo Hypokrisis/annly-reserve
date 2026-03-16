@@ -234,17 +234,18 @@ function Home() {
       </div>
 
       {/* Header Pill */}
-      <nav className="fixed w-full z-50 top-6 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="pill-nav flex justify-between items-center px-4 backdrop-blur-xl bg-white/80 border border-space-border shadow-md shadow-space-primary/5">
+      <nav className="fixed w-full z-50 top-4 px-4 sm:top-6">
+        <div className="max-w-7xl mx-auto flex justify-center">
+          <div className="pill-nav flex justify-between items-center w-full max-w-[95%] sm:max-w-none px-4 sm:px-6 h-14 sm:h-16 rounded-full backdrop-blur-xl bg-white/80 border border-space-border shadow-lg shadow-space-primary/5">
             {/* Logo */}
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo(0, 0)}>
-              <div className="w-10 h-10 bg-space-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-space-primary/20 hover:scale-105 transition-transform rotate-3">
-                <Scissors size={20} className="text-white -rotate-3" />
+            <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-space-primary rounded-full flex items-center justify-center text-white shadow-lg shadow-space-primary/20 hover:scale-105 transition-transform rotate-3">
+                <Scissors size={16} className="text-white -rotate-3 sm:hidden" />
+                <Scissors size={20} className="text-white -rotate-3 hidden sm:block" />
               </div>
               <div>
-                <span className="text-xl font-black tracking-tight text-space-text uppercase">Spacey</span>
-                <div className="text-[9px] uppercase tracking-[0.2em] text-space-muted font-bold -mt-1">Reserva tu Barbero</div>
+                <span className="text-lg sm:text-xl font-black tracking-tight text-space-text uppercase">Spacey</span>
+                <div className="text-[7px] sm:text-[9px] uppercase tracking-[0.2em] text-space-muted font-bold -mt-1 hidden xs:block">Reserva tu Barbero</div>
               </div>
             </div>
 
@@ -268,18 +269,21 @@ function Home() {
                     </div>
                   </button>
                   {isAccountMenuOpen && (
-                    <div className="absolute right-0 mt-3 w-64 bg-white rounded-[1.5rem] shadow-card-xl border border-space-border overflow-hidden py-1 z-50 animate-fade-in">
-                      <div className="px-5 py-4 border-b border-space-border bg-space-bg">
-                        <p className="text-[10px] text-space-muted font-black uppercase tracking-widest">Cuenta</p>
-                        <p className="text-sm font-bold text-space-text truncate mt-0.5">{user.email}</p>
+                    <div className="absolute right-0 mt-3 w-64 bg-white rounded-[2rem] shadow-card-xl border border-space-border overflow-hidden py-1 z-50 animate-fade-in">
+                      <div className="px-5 py-5 border-b border-space-border bg-space-bg flex justify-between items-center">
+                        <div>
+                          <p className="text-[10px] text-space-muted font-black uppercase tracking-widest">Cuenta</p>
+                          <p className="text-sm font-bold text-space-text truncate mt-0.5 max-w-[150px]">{user.email}</p>
+                        </div>
+                        <button onClick={() => setIsAccountMenuOpen(false)} className="sm:hidden p-2 text-space-muted"><XCircle size={18} /></button>
                       </div>
                       <div className="p-2 space-y-1">
-                        <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition" onClick={() => setIsAccountMenuOpen(false)}>
-                          <LayoutDashboard size={18} />
+                        <Link to="/dashboard" className="flex items-center gap-3 px-4 py-4 sm:py-3 text-sm font-semibold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-2xl transition" onClick={() => setIsAccountMenuOpen(false)}>
+                          <LayoutDashboard size={20} className="text-space-primary" />
                           <span>Ir al Dashboard</span>
                         </Link>
-                        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-space-danger hover:bg-space-danger/10 rounded-xl transition">
-                          <LogOut size={18} />
+                        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-4 sm:py-3 text-sm font-semibold text-space-danger hover:bg-space-danger/10 rounded-2xl transition">
+                          <LogOut size={20} />
                           <span>Cerrar Sesión</span>
                         </button>
                       </div>
@@ -301,103 +305,102 @@ function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20">
-        <div className="relative z-10 w-full max-w-7xl px-4 py-16">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      {/* Hero Section (Centralized) */}
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <div className="relative z-10 w-full max-w-5xl px-4 text-center">
+          <div className="animate-slide-in flex flex-col items-center">
+            
+            <div className="inline-flex items-center gap-2 mb-8 px-5 py-2.5 rounded-full border border-space-primary/20 bg-white/50 backdrop-blur-md shadow-sm">
+              <div className="w-2 h-2 rounded-full bg-space-success animate-pulse shadow-[0_0_8px_rgba(61,153,112,0.6)]"></div>
+              <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-space-primary">Red de profesionales activos en Puerto Rico</span>
+            </div>
 
-            {/* Left Column */}
-            <div className="animate-slide-in">
-              <div className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-space-primary/20 bg-space-primary/5">
-                <div className="w-2 h-2 rounded-full bg-space-success animate-pulse shadow-[0_0_8px_rgba(61,153,112,0.6)]"></div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-space-primary">Red de profesionales activos</span>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.95] text-space-text uppercase">
+              Deja de <span className="text-space-primary">buscar.</span><br />
+              Empieza a <span className="text-transparent bg-clip-text bg-gradient-to-r from-space-primary to-[#2a9d8f]">reservar.</span>
+            </h1>
+
+            <p className="text-lg sm:text-2xl text-space-muted mb-12 max-w-2xl font-medium leading-relaxed">
+              Spacey conecta a los profesionales más top con clientes que valoran su estilo. <br className="hidden sm:block" /> Agenda tu cita en segundos desde cualquier lugar.
+            </p>
+
+            {/* Search Box (Centered) */}
+            <form onSubmit={handleSearch} className="mb-16 w-full max-w-2xl">
+              <div className="flex items-center bg-white border-2 border-space-border hover:border-space-primary/50 focus-within:border-space-primary rounded-full p-2.5 relative group transition-all shadow-card-xl">
+                <Search className="ml-4 text-space-muted group-focus-within:text-space-primary transition-colors shrink-0" size={24} />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Barbería, Estilista, Servicio..."
+                  className="flex-1 bg-transparent pl-4 text-space-text font-black placeholder-space-muted/40 focus:outline-none text-base sm:text-lg h-14"
+                />
+                <button type="submit" className="btn-primary h-14 px-8 sm:px-12 uppercase tracking-widest text-xs sm:text-sm ml-2 shadow-btn rounded-full font-black">
+                  Buscar
+                </button>
               </div>
+            </form>
 
-              <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tighter leading-[1.05] text-space-text uppercase">
-                Deja de <span className="block text-space-primary">buscar.</span>
-                Empieza a <span className="text-transparent bg-clip-text bg-gradient-to-r from-space-primary to-[#2a9d8f]">reservar.</span>
-              </h1>
-
-              <p className="text-lg md:text-xl text-space-muted mb-10 max-w-xl font-medium leading-relaxed">
-                Spacey conecta a los profesionales más top con clientes que valoran su estilo. Agenda tu corte en segundos, sin filas.
-              </p>
-
-              {/* Search Box in Hero */}
-              <form onSubmit={handleSearch} className="mb-12 max-w-xl">
-                <div className="flex items-center bg-white border border-space-border hover:border-space-primary/50 focus-within:border-space-primary rounded-full p-2 relative group transition-all shadow-card">
-                  <Search className="ml-4 text-space-muted group-focus-within:text-space-primary transition-colors shrink-0" size={20} />
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Barbería, Nombre, Servicio..."
-                    className="flex-1 bg-transparent pl-4 text-space-text placeholder-space-muted/50 focus:outline-none text-sm h-14 font-medium"
-                  />
-                  <button type="submit" className="btn-primary h-12 px-8 uppercase tracking-widest text-xs ml-2">
-                    Buscar
-                  </button>
-                </div>
-              </form>
-
-              {/* Stats */}
-              <div className="flex flex-wrap gap-10">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-space-primary-light/30 rounded-2xl flex items-center justify-center text-space-primary"><Star size={20} className="fill-space-primary" /></div>
-                  <div>
-                    <div className="text-2xl font-black text-space-text">4.9/5</div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-space-muted">Valoración</div>
+            {/* Popular Categories (Circular Icons - Booksy Style) */}
+            <div className="flex flex-wrap justify-center gap-6 sm:gap-10 mb-16 px-4">
+              {[
+                { name: 'Barberia', icon: Scissors, color: 'bg-[#4a8463]/10 text-[#4a8463]', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=100&h=100&fit=crop' },
+                { name: 'Cabello', icon: Heart, color: 'bg-space-danger/10 text-space-danger', img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=100&h=100&fit=crop' },
+                { name: 'Uñas', icon: Star, color: 'bg-space-accent/10 text-space-accent', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=100&h=100&fit=crop' },
+                { name: 'Piel', icon: MapPin, color: 'bg-space-primary-light/20 text-space-primary', img: 'https://images.unsplash.com/photo-1552693673-1bf958298935?w=100&h=100&fit=crop' },
+              ].map((cat, i) => (
+                <div key={cat.name} className="flex flex-col items-center gap-3 group cursor-pointer animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
+                  <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+                    <div className="absolute inset-0 rounded-full border-2 border-space-border group-hover:border-space-primary transition-all scale-110 opacity-0 group-hover:opacity-100 duration-500"></div>
+                    <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-sm transition-transform group-hover:scale-95 duration-300">
+                      <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    </div>
                   </div>
+                  <span className="text-xs font-black uppercase tracking-widest text-space-text group-hover:text-space-primary transition-colors">{cat.name}</span>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-space-success/10 rounded-2xl flex items-center justify-center text-space-success"><Scissors size={20} /></div>
-                  <div>
-                    <div className="text-2xl font-black text-space-text">500+</div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-space-muted">Barberos Pro</div>
-                  </div>
-                </div>
+              ))}
+            </div>
+
+            {/* Floating Visual Elements (Booksy style labels) */}
+            {/* Top Left Float */}
+            <div className="absolute left-0 sm:left-[-5%] top-[-5%] sm:top-1/4 animate-float-slow z-20">
+              <div className="bg-white/95 backdrop-blur-md p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border border-space-border shadow-card flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-space-success/20 text-space-success rounded-xl flex items-center justify-center"><Check size={18} /></div>
+                <div className="text-left font-bold text-[10px] sm:text-sm text-space-text">Reserva Confirmada <br/><span className="text-[8px] sm:text-[10px] text-space-muted uppercase">Hair Studio 24</span></div>
+              </div>
+            </div>
+            
+            {/* Bottom Right Float */}
+            <div className="absolute right-0 sm:right-[-5%] bottom-[-10%] sm:bottom-1/3 animate-float z-20">
+               <div className="bg-white/95 backdrop-blur-md p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border border-space-border shadow-card flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-space-primary/10 text-space-primary rounded-xl flex items-center justify-center font-black text-[10px] sm:text-xs">$25</div>
+                <div className="text-left font-bold text-[10px] sm:text-sm text-space-text">Corte Premium <br/><span className="text-[8px] sm:text-[10px] text-space-muted uppercase">En descuento hoy</span></div>
               </div>
             </div>
 
-            {/* Right Column (Visual Testimonials) */}
-            <div className="animate-fade-in hidden lg:block relative h-[500px]">
-              
-              {/* Floating Profile 1 */}
-              <div className="absolute right-0 top-10 bg-white border border-space-border/50 rounded-3xl p-6 w-72 shadow-card-xl z-20 animate-float">
-                <div className="flex items-center gap-4 mb-4">
-                  <img src="https://i.pravatar.cc/150?u=a" alt="User" className="w-12 h-12 rounded-2xl object-cover border border-space-border" />
-                  <div>
-                    <div className="font-bold text-space-text text-sm">Miguel Rivera</div>
-                    <div className="flex gap-0.5 mt-0.5">
-                      {[1, 2, 3, 4, 5].map(i => <Star key={i} size={12} className="text-[#f59e0b] fill-[#f59e0b]" />)}
-                    </div>
-                  </div>
+            {/* New: Top Right Float */}
+            <div className="absolute right-0 sm:right-[5%] top-[5%] sm:top-10 animate-float z-20 hidden md:flex">
+               <div className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-full border border-space-border shadow-card flex items-center gap-2">
+                <div className="flex -space-x-2">
+                  <img className="w-6 h-6 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?u=1" alt="u1" />
+                  <img className="w-6 h-6 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?u=2" alt="u2" />
                 </div>
-                <p className="text-sm font-medium text-space-text leading-relaxed bg-space-bg p-4 rounded-2xl border border-space-border/50">"Reservé mi corte en 2 minutos. Nunca más espero sentado en una sala llena."</p>
+                <span className="text-[10px] font-black text-space-text uppercase tracking-tighter">4.9/5 (1k+ reseñas)</span>
               </div>
+            </div>
 
-               {/* Floating Profile 2 */}
-              <div className="absolute left-4 bottom-20 bg-white border border-space-border/50 rounded-3xl p-6 w-72 shadow-card-xl z-30 animate-float-slow">
-                <div className="flex items-center justify-between mb-4 border-b border-space-border pb-4">
-                  <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 rounded-xl bg-space-primary flex items-center justify-center shadow-lg"><Calendar className="text-white" size={18} /></div>
-                     <div>
-                       <div className="font-black text-space-text text-sm uppercase tracking-wider">Cita Lista</div>
-                       <div className="text-[10px] font-bold uppercase tracking-widest text-space-primary">Hoy 16:00</div>
-                     </div>
-                  </div>
-                  <Check className="text-space-success bg-space-success/10 p-1 rounded-full" size={24} />
-                </div>
-                <div className="flex justify-between items-center bg-space-bg px-4 py-3 rounded-2xl">
-                  <span className="text-xs font-bold text-space-muted">Servicio:</span>
-                  <span className="text-xs font-black text-space-text">Corte Premium</span>
-                </div>
+            {/* New: Bottom Left Float */}
+            <div className="absolute left-0 sm:left-[5%] bottom-[5%] sm:bottom-10 animate-float-slow z-20 hidden md:flex">
+               <div className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-full border border-space-border shadow-card flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-space-success animate-pulse"></div>
+                <span className="text-[10px] font-black text-space-text uppercase tracking-widest">24 Barberías Abiertas</span>
               </div>
-
-              {/* Decorative Background Blob behind cards */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-space-primary/10 rounded-full blur-[60px] -z-10"></div>
             </div>
           </div>
         </div>
+
+        {/* Decorative elements */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-space-primary/5 rounded-full blur-[120px] -z-10"></div>
       </div>
 
       {/* Directory Section */}

@@ -171,7 +171,7 @@ export default function LoginPage() {
                     </div>
 
                     <div className="mt-6 text-center">
-                        <Link to="/" className="text-sm text-space-muted hover:text-space-primary transition">
+                        <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-space-card2 text-space-primary font-bold rounded-full hover:bg-space-primary/10 transition uppercase tracking-widest text-xs">
                             ← Volver al inicio
                         </Link>
                     </div>
