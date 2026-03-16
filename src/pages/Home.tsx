@@ -18,6 +18,8 @@ interface BusinessResult {
   city?: string;
   banner_url?: string;
   logo_url?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 function Home() {
@@ -30,6 +32,10 @@ function Home() {
   const [loadingApts, setLoadingApts] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [lastAppointment, setLastAppointment] = useState<Appointment | null>(null);
+  const [sortByDistance, setSortByDistance] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -80,6 +86,11 @@ function Home() {
         return { ...apt, statusBadge };
       }).filter(apt => apt.status === 'confirmed');
       setCustomerAppointments(enriched);
+      
+      // Determine last appointment for rebooking
+      if (enriched.length > 0) {
+        setLastAppointment(enriched[0]);
+      }
     } catch (err) {
       console.error('Error loading customer appointments', err);
     } finally {
@@ -124,7 +135,7 @@ function Home() {
     try {
       const { data, error: bError } = await supabase
         .from('businesses')
-        .select('id, name, slug, description, address, city, banner_url, logo_url')
+        .select('id, name, slug, description, address, city, banner_url, logo_url, latitude, longitude')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -153,12 +164,52 @@ function Home() {
     { id: 'flash', label: 'Modo Flash', emoji: '🚀', color: 'bg-space-primary', text: 'text-white', border: 'border-space-primary', description: 'Disponible YA', filter: 'express' },
   ];
 
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  const handleGeoLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Tu navegador no soporta geolocalización');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setSortByDistance(true);
+        setIsLocating(false);
+      },
+      (err) => {
+        console.error('Geo error:', err);
+        alert('No pudimos obtener tu ubicación');
+        setIsLocating(false);
+      }
+    );
+  };
+
   const filteredBusinesses = activeMood 
     ? allBusinesses.filter(b => 
         b.name.toLowerCase().includes(energyFilters.find(m => m.id === activeMood)?.filter || '') ||
         b.description?.toLowerCase().includes(energyFilters.find(m => m.id === activeMood)?.filter || '')
       )
     : allBusinesses;
+
+  const sortedBusinesses = [...filteredBusinesses].sort((a, b) => {
+    if (sortByDistance && userLocation && a.latitude && b.latitude) {
+      const distA = calculateDistance(userLocation.lat, userLocation.lng, a.latitude, a.longitude!);
+      const distB = calculateDistance(userLocation.lat, userLocation.lng, b.latitude, b.longitude!);
+      return distA - distB;
+    }
+    return 0;
+  });
 
   const BusinessCard = ({ business, isFavorite }: { business: BusinessResult, isFavorite: boolean }) => (
     <Link
@@ -206,7 +257,11 @@ function Home() {
           <div className="flex items-center gap-1.5">
             <Star size={14} className="text-[#f59e0b] fill-[#f59e0b]" />
             <span className="text-sm font-bold text-space-text">4.9</span>
-            <span className="text-xs text-space-muted font-medium">(120+)</span>
+            {sortByDistance && userLocation && business.latitude && (
+              <span className="text-[10px] text-space-primary font-black ml-2 px-2 py-1 bg-space-primary/10 rounded-full border border-space-primary/20">
+                {calculateDistance(userLocation.lat, userLocation.lng, business.latitude, business.longitude!).toFixed(1)} km
+              </span>
+            )}
           </div>
           <span className="text-space-primary text-[11px] font-black group-hover:underline flex items-center gap-1 uppercase tracking-widest transition-colors group-hover:text-space-primary-dark">
             Reservar
@@ -338,10 +393,13 @@ function Home() {
         <div className="relative z-10 w-full max-w-7xl px-4">
           
           <div className="animate-slide-in flex flex-col items-start text-left mb-12">
-            <div className="inline-flex items-center gap-2 bg-space-primary/10 text-space-primary px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
-              <Star size={12} className="fill-space-primary" />
-              <span>La app #1 de reservas</span>
-            </div>
+            <button 
+              onClick={handleGeoLocation}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 transition-all ${sortByDistance ? 'bg-space-primary text-white shadow-lg' : 'bg-space-primary/10 text-space-primary hover:bg-space-primary/20'}`}
+            >
+              <MapPin size={12} className={isLocating ? 'animate-bounce' : ''} />
+              <span>{isLocating ? 'Ubicando...' : sortByDistance ? 'Cerca de ti: ACTIVADO' : '¿Usar mi ubicación?'}</span>
+            </button>
             <h1 className="text-5xl sm:text-7xl md:text-8xl font-black mb-6 tracking-tighter leading-[0.9] text-space-text uppercase">
               RESERVA TU <br />
               <span className="text-space-primary">PRÓXIMO NIVEL</span>
@@ -349,8 +407,40 @@ function Home() {
             <p className="text-sm sm:text-lg text-space-muted font-bold uppercase tracking-widest max-w-xl">Sin fricción. Sin esperas. Solo los mejores profesionales en un solo lugar.</p>
           </div>
 
-          {/* User Gamification Stats Card */}
-          {user && showStats && (
+          {/* BRUTAL FEATURE: One-Tap Rebooking */}
+          {user && lastAppointment && (
+            <div className="mb-12 animate-fade-in">
+              <div className="flex items-center gap-4 mb-4">
+                <h2 className="text-xs font-black text-space-muted uppercase tracking-[0.4em]">¿Lo de siempre?</h2>
+                <span className="h-px flex-1 bg-space-border/50"></span>
+              </div>
+              <button 
+                onClick={() => navigate(`/book/${(lastAppointment as any).business?.slug}`)}
+                className="w-full bg-white border-2 border-space-primary/30 p-6 rounded-[2rem] flex items-center justify-between hover:border-space-primary hover:shadow-xl transition-all group"
+              >
+                <div className="flex items-center gap-4 text-left">
+                  <div className="w-16 h-16 bg-space-primary rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg group-hover:scale-110 transition-transform">
+                    {(lastAppointment as any).business?.name?.[0].toUpperCase() || 'B'}
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-space-primary uppercase tracking-widest mb-1">Repetir última reserva</p>
+                    <h3 className="text-xl font-black text-space-text uppercase tracking-tight">{(lastAppointment as any).business?.name}</h3>
+                    <p className="text-xs text-space-muted font-bold uppercase tracking-widest">{(lastAppointment as any).service_name}</p>
+                  </div>
+                </div>
+                <div className="hidden sm:flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-2 text-space-primary font-black text-sm uppercase tracking-widest">
+                    <span>Reservar ahora</span>
+                    <ArrowRight size={18} />
+                  </div>
+                  <p className="text-[9px] text-space-muted font-bold uppercase tracking-[0.2em]">Sincronizado con tus preferencias</p>
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* User Gamification Stats Card - Hidden if Rebooking is shown to avoid clutter */}
+          {user && showStats && !lastAppointment && (
             <div className="mb-12 animate-fade-in relative">
                <div className="bg-space-text text-white rounded-[2rem] p-6 sm:p-8 shadow-2xl overflow-hidden relative group">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-space-primary/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
@@ -469,16 +559,16 @@ function Home() {
                   <h2 className="text-2xl font-black text-space-text uppercase tracking-tight">
                     {activeMood ? `Resultados: ${energyFilters.find(m => m.id === activeMood)?.label}` : 'Recomendadas'}
                   </h2>
-                  <span className="bg-space-bg text-space-primary px-3 py-1 rounded-lg text-xs font-black uppercase shadow-sm border border-space-border">{filteredBusinesses.length}</span>
+                  <span className="bg-space-bg text-space-primary px-3 py-1 rounded-lg text-xs font-black uppercase shadow-sm border border-space-border">{sortedBusinesses.length}</span>
                 </div>
                 {activeMood && (
                   <button onClick={() => setActiveMood(null)} className="text-[10px] font-black uppercase tracking-widest text-space-danger hover:underline">Ver Todo</button>
                 )}
               </div>
               
-              {filteredBusinesses.length > 0 ? (
+              {sortedBusinesses.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}
+                  {sortedBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}
                 </div>
               ) : (
                 <div className="bg-white rounded-[3rem] p-16 text-center border border-space-border shadow-card">

@@ -21,6 +21,7 @@ export default function PublicBookingPage() {
     const [services, setServices] = useState<Service[]>([]);
     const [barbers, setBarbers] = useState<Barber[]>([]);
     const [loading, setLoading] = useState(true);
+    const [queueStats, setQueueStats] = useState({ count: 0, waitMins: 0 });
 
     // Booking flow state
     const [step, setStep] = useState(1);
@@ -106,6 +107,20 @@ export default function PublicBookingPage() {
             }));
 
             setBarbers(barbersWithServices);
+
+            // Load Queue Stats for today
+            const today = new Date().toISOString().split('T')[0];
+            const { data: qData } = await supabase
+                .from('appointments')
+                .select('services(duration_minutes)')
+                .eq('business_id', businessData.id)
+                .eq('appointment_date', today)
+                .eq('status', 'confirmed');
+            
+            if (qData) {
+                const totalMins = qData.reduce((acc, curr) => acc + ((curr.services as any)?.duration_minutes || 30), 0);
+                setQueueStats({ count: qData.length, waitMins: totalMins });
+            }
 
         } catch (error: any) {
             console.error('[BookingPage] Fatal error:', error);
@@ -370,11 +385,55 @@ export default function PublicBookingPage() {
                 {/* Header Section */}
                 <header className="text-center mb-12 animate-fade-in">
                     <h1 className="text-4xl md:text-5xl font-black text-space-text mb-4 tracking-tighter uppercase">{business.name}</h1>
-                    <div className="inline-flex items-center gap-2 bg-space-card px-4 py-2 rounded-full shadow-sm border border-space-border relative">
-                        <span className="w-2 h-2 rounded-full bg-space-success animate-pulse shadow-[0_0_10px_rgba(61,153,112,0.5)]"></span>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-space-muted">Reservas Online</p>
+                    <div className="flex flex-wrap justify-center gap-3">
+                        <div className="inline-flex items-center gap-2 bg-space-card px-4 py-2 rounded-full shadow-sm border border-space-border relative">
+                            <span className="w-2 h-2 rounded-full bg-space-success animate-pulse shadow-[0_0_10px_rgba(61,153,112,0.5)]"></span>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-space-muted">Reservas Online</p>
+                        </div>
+                        <div className="inline-flex items-center gap-2 bg-space-primary/10 px-4 py-2 rounded-full shadow-sm border border-space-primary/20">
+                            <Star size={12} className="text-space-primary fill-space-primary" />
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-space-primary">Smart Queue: {queueStats.count} CITAS HOY</p>
+                        </div>
                     </div>
                 </header>
+
+                {/* BRUTAL FEATURE: Smart Queue Indicator */}
+                <div className="mb-12 animate-fade-in delay-75">
+                    <div className="bg-white border-2 border-space-primary/20 rounded-[2.5rem] p-6 flex items-center justify-between shadow-xl">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-space-primary rounded-2xl flex items-center justify-center text-white shadow-lg">
+                                <Clock size={20} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-space-primary uppercase tracking-[0.3em] mb-1">Estado de la fila</p>
+                                <h3 className="text-xl font-black text-space-text uppercase tracking-tight">Espera estimada: {queueStats.waitMins} min</h3>
+                            </div>
+                        </div>
+                        <div className="hidden sm:block text-right">
+                           <p className="text-[10px] font-black text-space-muted uppercase tracking-widest">Capacidad actual</p>
+                           <p className="text-sm font-bold text-space-text">{queueStats.count < 10 ? 'Alta Disponibilidad' : 'Fila Moderada'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* BRUTAL FEATURE: Gallery (Visual Proof) */}
+                <div className="mb-12 animate-fade-in delay-150 overflow-hidden">
+                    <div className="flex items-center justify-between mb-4 px-2">
+                        <h2 className="text-xs font-black text-space-muted uppercase tracking-[0.4em]">Trabajos Reales</h2>
+                        <span className="text-[10px] font-black text-space-primary uppercase tracking-widest hover:underline cursor-pointer">Ver Portfolio</span>
+                    </div>
+                    <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+                        {[1,2,3,4].map(i => (
+                            <div key={i} className="flex-shrink-0 w-48 h-64 bg-space-bg rounded-[2rem] overflow-hidden border border-space-border hover:border-space-primary/40 transition-all hover:scale-[1.02]">
+                                <img 
+                                    src={`https://images.unsplash.com/photo-${i === 1 ? '1503951914875-452162b0f3f1' : i === 2 ? '1621605815971-fbc98d665033' : i === 3 ? '1593702295094-ada35bc1307e' : '1585747860715-2ba37e788b70'}?auto=format&fit=crop&q=80&w=400`} 
+                                    alt="Result" 
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
                 {/* Progress Steps */}
                 <div className="flex justify-center mb-12 animate-fade-in delay-100">
@@ -407,7 +466,7 @@ export default function PublicBookingPage() {
                                 <p className="text-xs font-bold text-space-muted uppercase tracking-widest">¿Qué haremos hoy?</p>
                             </div>
                             <div className="grid gap-4">
-                                {services.map((service) => (
+                                {(services as Service[]).map((service) => (
                                     <button
                                         key={service.id}
                                         onClick={() => handleServiceSelect(service)}
@@ -454,12 +513,12 @@ export default function PublicBookingPage() {
                                 </button>
 
                                 {barbers
-                                    .filter(barber => {
+                                    .filter((barber: Barber) => {
                                         const barberServices = (barber as any).barbers_services;
                                         if (!barberServices) return true;
                                         return barberServices.some((bs: any) => bs.service_id === selectedService.id);
                                     })
-                                    .map((barber) => (
+                                    .map((barber: Barber) => (
                                         <button
                                             key={barber.id}
                                             onClick={() => handleBarberSelect(barber)}
