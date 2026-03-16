@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Modal } from '@/components/common/Modal';
 import { useAppointments } from '@/hooks/useAppointments';
+import { TimelineCalendar } from '@/components/calendar/TimelineCalendar';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -21,6 +22,7 @@ export default function AppointmentsPage() {
     // Barber Filter State
     const [selectedBarberId, setSelectedBarberId] = useState<string>('all');
     const [activeTab, setActiveTab] = useState<Tab>('today');
+    const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
     // Auto-detect staff's barber profile
     const currentStaffBarber = barbers.find(b => b.user_id === user?.id);
@@ -63,14 +65,10 @@ export default function AppointmentsPage() {
         }
 
         // Apply Tab filters
-        const today = new Date().toISOString().split('T')[0];
-
         if (activeTab === 'today') {
-            filters.date = today;
-            // "Pendientes" logic for Today implies we mostly care about active ones, 
-            // but usually a daily view shows everything for that day. 
-            // However, prompt says "En Pendientes solo mostrar status = confirmed".
-            // Since "Hoy" and "Próximas" are basically "Pending", we filter.
+            // "today" is now "Agenda" which uses currentDate
+            const selectedDateStr = currentDate.toISOString().split('T')[0];
+            filters.date = selectedDateStr;
             filters.status = 'confirmed';
         } else if (activeTab === 'upcoming') {
             // For upcoming, we fetch all (or maybe should fetch from today onwards if backend supported it)
@@ -154,8 +152,8 @@ export default function AppointmentsPage() {
     // Filter and Sort Appointments for "Upcoming" & "All" Logic
     const filteredAppointments = appointments.filter(apt => {
         if (activeTab === 'today') {
-            const today = new Date().toISOString().split('T')[0];
-            return apt.appointment_date === today && apt.status === 'confirmed';
+            const selectedDateStr = currentDate.toISOString().split('T')[0];
+            return apt.appointment_date === selectedDateStr && apt.status === 'confirmed';
         }
 
         if (activeTab === 'upcoming') {
@@ -212,7 +210,7 @@ export default function AppointmentsPage() {
                     {/* Tabs */}
                     <div className="flex p-1 bg-white border border-space-border rounded-xl w-full lg:w-auto shadow-card">
                         {(['today', 'upcoming', 'all'] as const).map((tab) => {
-                            const label = tab === 'today' ? 'Hoy' : tab === 'upcoming' ? 'Próximas' : 'Historial';
+                            const label = tab === 'today' ? 'Agenda Diaria' : tab === 'upcoming' ? 'Próximas' : 'Historial';
                             return (
                                 <button key={tab} onClick={() => setActiveTab(tab)}
                                     className={`flex-1 lg:flex-none px-5 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap
@@ -252,9 +250,20 @@ export default function AppointmentsPage() {
                         </div>
                         <h3 className="text-lg font-bold text-space-text mb-1">No hay citas</h3>
                         <p className="text-space-muted text-sm max-w-xs mx-auto">
-                            {activeTab === 'today' ? 'No tienes citas para hoy.' :
+                            {activeTab === 'today' ? 'No hay citas para este día.' :
                              activeTab === 'upcoming' ? 'No hay citas próximas.' : 'No hay historial.'}
                         </p>
+                    </div>
+                ) : activeTab === 'today' ? (
+                    <div className="animate-fade-in">
+                        <TimelineCalendar 
+                            appointments={filteredAppointments}
+                            selectedDate={currentDate}
+                            onDateChange={setCurrentDate}
+                            onAppointmentClick={handleViewDetails}
+                            barbers={selectedBarberId === 'all' ? barbers : barbers.filter(b => b.id === selectedBarberId)}
+                            services={services}
+                        />
                     </div>
                 ) : (
                     <div className="space-y-3">

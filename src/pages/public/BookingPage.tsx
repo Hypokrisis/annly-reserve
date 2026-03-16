@@ -4,6 +4,7 @@ import { Check, ChevronLeft, Home, Calendar as CalendarIcon, Clock, User as User
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { MonthGridCalendar } from '@/components/calendar/MonthGridCalendar';
 import { useAvailability } from '@/hooks/useAvailability';
 import { formatCurrency, formatDate, parseDate, formatTimeDisplay, isValidEmail, isValidPhone } from '@/utils';
 import { createAppointment } from '@/lib/appointments';
@@ -36,7 +37,6 @@ export default function PublicBookingPage() {
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
-    const [userProfile, setUserProfile] = useState<{ full_name?: string; phone?: string } | null>(null);
     const [, setLoadingProfile] = useState(false);
 
     // Load availability when service, barber, and date are selected
@@ -166,7 +166,6 @@ export default function PublicBookingPage() {
                     .maybeSingle();
 
                 if (!error && data) {
-                    setUserProfile(data);
                     // Autocomplete customer info from profile
                     setCustomerInfo(prev => ({
                         ...prev,
@@ -255,15 +254,6 @@ export default function PublicBookingPage() {
         } finally {
             setSubmitting(false);
         }
-    };
-
-    const getMinDate = () => new Date().toISOString().split('T')[0];
-    const getMaxDate = () => {
-        const today = new Date();
-        const maxDays = business?.max_advance_booking_days || 30;
-        const maxDate = new Date(today);
-        maxDate.setDate(maxDate.getDate() + maxDays);
-        return maxDate.toISOString().split('T')[0];
     };
 
     if (loading) return (
@@ -523,18 +513,11 @@ export default function PublicBookingPage() {
                                 ))}
                             </div>
 
-                            <div className="max-w-xs mx-auto text-center">
-                                <label className="block text-[10px] font-black text-space-muted uppercase tracking-[0.2em] mb-4">O elige una fecha específica</label>
-                                <div className="relative group mx-auto w-full max-w-[240px]">
-                                    <input
-                                        type="date"
-                                        value={selectedDate}
-                                        onChange={(e) => handleDateSelect(e.target.value)}
-                                        min={getMinDate()}
-                                        max={getMaxDate()}
-                                        className="w-full text-center font-bold uppercase text-sm h-14 rounded-2xl bg-white border border-space-border text-space-text focus:ring-2 focus:ring-space-primary focus:border-transparent transition-all hover:bg-space-bg cursor-pointer"
-                                    />
-                                </div>
+                            <div className="mt-8 w-full flex justify-center">
+                                <MonthGridCalendar 
+                                    selectedDate={selectedDate} 
+                                    onDateSelect={handleDateSelect}
+                                />
                             </div>
                         </div>
                     )}
