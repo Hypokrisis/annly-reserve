@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, Search, LogOut, LayoutDashboard, Check } from 'lucide-react';
+import { MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, LogOut, LayoutDashboard, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,10 +21,9 @@ interface BusinessResult {
 }
 
 function Home() {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [searchTerm, setSearchTerm] = useState('');
   const [allBusinesses, setAllBusinesses] = useState<BusinessResult[]>([]);
-  const [recentBusinesses, setRecentBusinesses] = useState<BusinessResult[]>([]);
   const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
   const [customerAppointments, setCustomerAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,11 +131,6 @@ function Home() {
       if (bError) throw bError;
       const businessesData = data || [];
       setAllBusinesses(businessesData);
-      const recentSlugs = JSON.parse(localStorage.getItem('recentBusinesses') || '[]');
-      if (recentSlugs.length > 0) {
-        const foundRecents = businessesData.filter(b => recentSlugs.includes(b.slug));
-        setRecentBusinesses(foundRecents);
-      }
     } catch (err: any) {
       console.error('Error loading home data:', err);
       setError('No pudimos cargar las barberías. Intenta recargar la página.');
@@ -144,17 +139,32 @@ function Home() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchTerm.trim()) return;
-    const el = document.getElementById('directory');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
-
   const handleLogout = async () => {
     await logout();
     setIsAccountMenuOpen(false);
   };
+
+  const handleSurpriseMe = () => {
+    if (allBusinesses.length === 0) return;
+    const random = allBusinesses[Math.floor(Math.random() * allBusinesses.length)];
+    navigate(`/book/${random.slug}`);
+  };
+
+  const [activeMood, setActiveMood] = useState<string | null>(null);
+
+  const moods = [
+    { id: 'fresh', label: 'Quiero verme fresh', emoji: '🔥', color: 'bg-[#ff6b6b]', description: 'Barberías y estilistas top', filter: 'barbería' },
+    { id: 'glam', label: 'Quiero arreglarme full', emoji: '💅', color: 'bg-[#ff9ff3]', description: 'Nails, faciales y belleza', filter: 'uñas' },
+    { id: 'fast', label: 'Necesito algo rápido', emoji: '⚡', color: 'bg-[#feca57]', description: 'Citas inmediatas sin fila', filter: 'express' },
+    { id: 'value', label: 'Estoy pelao pero quiero algo bueno', emoji: '💸', color: 'bg-[#1dd1a1]', description: 'Ofertas y combos económicos', filter: 'oferta' },
+  ];
+
+  const filteredBusinesses = activeMood 
+    ? allBusinesses.filter(b => 
+        b.name.toLowerCase().includes(moods.find(m => m.id === activeMood)?.filter || '') ||
+        b.description?.toLowerCase().includes(moods.find(m => m.id === activeMood)?.filter || '')
+      )
+    : allBusinesses;
 
   const BusinessCard = ({ business, isFavorite }: { business: BusinessResult, isFavorite: boolean }) => (
     <Link
@@ -214,6 +224,26 @@ function Home() {
   );
 
   const favoriteBusinesses = allBusinesses.filter(b => favoriteSlugs.includes(b.slug));
+
+  const MoodCard = ({ mood }: { mood: typeof moods[0] }) => (
+    <button
+      onClick={() => {
+        setActiveMood(activeMood === mood.id ? null : mood.id);
+        if (activeMood !== mood.id) {
+           document.getElementById('directory')?.scrollIntoView({ behavior: 'smooth' });
+        }
+      }}
+      className={`relative flex-shrink-0 w-64 h-80 rounded-[2.5rem] overflow-hidden p-8 flex flex-col justify-end transition-all duration-500 hover:scale-105 shadow-xl group border-4 ${activeMood === mood.id ? 'border-space-primary' : 'border-white'}`}
+    >
+      <div className={`absolute inset-0 ${mood.color} opacity-90 group-hover:opacity-100 transition-opacity`}></div>
+      <div className="absolute top-8 left-8 text-5xl group-hover:scale-110 transition-transform">{mood.emoji}</div>
+      <div className="relative z-10 text-left">
+        <h3 className="text-white text-2xl font-black leading-tight mb-2 uppercase tracking-tighter">{mood.label}</h3>
+        <p className="text-white/80 text-xs font-bold uppercase tracking-widest">{mood.description}</p>
+      </div>
+      <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+    </button>
+  );
 
   return (
     <div className="min-h-screen bg-space-bg text-space-text">
@@ -305,102 +335,73 @@ function Home() {
         </div>
       </nav>
 
-      {/* Hero Section (Centralized) */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-        <div className="relative z-10 w-full max-w-5xl px-4 text-center">
-          <div className="animate-slide-in flex flex-col items-center">
-            
-            <div className="inline-flex items-center gap-2 mb-8 px-5 py-2.5 rounded-full border border-space-primary/20 bg-white/50 backdrop-blur-md shadow-sm">
-              <div className="w-2 h-2 rounded-full bg-space-success animate-pulse shadow-[0_0_8px_rgba(61,153,112,0.6)]"></div>
-              <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-space-primary">Red de profesionales activos en Puerto Rico</span>
-            </div>
-
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.95] text-space-text uppercase">
-              Deja de <span className="text-space-primary">buscar.</span><br />
-              Empieza a <span className="text-transparent bg-clip-text bg-gradient-to-r from-space-primary to-[#2a9d8f]">reservar.</span>
+      {/* Hero Section (App Style) */}
+      <div className="relative min-h-screen flex flex-col items-center justify-start overflow-hidden pt-32 pb-20">
+        <div className="relative z-10 w-full max-w-7xl px-4 text-center">
+          
+          <div className="animate-slide-in flex flex-col items-center mb-12">
+            <h1 className="text-6xl sm:text-8xl md:text-9xl font-black mb-6 tracking-tighter leading-[0.85] text-space-text uppercase">
+              ¿Cómo quieres <br />
+              <span className="text-space-primary italic">salir de aquí?</span>
             </h1>
+            <p className="text-lg sm:text-xl text-space-muted font-bold uppercase tracking-[0.2em] mb-12">Reservas épicas en segundos</p>
 
-            <p className="text-lg sm:text-2xl text-space-muted mb-12 max-w-2xl font-medium leading-relaxed">
-              Spacey conecta a los profesionales más top con clientes que valoran su estilo. <br className="hidden sm:block" /> Agenda tu cita en segundos desde cualquier lugar.
-            </p>
-
-            {/* Search Box (Centered) */}
-            <form onSubmit={handleSearch} className="mb-16 w-full max-w-2xl">
-              <div className="flex items-center bg-white border-2 border-space-border hover:border-space-primary/50 focus-within:border-space-primary rounded-full p-2.5 relative group transition-all shadow-card-xl">
-                <Search className="ml-4 text-space-muted group-focus-within:text-space-primary transition-colors shrink-0" size={24} />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Barbería, Estilista, Servicio..."
-                  className="flex-1 bg-transparent pl-4 text-space-text font-black placeholder-space-muted/40 focus:outline-none text-base sm:text-lg h-14"
-                />
-                <button type="submit" className="btn-primary h-14 px-8 sm:px-12 uppercase tracking-widest text-xs sm:text-sm ml-2 shadow-btn rounded-full font-black">
-                  Buscar
-                </button>
+            {/* Surprise Me Button (The Innovation) */}
+            <button 
+              onClick={handleSurpriseMe}
+              className="group relative inline-flex items-center gap-4 bg-space-text text-white px-10 py-6 rounded-full font-black text-lg uppercase tracking-widest hover:bg-space-primary transition-all shadow-2xl hover:scale-105 active:scale-95 mb-16 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-space-primary/0 via-white/10 to-space-primary/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              <span className="relative z-10">🎲 Sorpéndeme</span>
+              <div className="relative z-10 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </div>
-            </form>
+            </button>
+          </div>
 
-            {/* Popular Categories (Circular Icons - Booksy Style) */}
-            <div className="flex flex-wrap justify-center gap-6 sm:gap-10 mb-16 px-4">
+          {/* Mood Discovery (Stories Scroll Horizontal) */}
+          <div className="w-full relative px-2 mb-16">
+             <div className="flex items-center justify-between mb-6 px-4">
+                <h2 className="text-xs font-black text-space-muted uppercase tracking-[0.3em]">Elige tu Mood</h2>
+                <div className="flex gap-2">
+                   <div className="w-2 h-2 rounded-full bg-space-primary"></div>
+                   <div className="w-2 h-2 rounded-full bg-space-border"></div>
+                   <div className="w-2 h-2 rounded-full bg-space-border"></div>
+                </div>
+             </div>
+             
+             {/* Horizontal Scroll Area */}
+             <div className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide px-4 -mx-4 mask-fade-edges">
+                {moods.map((mood) => (
+                  <MoodCard key={mood.id} mood={mood} />
+                ))}
+             </div>
+          </div>
+
+          {/* Traditional Stories Style Categories (Circular) */}
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide mb-12 border-y border-space-border/30 py-6">
               {[
-                { name: 'Barberia', icon: Scissors, color: 'bg-[#4a8463]/10 text-[#4a8463]', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=100&h=100&fit=crop' },
-                { name: 'Cabello', icon: Heart, color: 'bg-space-danger/10 text-space-danger', img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=100&h=100&fit=crop' },
-                { name: 'Uñas', icon: Star, color: 'bg-space-accent/10 text-space-accent', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=100&h=100&fit=crop' },
-                { name: 'Piel', icon: MapPin, color: 'bg-space-primary-light/20 text-space-primary', img: 'https://images.unsplash.com/photo-1552693673-1bf958298935?w=100&h=100&fit=crop' },
-              ].map((cat, i) => (
-                <div key={cat.name} className="flex flex-col items-center gap-3 group cursor-pointer animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
-                  <div className="relative w-20 h-20 sm:w-24 sm:h-24">
-                    <div className="absolute inset-0 rounded-full border-2 border-space-border group-hover:border-space-primary transition-all scale-110 opacity-0 group-hover:opacity-100 duration-500"></div>
-                    <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-sm transition-transform group-hover:scale-95 duration-300">
-                      <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                    </div>
+                { name: 'Hair', img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=80&h=80&fit=crop' },
+                { name: 'Nails', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=80&h=80&fit=crop' },
+                { name: 'Skin', img: 'https://images.unsplash.com/photo-1552693673-1bf958298935?w=80&h=80&fit=crop' },
+                { name: 'Food', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=80&h=80&fit=crop' },
+                { name: 'Tattoo', img: 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=80&h=80&fit=crop' },
+                { name: 'Gym', img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=80&h=80&fit=crop' },
+              ].map((cat) => (
+                <div key={cat.name} className="flex flex-col items-center gap-2 flex-shrink-0 cursor-pointer">
+                  <div className="w-16 h-16 rounded-full p-1 border-2 border-space-primary overflow-hidden shadow-inner bg-white">
+                    <img src={cat.img} alt={cat.name} className="w-full h-full rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-300" />
                   </div>
-                  <span className="text-xs font-black uppercase tracking-widest text-space-text group-hover:text-space-primary transition-colors">{cat.name}</span>
+                  <span className="text-[10px] font-black text-space-muted uppercase tracking-widest">{cat.name}</span>
                 </div>
               ))}
-            </div>
-
-            {/* Floating Visual Elements (Booksy style labels) */}
-            {/* Top Left Float */}
-            <div className="absolute left-0 sm:left-[-5%] top-[-5%] sm:top-1/4 animate-float-slow z-20">
-              <div className="bg-white/95 backdrop-blur-md p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border border-space-border shadow-card flex items-center gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-space-success/20 text-space-success rounded-xl flex items-center justify-center"><Check size={18} /></div>
-                <div className="text-left font-bold text-[10px] sm:text-sm text-space-text">Reserva Confirmada <br/><span className="text-[8px] sm:text-[10px] text-space-muted uppercase">Hair Studio 24</span></div>
-              </div>
-            </div>
-            
-            {/* Bottom Right Float */}
-            <div className="absolute right-0 sm:right-[-5%] bottom-[-10%] sm:bottom-1/3 animate-float z-20">
-               <div className="bg-white/95 backdrop-blur-md p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border border-space-border shadow-card flex items-center gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-space-primary/10 text-space-primary rounded-xl flex items-center justify-center font-black text-[10px] sm:text-xs">$25</div>
-                <div className="text-left font-bold text-[10px] sm:text-sm text-space-text">Corte Premium <br/><span className="text-[8px] sm:text-[10px] text-space-muted uppercase">En descuento hoy</span></div>
-              </div>
-            </div>
-
-            {/* New: Top Right Float */}
-            <div className="absolute right-0 sm:right-[5%] top-[5%] sm:top-10 animate-float z-20 hidden md:flex">
-               <div className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-full border border-space-border shadow-card flex items-center gap-2">
-                <div className="flex -space-x-2">
-                  <img className="w-6 h-6 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?u=1" alt="u1" />
-                  <img className="w-6 h-6 rounded-full border-2 border-white" src="https://i.pravatar.cc/100?u=2" alt="u2" />
-                </div>
-                <span className="text-[10px] font-black text-space-text uppercase tracking-tighter">4.9/5 (1k+ reseñas)</span>
-              </div>
-            </div>
-
-            {/* New: Bottom Left Float */}
-            <div className="absolute left-0 sm:left-[5%] bottom-[5%] sm:bottom-10 animate-float-slow z-20 hidden md:flex">
-               <div className="bg-white/95 backdrop-blur-md px-4 py-3 rounded-full border border-space-border shadow-card flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-space-success animate-pulse"></div>
-                <span className="text-[10px] font-black text-space-text uppercase tracking-widest">24 Barberías Abiertas</span>
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* Decorative elements */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] bg-space-primary/5 rounded-full blur-[120px] -z-10"></div>
+        {/* Repositioned Floating elements to be less "buggy" */}
+        <div className="hidden lg:block absolute left-10 bottom-20 animate-float-slow z-0 opacity-50">
+           <div className="w-64 h-64 bg-space-primary/10 rounded-full blur-[80px]"></div>
+        </div>
       </div>
 
       {/* Directory Section */}
@@ -471,14 +472,19 @@ function Home() {
             <section className="animate-fade-in delay-100">
               <div className="flex items-center justify-between mb-8 px-2 border-b border-space-border pb-4">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-black text-space-text uppercase tracking-tight">Recomendadas</h2>
-                  <span className="bg-space-bg text-space-primary px-3 py-1 rounded-lg text-xs font-black uppercase shadow-sm border border-space-border">{allBusinesses.length}</span>
+                  <h2 className="text-2xl font-black text-space-text uppercase tracking-tight">
+                    {activeMood ? `Resultados para: ${moods.find(m => m.id === activeMood)?.label}` : 'Recomendadas'}
+                  </h2>
+                  <span className="bg-space-bg text-space-primary px-3 py-1 rounded-lg text-xs font-black uppercase shadow-sm border border-space-border">{filteredBusinesses.length}</span>
                 </div>
+                {activeMood && (
+                  <button onClick={() => setActiveMood(null)} className="text-[10px] font-black uppercase tracking-widest text-space-danger hover:underline">Ver Todo</button>
+                )}
               </div>
               
-              {allBusinesses.length > 0 ? (
+              {filteredBusinesses.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {allBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}
+                  {filteredBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}
                 </div>
               ) : (
                 <div className="bg-white rounded-[3rem] p-16 text-center border border-space-border shadow-card">

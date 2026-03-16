@@ -141,8 +141,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                     })}
                 </nav>
 
-                {/* User Footer */}
-                <div className="px-3 py-4 border-t border-space-border flex-shrink-0 pb-safe sm:pb-4 mb-6 lg:mb-0">
+                {/* User Footer (Desktop only) */}
+                <div className="hidden lg:block px-3 py-4 border-t border-space-border flex-shrink-0 mb-6 font-bold">
                     <div className="flex items-center gap-3 bg-space-card2 p-3 rounded-2xl border border-space-border/50">
                         <div className="w-10 h-10 rounded-full bg-space-primary-light flex items-center justify-center text-space-primary font-black text-sm flex-shrink-0 shadow-sm border border-space-primary/10">
                             {user?.email?.charAt(0).toUpperCase()}
@@ -161,6 +161,25 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                     </div>
                 </div>
             </aside>
+
+            {/* ── Mobile Bottom Navigation (Definitive Fix) ───────────────────── */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-space-border px-8 py-3 pb-safe flex items-center justify-between shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+                <Link to="/dashboard" className={`flex flex-col items-center gap-1 ${location.pathname === '/dashboard' ? 'text-space-primary' : 'text-space-muted'}`}>
+                    <LayoutDashboard size={22} />
+                    <span className="text-[10px] font-black uppercase tracking-tighter">Panel</span>
+                </Link>
+                
+                <div className="relative">
+                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-14 h-14 bg-space-primary rounded-full flex items-center justify-center text-white shadow-xl border-4 border-white active:scale-90 transition-transform">
+                        <Scissors size={24} />
+                    </div>
+                </div>
+
+                <button onClick={handleLogout} className="flex flex-col items-center gap-1 text-space-danger animate-pulse">
+                    <LogOut size={22} />
+                    <span className="text-[10px] font-black uppercase tracking-tighter">Salir</span>
+                </button>
+            </div>
 
             {/* ── Main Content ──────────────────────────────────── */}
             <main className="flex-1 min-w-0 overflow-y-auto pt-20 lg:pt-0">
