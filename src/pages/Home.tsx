@@ -144,25 +144,19 @@ function Home() {
     setIsAccountMenuOpen(false);
   };
 
-  const handleSurpriseMe = () => {
-    if (allBusinesses.length === 0) return;
-    const random = allBusinesses[Math.floor(Math.random() * allBusinesses.length)];
-    navigate(`/book/${random.slug}`);
-  };
-
   const [activeMood, setActiveMood] = useState<string | null>(null);
+  const [showStats, setShowStats] = useState(true);
 
-  const moods = [
-    { id: 'fresh', label: 'Quiero verme fresh', emoji: '🔥', color: 'bg-[#ff6b6b]', description: 'Barberías y estilistas top', filter: 'barbería' },
-    { id: 'glam', label: 'Quiero arreglarme full', emoji: '💅', color: 'bg-[#ff9ff3]', description: 'Nails, faciales y belleza', filter: 'uñas' },
-    { id: 'fast', label: 'Necesito algo rápido', emoji: '⚡', color: 'bg-[#feca57]', description: 'Citas inmediatas sin fila', filter: 'express' },
-    { id: 'value', label: 'Estoy pelao pero quiero algo bueno', emoji: '💸', color: 'bg-[#1dd1a1]', description: 'Ofertas y combos económicos', filter: 'oferta' },
+  const energyFilters = [
+    { id: 'saving', label: 'Modo Ahorro', emoji: '🪫', color: 'bg-white', text: 'text-space-text', border: 'border-space-border', description: 'Rápido + Barato', filter: 'oferta' },
+    { id: 'premium', label: 'Modo Premium', emoji: '⚡', color: 'bg-space-text', text: 'text-white', border: 'border-space-text', description: 'Calidad + Top', filter: 'barbería' },
+    { id: 'flash', label: 'Modo Flash', emoji: '🚀', color: 'bg-space-primary', text: 'text-white', border: 'border-space-primary', description: 'Disponible YA', filter: 'express' },
   ];
 
   const filteredBusinesses = activeMood 
     ? allBusinesses.filter(b => 
-        b.name.toLowerCase().includes(moods.find(m => m.id === activeMood)?.filter || '') ||
-        b.description?.toLowerCase().includes(moods.find(m => m.id === activeMood)?.filter || '')
+        b.name.toLowerCase().includes(energyFilters.find(m => m.id === activeMood)?.filter || '') ||
+        b.description?.toLowerCase().includes(energyFilters.find(m => m.id === activeMood)?.filter || '')
       )
     : allBusinesses;
 
@@ -225,7 +219,7 @@ function Home() {
 
   const favoriteBusinesses = allBusinesses.filter(b => favoriteSlugs.includes(b.slug));
 
-  const MoodCard = ({ mood }: { mood: typeof moods[0] }) => (
+  const MoodCard = ({ mood }: { mood: typeof energyFilters[0] }) => (
     <button
       onClick={() => {
         setActiveMood(activeMood === mood.id ? null : mood.id);
@@ -233,15 +227,18 @@ function Home() {
            document.getElementById('directory')?.scrollIntoView({ behavior: 'smooth' });
         }
       }}
-      className={`relative flex-shrink-0 w-64 h-80 rounded-[2.5rem] overflow-hidden p-8 flex flex-col justify-end transition-all duration-500 hover:scale-105 shadow-xl group border-4 ${activeMood === mood.id ? 'border-space-primary' : 'border-white'}`}
+      className={`relative flex-shrink-0 w-full sm:w-auto flex-1 min-w-[200px] rounded-3xl overflow-hidden p-6 flex flex-col items-start justify-between transition-all duration-300 hover:scale-[1.02] shadow-sm border-2 ${activeMood === mood.id ? 'border-space-primary ring-4 ring-space-primary/10' : 'border-space-border bg-white'}`}
     >
-      <div className={`absolute inset-0 ${mood.color} opacity-90 group-hover:opacity-100 transition-opacity`}></div>
-      <div className="absolute top-8 left-8 text-5xl group-hover:scale-110 transition-transform">{mood.emoji}</div>
-      <div className="relative z-10 text-left">
-        <h3 className="text-white text-2xl font-black leading-tight mb-2 uppercase tracking-tighter">{mood.label}</h3>
-        <p className="text-white/80 text-xs font-bold uppercase tracking-widest">{mood.description}</p>
+      <div className="flex items-center justify-between w-full mb-4">
+        <span className="text-3xl">{mood.emoji}</span>
+        <div className={`w-8 h-8 rounded-full ${mood.color} ${mood.border} border flex items-center justify-center`}>
+           <ArrowRight size={14} className={mood.text} />
+        </div>
       </div>
-      <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+      <div className="text-left">
+        <p className="text-[10px] font-black uppercase tracking-widest text-space-muted mb-1">{mood.description}</p>
+        <h3 className="text-space-text text-lg font-black uppercase tracking-tight">{mood.label}</h3>
+      </div>
     </button>
   );
 
@@ -287,14 +284,15 @@ function Home() {
             </div>
 
             {/* Auth Buttons */}
-            <div className="flex items-center gap-3">
+            {/* Auth Buttons */}
+            <div className="flex items-center gap-2 sm:gap-3">
               {user ? (
                 <div className="relative">
                   <button
                     onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
                     className="flex items-center gap-2 p-1 rounded-full hover:bg-space-bg transition border border-transparent hover:border-space-border"
                   >
-                    <div className="w-9 h-9 bg-space-primary-light text-space-primary rounded-full flex items-center justify-center font-black text-sm border border-space-primary/20 shadow-sm">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-space-primary-light text-space-primary rounded-full flex items-center justify-center font-black text-xs sm:text-sm border border-space-primary/20 shadow-sm">
                       {user.email?.[0].toUpperCase()}
                     </div>
                   </button>
@@ -303,7 +301,7 @@ function Home() {
                       <div className="px-5 py-5 border-b border-space-border bg-space-bg flex justify-between items-center">
                         <div>
                           <p className="text-[10px] text-space-muted font-black uppercase tracking-widest">Cuenta</p>
-                          <p className="text-sm font-bold text-space-text truncate mt-0.5 max-w-[150px]">{user.email}</p>
+                          <p className="text-xs font-bold text-space-text truncate mt-0.5 max-w-[150px]">{user.email}</p>
                         </div>
                         <button onClick={() => setIsAccountMenuOpen(false)} className="sm:hidden p-2 text-space-muted"><XCircle size={18} /></button>
                       </div>
@@ -321,86 +319,82 @@ function Home() {
                   )}
                 </div>
               ) : (
-                <>
-                  <Link to="/login" className="text-xs font-bold text-space-text hover:text-space-primary transition px-5 py-2.5 rounded-full border border-space-border/50 hover:border-space-primary bg-white hover:bg-space-bg uppercase tracking-widest hidden sm:block">
-                    Acceso
+                <div className="flex items-center gap-1.5 sm:gap-3">
+                  <Link to="/login" className="text-[10px] sm:text-xs font-black text-space-text hover:text-white hover:bg-space-text transition px-4 sm:px-6 py-2 sm:py-3 rounded-full border-2 border-space-text uppercase tracking-widest">
+                    Acceder
                   </Link>
-                  <Link to="/signup" className="btn-primary py-2.5 px-6 text-xs uppercase tracking-widest shadow-btn">
-                    Registrar
+                  <Link to="/signup" className="btn-primary py-2 sm:py-3 px-4 sm:px-6 text-[10px] sm:text-xs uppercase tracking-widest shadow-btn hidden xs:flex">
+                    Unirse
                   </Link>
-                </>
+                </div>
               )}
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section (App Style) */}
-      <div className="relative min-h-screen flex flex-col items-center justify-start overflow-hidden pt-32 pb-20">
-        <div className="relative z-10 w-full max-w-7xl px-4 text-center">
+      {/* Hero Section (Booking App Dashboard Style) */}
+      <div className="relative min-h-[85vh] flex flex-col items-center justify-start overflow-hidden pt-36 pb-12">
+        <div className="relative z-10 w-full max-w-7xl px-4">
           
-          <div className="animate-slide-in flex flex-col items-center mb-12">
-            <h1 className="text-6xl sm:text-8xl md:text-9xl font-black mb-6 tracking-tighter leading-[0.85] text-space-text uppercase">
-              ¿Cómo quieres <br />
-              <span className="text-space-primary italic">salir de aquí?</span>
+          <div className="animate-slide-in flex flex-col items-start text-left mb-12">
+            <div className="inline-flex items-center gap-2 bg-space-primary/10 text-space-primary px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
+              <Star size={12} className="fill-space-primary" />
+              <span>La app #1 de reservas</span>
+            </div>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black mb-6 tracking-tighter leading-[0.9] text-space-text uppercase">
+              RESERVA TU <br />
+              <span className="text-space-primary">PRÓXIMO NIVEL</span>
             </h1>
-            <p className="text-lg sm:text-xl text-space-muted font-bold uppercase tracking-[0.2em] mb-12">Reservas épicas en segundos</p>
-
-            {/* Surprise Me Button (The Innovation) */}
-            <button 
-              onClick={handleSurpriseMe}
-              className="group relative inline-flex items-center gap-4 bg-space-text text-white px-10 py-6 rounded-full font-black text-lg uppercase tracking-widest hover:bg-space-primary transition-all shadow-2xl hover:scale-105 active:scale-95 mb-16 overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-space-primary/0 via-white/10 to-space-primary/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-              <span className="relative z-10">🎲 Sorpéndeme</span>
-              <div className="relative z-10 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-              </div>
-            </button>
+            <p className="text-sm sm:text-lg text-space-muted font-bold uppercase tracking-widest max-w-xl">Sin fricción. Sin esperas. Solo los mejores profesionales en un solo lugar.</p>
           </div>
 
-          {/* Mood Discovery (Stories Scroll Horizontal) */}
-          <div className="w-full relative px-2 mb-16">
-             <div className="flex items-center justify-between mb-6 px-4">
-                <h2 className="text-xs font-black text-space-muted uppercase tracking-[0.3em]">Elige tu Mood</h2>
-                <div className="flex gap-2">
-                   <div className="w-2 h-2 rounded-full bg-space-primary"></div>
-                   <div className="w-2 h-2 rounded-full bg-space-border"></div>
-                   <div className="w-2 h-2 rounded-full bg-space-border"></div>
+          {/* User Gamification Stats Card */}
+          {user && showStats && (
+            <div className="mb-12 animate-fade-in relative">
+               <div className="bg-space-text text-white rounded-[2rem] p-6 sm:p-8 shadow-2xl overflow-hidden relative group">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-space-primary/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                  <button onClick={() => setShowStats(false)} className="absolute top-4 right-4 text-white/40 hover:text-white transition"><XCircle size={20} /></button>
+                  
+                  <div className="flex flex-col sm:flex-row items-center gap-8 relative z-10">
+                     <div className="flex flex-col items-center sm:items-start">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 mb-2">Tu Estado Actual</p>
+                        <div className="flex items-center gap-3">
+                           <div className="text-4xl font-black italic">ESTILO AL 85%</div>
+                           <div className="px-3 py-1 bg-space-primary rounded-lg text-[10px] font-black animate-pulse">LEVEL UP</div>
+                        </div>
+                     </div>
+                     <div className="h-px sm:h-12 w-full sm:w-px bg-white/10"></div>
+                     <div className="flex-1 w-full">
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+                           <span>Progreso de Frescura</span>
+                           <span>Proxima cita: pronto</span>
+                        </div>
+                        <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+                           <div className="w-[85%] h-full bg-space-primary shadow-[0_0_15px_rgba(74,132,99,0.5)]"></div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+          )}
+
+          {/* Energy Filters (The Main Intent Engine) */}
+          <div className="w-full relative mb-12">
+             <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                  <h2 className="text-xs font-black text-space-muted uppercase tracking-[0.4em]">¿En qué modo estás hoy?</h2>
+                  <div className="h-px w-24 bg-space-border/50 hidden sm:block"></div>
                 </div>
              </div>
              
-             {/* Horizontal Scroll Area */}
-             <div className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide px-4 -mx-4 mask-fade-edges">
-                {moods.map((mood) => (
+             {/* Simple Grid */}
+             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {energyFilters.map((mood) => (
                   <MoodCard key={mood.id} mood={mood} />
                 ))}
              </div>
           </div>
-
-          {/* Traditional Stories Style Categories (Circular) */}
-          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide mb-12 border-y border-space-border/30 py-6">
-              {[
-                { name: 'Hair', img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=80&h=80&fit=crop' },
-                { name: 'Nails', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=80&h=80&fit=crop' },
-                { name: 'Skin', img: 'https://images.unsplash.com/photo-1552693673-1bf958298935?w=80&h=80&fit=crop' },
-                { name: 'Food', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=80&h=80&fit=crop' },
-                { name: 'Tattoo', img: 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=80&h=80&fit=crop' },
-                { name: 'Gym', img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=80&h=80&fit=crop' },
-              ].map((cat) => (
-                <div key={cat.name} className="flex flex-col items-center gap-2 flex-shrink-0 cursor-pointer">
-                  <div className="w-16 h-16 rounded-full p-1 border-2 border-space-primary overflow-hidden shadow-inner bg-white">
-                    <img src={cat.img} alt={cat.name} className="w-full h-full rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-300" />
-                  </div>
-                  <span className="text-[10px] font-black text-space-muted uppercase tracking-widest">{cat.name}</span>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        {/* Repositioned Floating elements to be less "buggy" */}
-        <div className="hidden lg:block absolute left-10 bottom-20 animate-float-slow z-0 opacity-50">
-           <div className="w-64 h-64 bg-space-primary/10 rounded-full blur-[80px]"></div>
         </div>
       </div>
 
@@ -473,7 +467,7 @@ function Home() {
               <div className="flex items-center justify-between mb-8 px-2 border-b border-space-border pb-4">
                 <div className="flex items-center gap-3">
                   <h2 className="text-2xl font-black text-space-text uppercase tracking-tight">
-                    {activeMood ? `Resultados para: ${moods.find(m => m.id === activeMood)?.label}` : 'Recomendadas'}
+                    {activeMood ? `Resultados: ${energyFilters.find(m => m.id === activeMood)?.label}` : 'Recomendadas'}
                   </h2>
                   <span className="bg-space-bg text-space-primary px-3 py-1 rounded-lg text-xs font-black uppercase shadow-sm border border-space-border">{filteredBusinesses.length}</span>
                 </div>
