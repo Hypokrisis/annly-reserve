@@ -135,13 +135,21 @@ function Home() {
     try {
       const { data, error: bError } = await supabase
         .from('businesses')
-        .select('id, name, slug, description, address, city, banner_url, logo_url, latitude, longitude')
+        .select(`
+          id, name, slug, description, address, city, banner_url, logo_url, latitude, longitude,
+          services(price, is_active)
+        `)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(20);
       if (bError) throw bError;
-      const businessesData = data || [];
-      setAllBusinesses(businessesData);
+      const businessesData = (data || []).map(b => ({
+        ...b,
+        hasAhorro: b.services?.some((s: any) => s.is_active && s.price >= 10 && s.price <= 15),
+        hasPremium: b.services?.some((s: any) => s.is_active && s.price >= 40),
+        isFlash: b.services?.some((s: any) => s.is_active && s.price > 0) // Placeholder for "Available Now" logic if needed
+      }));
+      setAllBusinesses(businessesData as any);
     } catch (err: any) {
       console.error('Error loading home data:', err);
       setError('No pudimos cargar las barberías. Intenta recargar la página.');
@@ -159,9 +167,9 @@ function Home() {
   const [showStats, setShowStats] = useState(true);
 
   const energyFilters = [
-    { id: 'saving', label: 'Modo Ahorro', emoji: '🪫', color: 'bg-white', text: 'text-space-text', border: 'border-space-border', description: 'Rápido + Barato', filter: 'oferta' },
-    { id: 'premium', label: 'Modo Premium', emoji: '⚡', color: 'bg-space-text', text: 'text-white', border: 'border-space-text', description: 'Calidad + Top', filter: 'barbería' },
-    { id: 'flash', label: 'Modo Flash', emoji: '🚀', color: 'bg-space-primary', text: 'text-white', border: 'border-space-primary', description: 'Disponible YA', filter: 'express' },
+    { id: 'saving', label: 'Modo Ahorro', emoji: '🪫', color: 'bg-white', text: 'text-space-text', border: 'border-space-border', description: 'Rápido + Barato', filter: 'ahorro' },
+    { id: 'premium', label: 'Modo Premium', emoji: '⚡', color: 'bg-space-text', text: 'text-white', border: 'border-space-text', description: 'Calidad + Top', filter: 'premium' },
+    { id: 'flash', label: 'Modo Flash', emoji: '🚀', color: 'bg-space-primary', text: 'text-white', border: 'border-space-primary', description: 'Disponible YA', filter: 'flash' },
   ];
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -196,10 +204,12 @@ function Home() {
   };
 
   const filteredBusinesses = activeMood 
-    ? allBusinesses.filter(b => 
-        b.name.toLowerCase().includes(energyFilters.find(m => m.id === activeMood)?.filter || '') ||
-        b.description?.toLowerCase().includes(energyFilters.find(m => m.id === activeMood)?.filter || '')
-      )
+    ? allBusinesses.filter(b => {
+        if (activeMood === 'saving') return (b as any).hasAhorro;
+        if (activeMood === 'premium') return (b as any).hasPremium;
+        if (activeMood === 'flash') return (b as any).isFlash; // Simple fallback
+        return true;
+      })
     : allBusinesses;
 
   const sortedBusinesses = [...filteredBusinesses].sort((a, b) => {

@@ -160,7 +160,7 @@ export default function ServicesPage() {
                 {loading && services.length === 0 ? (
                     <div className="flex justify-center py-20"><LoadingSpinner /></div>
                 ) : services.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-16 text-center border-2 border-dashed border-space-border">
+                    <div className="bg-white rounded-2xl p-8 sm:p-16 text-center border-2 border-dashed border-space-border">
                         <div className="w-14 h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Scissors size={28} className="text-space-muted" />
                         </div>
@@ -168,61 +168,63 @@ export default function ServicesPage() {
                         <p className="text-space-muted text-sm mb-6 max-w-xs mx-auto">
                             Agrega tu primer servicio para empezar a recibir reservas.
                         </p>
-                        <button onClick={() => handleOpenModal()} className="btn-primary">
+                        <button onClick={() => handleOpenModal()} className="btn-primary w-full sm:w-auto">
                             <Plus size={16} />Crear Servicio
                         </button>
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
                         {services.map((service) => (
                             <div key={service.id}
-                                className={`card p-5 hover:shadow-card-lg transition-all group ${!service.is_active ? 'opacity-60' : ''}`}
+                                className={`card p-4 sm:p-5 hover:shadow-card-lg transition-all group overflow-hidden ${!service.is_active ? 'opacity-60' : ''}`}
                             >
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <div className="flex gap-4 items-start flex-1">
-                                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0
+                                    <div className="flex gap-3 sm:gap-4 items-start flex-1 min-w-0">
+                                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0
                                             ${service.is_active ? 'bg-space-primary-light text-space-primary' : 'bg-space-card2 text-space-muted'}`}>
-                                            <Scissors size={18} />
+                                            <Scissors size={18} className="sm:w-5 sm:h-5" />
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                <h3 className="font-bold text-space-text truncate">{service.name}</h3>
-                                                {!service.is_active && <span className="badge-gray">Inactivo</span>}
+                                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                                <h3 className="font-bold text-space-text truncate text-sm sm:text-base">{service.name}</h3>
+                                                {!service.is_active && <span className="badge-gray scale-90 origin-left">Inactivo</span>}
                                             </div>
                                             {service.description && (
-                                                <p className="text-space-muted text-sm truncate">{service.description}</p>
+                                                <p className="text-space-muted text-xs sm:text-sm line-clamp-1 mb-1.5">{service.description}</p>
                                             )}
-                                            <div className="flex gap-3 mt-1.5">
-                                                <span className="flex items-center gap-1 text-xs text-space-muted">
+                                            <div className="flex items-center gap-3">
+                                                <span className="flex items-center gap-1 text-[10px] sm:text-xs font-medium text-space-muted bg-neutral-100 px-2 py-0.5 rounded-md">
                                                     <Clock size={11} />{service.duration_minutes} min
                                                 </span>
-                                                <span className="text-xs font-bold text-space-primary">
+                                                <span className="text-xs sm:text-sm font-black text-space-primary uppercase tracking-tight">
                                                     {formatCurrency(service.price)}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 self-end sm:self-center">
-                                        <button onClick={() => handleOpenModal(service)}
-                                            className="btn-ghost w-9 h-9 p-0 rounded-xl" title="Editar">
-                                            <Edit2 size={15} />
-                                        </button>
-                                        {service.is_active ? (
-                                            <button onClick={() => handleDelete(service)}
-                                                className="w-9 h-9 p-0 rounded-xl text-space-muted hover:text-space-danger hover:bg-red-50 transition flex items-center justify-center"
-                                                title="Desactivar">
-                                                <Ban size={15} />
+                                    <div className="flex items-center gap-2 sm:gap-3 bg-neutral-50/50 sm:bg-transparent p-2 sm:p-0 rounded-xl sm:rounded-none justify-between sm:justify-end">
+                                        <div className="flex items-center gap-1.5">
+                                            <button onClick={() => handleOpenModal(service)}
+                                                className="w-10 h-10 sm:w-9 sm:h-9 bg-white sm:bg-transparent border border-neutral-100 sm:border-none shadow-sm sm:shadow-none flex items-center justify-center rounded-xl text-space-muted hover:text-space-primary hover:bg-space-card2 transition-all" title="Editar">
+                                                <Edit2 size={16} />
                                             </button>
-                                        ) : (
-                                            <button onClick={() => updateService(service.id, { is_active: true })}
-                                                className="px-3 h-9 rounded-xl text-xs font-semibold text-space-success bg-green-50 hover:bg-space-success hover:text-white transition">
-                                                Activar
-                                            </button>
-                                        )}
+                                            {service.is_active ? (
+                                                <button onClick={() => handleDelete(service)}
+                                                    className="w-10 h-10 sm:w-9 sm:h-9 bg-white sm:bg-transparent border border-neutral-100 sm:border-none shadow-sm sm:shadow-none flex items-center justify-center rounded-xl text-space-muted hover:text-space-danger hover:bg-red-50 transition-all font-bold"
+                                                    title="Desactivar">
+                                                    <Ban size={16} />
+                                                </button>
+                                            ) : (
+                                                <button onClick={() => updateService(service.id, { is_active: true })}
+                                                    className="px-4 h-10 sm:h-9 rounded-xl text-xs font-black uppercase tracking-widest text-space-success bg-white border border-space-success/20 hover:bg-space-success hover:text-white transition-all">
+                                                    Activar
+                                                </button>
+                                            )}
+                                        </div>
                                         <button onClick={() => handleHardDelete(service)}
-                                            className="w-9 h-9 p-0 rounded-xl text-space-muted hover:text-space-danger hover:bg-red-50 transition flex items-center justify-center"
+                                            className="w-10 h-10 sm:w-9 sm:h-9 bg-red-50 sm:bg-transparent border border-red-100 sm:border-none shadow-sm sm:shadow-none flex items-center justify-center rounded-xl text-space-danger hover:bg-space-danger hover:text-white transition-all"
                                             title="Eliminar permanentemente">
-                                            <ShieldAlert size={15} />
+                                            <ShieldAlert size={16} />
                                         </button>
                                     </div>
                                 </div>
@@ -234,31 +236,31 @@ export default function ServicesPage() {
                 {/* Create/Edit Modal */}
                 <Modal isOpen={isModalOpen} onClose={handleCloseModal}
                     title={editingService ? 'Editar Servicio' : 'Nuevo Servicio'}>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-5 max-h-[70vh] overflow-y-auto px-1 scrollbar-hide">
                         <Input label="Nombre del Servicio" value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            error={formErrors.name} placeholder="Ej: Corte de pelo" required />
+                            error={formErrors.name} placeholder="Ej: Corte de pelo + Lavado" required />
 
                         <div>
-                            <label className="input-label">Descripción</label>
+                            <label className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2 mb-1.5 block">Descripción</label>
                             <textarea value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="input-field" rows={3} placeholder="Descripción opcional" />
+                                className="w-full px-5 py-3 bg-neutral-50 border-transparent rounded-2xl text-sm font-medium text-space-text focus:bg-white focus:ring-2 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-neutral-300 resize-none" rows={3} placeholder="Describe brevemente qué incluye este servicio..." />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input label="Duración (min)" type="number" value={formData.duration_minutes}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <Input label="Duración (minutos)" type="number" value={formData.duration_minutes}
                                 onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
                                 error={formErrors.duration_minutes} placeholder="30" min="1" required />
-                            <Input label="Precio" type="number" step="0.01" value={formData.price}
+                            <Input label="Precio ($)" type="number" step="0.01" value={formData.price}
                                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                error={formErrors.price} placeholder="500.00" min="0" required />
+                                error={formErrors.price} placeholder="0.00" min="0" required />
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-4 border-t border-space-border">
-                            <button type="button" onClick={handleCloseModal} className="btn-secondary">Cancelar</button>
-                            <button type="submit" disabled={loading} className="btn-primary">
-                                {loading ? 'Guardando...' : editingService ? 'Actualizar' : 'Crear'}
+                        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-neutral-100 mt-4">
+                            <button type="button" onClick={handleCloseModal} className="btn-secondary w-full sm:w-auto order-2 sm:order-1 h-12 rounded-2xl font-bold uppercase tracking-widest text-[10px]">Cancelar</button>
+                            <button type="submit" disabled={loading} className="btn-primary w-full sm:w-auto order-1 sm:order-2 h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-space-primary/20">
+                                {loading ? 'Guardando...' : editingService ? 'Actualizar Servicio' : 'Crear Servicio'}
                             </button>
                         </div>
                     </form>

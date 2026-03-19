@@ -8,8 +8,12 @@ export interface Business {
     phone?: string;
     email?: string;
     address?: string;
+    city?: string;
+    latitude?: number;
+    longitude?: number;
     timezone: string;
     logo_url?: string;
+    banner_url?: string;
 
     // Configuration
     booking_buffer_minutes: number;
@@ -29,6 +33,7 @@ export interface CreateBusinessData {
     phone?: string;
     email?: string;
     address?: string;
+    city?: string;
     timezone?: string;
 }
 
@@ -38,6 +43,11 @@ export interface UpdateBusinessData {
     phone?: string;
     email?: string;
     address?: string;
+    city?: string;
+    latitude?: number;
+    longitude?: number;
+    logo_url?: string;
+    banner_url?: string;
     timezone?: string;
     booking_buffer_minutes?: number;
     cancellation_window_hours?: number;

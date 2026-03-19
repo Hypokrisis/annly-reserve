@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Scissors, Users, Calendar, Settings, ArrowRight, ExternalLink, Copy, Check, Clock, TrendingUp, Award, DollarSign, PieChart } from 'lucide-react';
+import { Scissors, Users, Calendar, Settings, ArrowRight, Copy, Check, Clock, TrendingUp, Award, PieChart, Sparkles, MessageSquare, MapPin } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/supabaseClient';
 import { formatCurrency } from '@/utils';
@@ -156,36 +156,81 @@ export default function DashboardHome() {
                     })}
                 </div>
 
-                {/* ── Public Link Banner ──────────────────────── */}
-                <div className="rounded-[2rem] bg-space-text p-6 md:p-8 mb-8 relative overflow-hidden shadow-card-lg border border-space-border/20">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-space-primary/20 rounded-full blur-3xl -mr-10 -mt-10" />
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-space-primary/20 rounded-full blur-3xl -ml-10 -mb-10" />
-                    <div className="relative z-10">
-                        <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Tu Página de Reservas</h2>
-                        <p className="text-space-border text-sm mb-6 max-w-xl leading-relaxed">Comparte este link en Instagram, WhatsApp o tu web para que tus clientes reserven al instante.</p>
-
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-5 py-3.5 text-sm text-white/90 font-mono truncate shadow-inner">
-                                {window.location.origin}/book/{business?.slug}
+                {/* ── Public Link Banner & Marketing Kit ──────────────────────── */}
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+                    <div className="xl:col-span-2 rounded-[2.5rem] bg-space-text p-8 sm:p-10 relative overflow-hidden shadow-2xl border border-white/5 group">
+                        <div className="absolute top-0 right-0 w-80 h-80 bg-space-primary/10 rounded-full blur-[100px] -mr-40 -mt-40 group-hover:bg-space-primary/20 transition-all duration-700" />
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-space-purple/10 rounded-full blur-[100px] -ml-32 -mb-32" />
+                        
+                        <div className="relative z-10">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-lg border border-white/10 mb-6 font-black text-[10px] text-white uppercase tracking-widest">
+                                <Sparkles size={12} className="text-space-primary" />
+                                Marketing Kit
                             </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handleCopyLink}
-                                    className="flex items-center gap-2 px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl text-sm font-semibold transition"
-                                >
-                                    {copied ? <Check size={16} /> : <Copy size={16} />}
-                                    {copied ? 'Copiado' : 'Copiar'}
-                                </button>
-                                <a
-                                    href={`/book/${business?.slug}`}
-                                    target="_blank" rel="noopener noreferrer"
-                                    className="flex items-center gap-2 px-5 py-3.5 bg-space-primary hover:bg-space-primary-dark text-white rounded-xl text-sm font-bold shadow-btn transition"
-                                >
-                                    <ExternalLink size={16} />
-                                    Visitar
-                                </a>
+                            <h2 className="text-3xl font-black text-white mb-4 tracking-tighter uppercase italic">Tu Link de Reservas</h2>
+                            <p className="text-white/60 text-sm mb-8 max-w-xl leading-relaxed font-medium">Comparte tu link profesional y empieza a recibir citas 24/7 sin mover un dedo.</p>
+
+                            <div className="space-y-4">
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white/90 font-mono truncate shadow-inner">
+                                        {window.location.origin}/book/{business?.slug}
+                                    </div>
+                                    <button
+                                        onClick={handleCopyLink}
+                                        className="h-14 px-8 bg-white text-space-text rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-white/5 flex items-center justify-center gap-2 shrink-0"
+                                    >
+                                        {copied ? <Check size={16} /> : <Copy size={16} />}
+                                        {copied ? 'Copiado' : 'Copiar Link'}
+                                    </button>
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                    <button 
+                                        onClick={() => {
+                                            const text = `¡Hola! Ya puedes reservar con nosotros online aquí: ${window.location.origin}/book/${business?.slug}`;
+                                            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                                        }}
+                                        className="px-6 py-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                                    >
+                                        <MessageSquare size={14} /> Compartir por WhatsApp
+                                    </button>
+                                    <button className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                                        <PieChart size={14} /> Ver Estadísticas de Link
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="card p-8 bg-white border-2 border-space-border/50 flex flex-col justify-between">
+                         <div>
+                            <div className="flex items-center gap-2 mb-6">
+                                <MapPin size={18} className="text-space-primary" />
+                                <h2 className="text-[10px] font-black text-space-muted uppercase tracking-[0.3em]">Visibilidad en Mapa</h2>
+                            </div>
+                            <h3 className="text-lg font-black text-space-text uppercase tracking-tight mb-4">Estado de Filtros</h3>
+                            <div className="space-y-3">
+                                {[
+                                    { id: 'saving', label: 'Modo Ahorro', active: services.some(s => s.price >= 10 && s.price <= 15), icon: '🪫', color: 'text-amber-500' },
+                                    { id: 'premium', label: 'Modo Premium', active: services.some(s => s.price >= 40), icon: '⚡', color: 'text-blue-500' },
+                                    { id: 'flash', label: 'Modo Flash', active: services.length > 0, icon: '🚀', color: 'text-space-primary' }
+                                ].map((mode) => (
+                                    <div key={mode.id} className={`flex items-center justify-between p-3 rounded-2xl border ${mode.active ? 'bg-neutral-50 border-neutral-200' : 'bg-white border-neutral-100 opacity-40'}`}>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-xl">{mode.icon}</span>
+                                            <span className={`text-[10px] font-black uppercase tracking-widest ${mode.active ? 'text-space-text' : 'text-neutral-400'}`}>{mode.label}</span>
+                                        </div>
+                                        {mode.active ? (
+                                            <span className="text-[9px] font-black text-space-success uppercase tracking-widest bg-space-success/10 px-2 py-0.5 rounded-md">Activo</span>
+                                        ) : (
+                                            <span className="text-[9px] font-black text-neutral-400 uppercase tracking-widest">Inactivo</span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                         </div>
+                         <p className="text-[9px] text-space-muted font-bold mt-6 leading-relaxed">
+                            * Los modos se activan automáticamente según tus precios y disponibilidad actual.
+                         </p>
                     </div>
                 </div>
 
