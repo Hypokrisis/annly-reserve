@@ -14,6 +14,9 @@ export interface Business {
     timezone: string;
     logo_url?: string;
     banner_url?: string;
+    instagram_url?: string;
+    website_url?: string;
+    gallery?: string[]; // Array of image URLs
 
     // Configuration
     booking_buffer_minutes: number;
@@ -48,6 +51,9 @@ export interface UpdateBusinessData {
     longitude?: number;
     logo_url?: string;
     banner_url?: string;
+    instagram_url?: string;
+    website_url?: string;
+    gallery?: string[];
     timezone?: string;
     booking_buffer_minutes?: number;
     cancellation_window_hours?: number;

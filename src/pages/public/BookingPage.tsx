@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Check, ChevronLeft, Home, Calendar as CalendarIcon, Clock, User as UserIcon, Scissors, Star } from 'lucide-react';
+import { Check, ChevronLeft, Home, Calendar as CalendarIcon, Clock, User as UserIcon, Scissors, Star, Instagram, Globe } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -385,7 +385,7 @@ export default function PublicBookingPage() {
                 {/* Header Section */}
                 <header className="text-center mb-12 animate-fade-in">
                     <h1 className="text-4xl md:text-5xl font-black text-space-text mb-4 tracking-tighter uppercase">{business.name}</h1>
-                    <div className="flex flex-wrap justify-center gap-3">
+                    <div className="flex flex-wrap justify-center gap-3 mb-6">
                         <div className="inline-flex items-center gap-2 bg-space-card px-4 py-2 rounded-full shadow-sm border border-space-border relative">
                             <span className="w-2 h-2 rounded-full bg-space-success animate-pulse shadow-[0_0_10px_rgba(61,153,112,0.5)]"></span>
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-space-muted">Reservas Online</p>
@@ -394,6 +394,19 @@ export default function PublicBookingPage() {
                             <Star size={12} className="text-space-primary fill-space-primary" />
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-space-primary">Smart Queue: {queueStats.count} CITAS HOY</p>
                         </div>
+                    </div>
+
+                    <div className="flex justify-center gap-4">
+                        {business.instagram_url && (
+                            <a href={business.instagram_url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-white border border-space-border flex items-center justify-center text-space-text hover:text-space-primary hover:border-space-primary transition-all shadow-sm">
+                                <Instagram size={20} />
+                            </a>
+                        )}
+                        {business.website_url && (
+                            <a href={business.website_url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-white border border-space-border flex items-center justify-center text-space-text hover:text-space-primary hover:border-space-primary transition-all shadow-sm">
+                                <Globe size={20} />
+                            </a>
+                        )}
                     </div>
                 </header>
 
@@ -417,23 +430,25 @@ export default function PublicBookingPage() {
                 </div>
 
                 {/* BRUTAL FEATURE: Gallery (Visual Proof) */}
-                <div className="mb-12 animate-fade-in delay-150 overflow-hidden">
-                    <div className="flex items-center justify-between mb-4 px-2">
-                        <h2 className="text-xs font-black text-space-muted uppercase tracking-[0.4em]">Trabajos Reales</h2>
-                        <span className="text-[10px] font-black text-space-primary uppercase tracking-widest hover:underline cursor-pointer">Ver Portfolio</span>
+                {business.gallery && business.gallery.length > 0 && (
+                    <div className="mb-12 animate-fade-in delay-150 overflow-hidden">
+                        <div className="flex items-center justify-between mb-4 px-2">
+                            <h2 className="text-xs font-black text-space-muted uppercase tracking-[0.4em]">Trabajos Reales</h2>
+                            <p className="text-[10px] font-black text-space-primary uppercase tracking-widest">{business.gallery.length} fotos</p>
+                        </div>
+                        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+                            {business.gallery.map((url, idx) => (
+                                <div key={idx} className="flex-shrink-0 w-48 h-64 bg-space-bg rounded-[2rem] overflow-hidden border border-space-border hover:border-space-primary/40 transition-all hover:scale-[1.02]">
+                                    <img 
+                                        src={url} 
+                                        alt={`Trabajo ${idx + 1}`} 
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                    <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-                        {[1,2,3,4].map(i => (
-                            <div key={i} className="flex-shrink-0 w-48 h-64 bg-space-bg rounded-[2rem] overflow-hidden border border-space-border hover:border-space-primary/40 transition-all hover:scale-[1.02]">
-                                <img 
-                                    src={`https://images.unsplash.com/photo-${i === 1 ? '1503951914875-452162b0f3f1' : i === 2 ? '1621605815971-fbc98d665033' : i === 3 ? '1593702295094-ada35bc1307e' : '1585747860715-2ba37e788b70'}?auto=format&fit=crop&q=80&w=400`} 
-                                    alt="Result" 
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                )}
 
                 {/* Progress Steps */}
                 <div className="flex justify-center mb-12 animate-fade-in delay-100">

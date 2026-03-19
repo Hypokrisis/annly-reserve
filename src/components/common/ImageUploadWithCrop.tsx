@@ -146,8 +146,8 @@ export function ImageUploadWithCrop({
       </div>
 
       {showCropper && (
-        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4 sm:p-10 backdrop-blur-md">
-          <div className="relative w-full max-w-4xl aspect-[4/3] sm:aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+        <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-2 sm:p-10 backdrop-blur-md">
+          <div className="relative w-[95vw] sm:w-full max-w-4xl aspect-square sm:aspect-video rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/10">
             <Cropper
               image={image!}
               crop={crop}
@@ -159,9 +159,9 @@ export function ImageUploadWithCrop({
             />
           </div>
           
-          <div className="mt-8 w-full max-w-md space-y-6">
-            <div className="flex items-center gap-4 bg-white/10 p-4 rounded-2xl border border-white/5">
-              <ImageIcon size={18} className="text-white" />
+          <div className="mt-4 sm:mt-8 w-full max-w-md px-4 space-y-4 sm:space-y-6">
+            <div className="flex items-center gap-4 bg-white/10 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-white/5">
+              <ImageIcon size={18} className="text-white shrink-0" />
               <input
                 type="range"
                 value={zoom}
@@ -170,24 +170,24 @@ export function ImageUploadWithCrop({
                 step={0.1}
                 aria-labelledby="Zoom"
                 onChange={(e: any) => setZoom(e.target.value)}
-                className="w-full accent-space-primary"
+                className="w-full accent-space-primary h-1.5 sm:h-2"
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <button 
                 onClick={() => setShowCropper(false)}
-                className="py-4 rounded-2xl bg-white/5 text-white font-bold uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all border border-white/10"
+                className="py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-white/5 text-white font-bold uppercase tracking-widest text-[9px] sm:text-[10px] hover:bg-white/10 transition-all border border-white/10"
               >
                 Cancelar
               </button>
               <button 
                 onClick={handleUpload}
                 disabled={isUploading}
-                className="py-4 rounded-2xl bg-space-primary text-white font-black uppercase tracking-widest text-[10px] hover:scale-105 transition-all shadow-lg shadow-space-primary/20 flex items-center justify-center gap-2"
+                className="py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-space-primary text-white font-black uppercase tracking-widest text-[9px] sm:text-[10px] hover:scale-105 transition-all shadow-lg shadow-space-primary/20 flex items-center justify-center gap-2"
               >
-                {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                {isUploading ? 'Subiendo...' : 'Confirmar & Subir'}
+                {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                {isUploading ? 'Subiendo...' : 'Confirmar'}
               </button>
             </div>
           </div>

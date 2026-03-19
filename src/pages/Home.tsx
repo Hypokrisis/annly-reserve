@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, LogOut, LayoutDashboard, ArrowRight } from 'lucide-react';
+import { MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, LogOut, LayoutDashboard, ArrowRight, Info, Instagram, Globe, X, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
@@ -20,6 +20,9 @@ interface BusinessResult {
   logo_url?: string;
   latitude?: number;
   longitude?: number;
+  instagram_url?: string;
+  website_url?: string;
+  gallery?: string[];
 }
 
 function Home() {
@@ -221,65 +224,75 @@ function Home() {
     return 0;
   });
 
+  const [selectedBusinessDetails, setSelectedBusinessDetails] = useState<BusinessResult | null>(null);
+
   const BusinessCard = ({ business, isFavorite }: { business: BusinessResult, isFavorite: boolean }) => (
-    <Link
-      to={`/book/${business.slug}`}
-      className="group bg-white border border-space-border hover:border-space-primary/40 rounded-[2rem] overflow-hidden hover:shadow-card-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative cursor-pointer"
+    <div
+      className="group bg-white border border-space-border hover:border-space-primary/40 rounded-[2rem] overflow-hidden hover:shadow-card-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative"
     >
       <button
         onClick={(e) => toggleFavorite(e, business.slug)}
-        className="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full border border-space-border/50 hover:bg-white transition shadow-sm hover:scale-110"
+        className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full border border-space-border/50 hover:bg-white transition shadow-sm hover:scale-110"
       >
         <Heart size={16} className={`transition-colors ${isFavorite ? 'fill-space-danger text-space-danger' : 'text-space-muted hover:text-space-danger'}`} />
       </button>
 
-      <div className="h-48 bg-space-bg relative overflow-hidden p-2 pb-0">
+      {/* Banner / Media Section */}
+      <Link to={`/book/${business.slug}`} className="block h-48 bg-space-bg relative overflow-hidden group/banner p-2 pb-0">
         <div className="w-full h-full rounded-t-[1.5rem] overflow-hidden relative">
           <img
-            src={business.banner_url || business.logo_url || `https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800`}
+            src={business.banner_url || `https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800`}
             alt={business.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
+            className="w-full h-full object-cover group-hover/banner:scale-105 transition duration-700"
             loading="lazy"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800';
-            }}
           />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent"></div>
-          <div className="absolute bottom-4 left-4 right-4">
-            <h3 className="text-xl font-black leading-tight mb-1 text-white tracking-tight">{business.name}</h3>
-            {business.city && (
-              <div className="flex items-center text-[10px] text-white/90 font-bold uppercase tracking-widest drop-shadow-md">
-                <MapPin size={10} className="mr-1" />
-                {business.city}
-              </div>
-            )}
-          </div>
+          <div className="absolute inset-0 bg-black/20 group-hover/banner:bg-black/10 transition-colors"></div>
+        </div>
+      </Link>
+
+      {/* Logo Bubble Overlay */}
+      <div className="absolute top-40 left-6 z-10">
+        <div className="w-16 h-16 rounded-2xl bg-white p-1 shadow-xl border border-space-border/50 overflow-hidden transform group-hover:scale-110 transition-transform duration-500">
+           <img 
+              src={business.logo_url || business.banner_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(business.name)}&background=1a2e28&color=fff`} 
+              className="w-full h-full object-cover rounded-xl"
+              alt="Logo"
+           />
         </div>
       </div>
-      <div className="p-6 flex-1 flex flex-col">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-space-success/10 text-space-success text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-lg font-bold border border-space-success/20">Disponible</span>
-        </div>
-        <p className="text-space-muted text-sm mb-5 line-clamp-2 flex-1 font-medium">
-          {business.description || 'Reserva tu cita con los mejores profesionales de la zona.'}
+
+      {/* Card Content */}
+      <div className="p-6 pt-10 flex-1 flex flex-col">
+        <Link to={`/book/${business.slug}`} className="block group/title">
+          <h3 className="text-xl font-black leading-tight mb-1 text-space-text tracking-tight group-hover/title:text-space-primary transition-colors">{business.name}</h3>
+          <div className="flex items-center text-[10px] text-space-muted font-bold uppercase tracking-widest mt-1">
+            <MapPin size={10} className="mr-1 text-space-primary" />
+            {business.city || 'Ubicación no especificada'}
+          </div>
+        </Link>
+
+        <p className="text-space-muted text-sm my-5 line-clamp-2 flex-1 font-medium">
+          {business.description || 'Reserva tu cita con los mejores profesionales en Spacey.'}
         </p>
-        <div className="mt-auto pt-5 border-t border-space-border flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Star size={14} className="text-[#f59e0b] fill-[#f59e0b]" />
-            <span className="text-sm font-bold text-space-text">4.9</span>
-            {sortByDistance && userLocation && business.latitude && (
-              <span className="text-[10px] text-space-primary font-black ml-2 px-2 py-1 bg-space-primary/10 rounded-full border border-space-primary/20">
-                {calculateDistance(userLocation.lat, userLocation.lng, business.latitude, business.longitude!).toFixed(1)} km
-              </span>
-            )}
-          </div>
-          <span className="text-space-primary text-[11px] font-black group-hover:underline flex items-center gap-1 uppercase tracking-widest transition-colors group-hover:text-space-primary-dark">
+
+        <div className="mt-auto pt-5 border-t border-space-border grid grid-cols-2 gap-3">
+          <button 
+             onClick={() => setSelectedBusinessDetails(business)}
+             className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-space-border text-[10px] font-black uppercase tracking-widest text-space-muted hover:bg-space-bg hover:text-space-text transition-all"
+          >
+             <Info size={14} />
+             Detalles
+          </button>
+          <Link 
+            to={`/book/${business.slug}`}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-space-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-space-primary/20 hover:scale-105 active:scale-95 transition-all"
+          >
+            <Scissors size={14} />
             Reservar
-            <Scissors size={14} className="group-hover:rotate-12 transition group-hover:scale-110" />
-          </span>
+          </Link>
         </div>
       </div>
-    </Link>
+    </div>
   );
 
   const favoriteBusinesses = allBusinesses.filter(b => favoriteSlugs.includes(b.slug));
@@ -612,6 +625,97 @@ function Home() {
           </div>
         </div>
       </footer>
+      {/* Business Details Modal */}
+      {selectedBusinessDetails && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 animate-fade-in">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setSelectedBusinessDetails(null)}></div>
+          <div className="relative w-full max-w-2xl bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-space-border/20 animate-scale-in">
+             <button 
+                onClick={() => setSelectedBusinessDetails(null)}
+                className="absolute top-4 right-4 z-50 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full border border-space-border/50 flex items-center justify-center text-space-text hover:bg-white transition-all shadow-sm"
+             >
+                <X size={20} />
+             </button>
+
+             <div className="h-48 sm:h-64 bg-space-bg relative">
+                <img 
+                   src={selectedBusinessDetails.banner_url || `https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800`} 
+                   className="w-full h-full object-cover"
+                   alt="Banner"
+                />
+                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                <div className="absolute bottom-6 left-8 flex items-end gap-6">
+                   <div className="w-24 h-24 rounded-[2rem] bg-white p-1 shadow-2xl border border-white/20 overflow-hidden">
+                      <img 
+                         src={selectedBusinessDetails.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedBusinessDetails.name)}&background=1a2e28&color=fff`} 
+                         className="w-full h-full object-cover rounded-[1.7rem]"
+                         alt="Logo"
+                      />
+                   </div>
+                   <div className="mb-2">
+                       <h2 className="text-3xl font-black text-white tracking-tight uppercase leading-none">{selectedBusinessDetails.name}</h2>
+                       <div className="flex items-center text-[10px] text-white/80 font-bold uppercase tracking-widest mt-2">
+                          <MapPin size={10} className="mr-1 text-space-primary" />
+                          {selectedBusinessDetails.city || 'Ubicación no especificada'}
+                       </div>
+                   </div>
+                </div>
+             </div>
+
+             <div className="p-8 pt-10">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                   <div className="md:col-span-2">
+                      <h4 className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] mb-3">Sobre nosotros</h4>
+                      <p className="text-sm text-space-text font-medium leading-relaxed">
+                         {selectedBusinessDetails.description || 'Esta barbería aún no ha añadido una descripción, pero estamos felices de atenderte con la mejor calidad y estilo.'}
+                      </p>
+                      
+                      <div className="mt-8 flex flex-wrap gap-4">
+                         {selectedBusinessDetails.instagram_url && (
+                            <a href={selectedBusinessDetails.instagram_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-neutral-50 text-space-text hover:bg-space-primary/10 hover:text-space-primary transition-all border border-neutral-100 group">
+                               <Instagram size={18} className="group-hover:scale-110 transition-transform" />
+                               <span className="text-[10px] font-black uppercase tracking-widest">Instagram</span>
+                            </a>
+                         )}
+                         {selectedBusinessDetails.website_url && (
+                            <a href={selectedBusinessDetails.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-neutral-50 text-space-text hover:bg-space-primary/10 hover:text-space-primary transition-all border border-neutral-100 group">
+                               <Globe size={18} className="group-hover:scale-110 transition-transform" />
+                               <span className="text-[10px] font-black uppercase tracking-widest">Sitio Web</span>
+                            </a>
+                         )}
+                      </div>
+                   </div>
+
+                   <div className="space-y-6">
+                      <div className="p-5 rounded-3xl bg-neutral-50 border border-neutral-100">
+                         <h4 className="text-[9px] font-black text-space-muted uppercase tracking-[0.2em] mb-3">Ubicación</h4>
+                         <p className="text-[11px] font-bold text-space-text mb-3 leading-snug">
+                            {selectedBusinessDetails.address || 'Consulta nuestra dirección exacta al reservar.'}
+                         </p>
+                         <a 
+                            href={`https://www.google.com/maps/search/?api=1&query=${selectedBusinessDetails.latitude},${selectedBusinessDetails.longitude}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-[10px] font-black text-space-primary uppercase tracking-widest hover:underline flex items-center gap-1.5"
+                         >
+                            <Search size={12} />
+                            Ver en Google Maps
+                         </a>
+                      </div>
+                      
+                      <Link 
+                         to={`/book/${selectedBusinessDetails.slug}`}
+                         className="w-full flex btn-primary h-14 items-center justify-center gap-3 shadow-xl active:scale-95 transition-all font-black uppercase tracking-[0.2em] text-[10px]"
+                      >
+                         <Scissors size={18} />
+                         Reservar Ahora
+                      </Link>
+                   </div>
+                </div>
+             </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

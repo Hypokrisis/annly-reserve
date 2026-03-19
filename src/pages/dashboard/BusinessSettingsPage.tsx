@@ -20,6 +20,9 @@ export default function BusinessSettingsPage() {
         longitude: '',
         logo_url: '',
         banner_url: '',
+        instagram_url: '',
+        website_url: '',
+        gallery: [] as string[],
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -37,6 +40,9 @@ export default function BusinessSettingsPage() {
                 longitude: currentBusiness.longitude?.toString() || '',
                 logo_url: currentBusiness.logo_url || '',
                 banner_url: currentBusiness.banner_url || '',
+                instagram_url: currentBusiness.instagram_url || '',
+                website_url: currentBusiness.website_url || '',
+                gallery: currentBusiness.gallery || [],
             });
         }
     }, [currentBusiness]);
@@ -45,6 +51,29 @@ export default function BusinessSettingsPage() {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
         setMessage(null);
+    };
+
+    const handleDetectLocation = () => {
+        if (!navigator.geolocation) {
+            setMessage({ type: 'error', text: 'Tu navegador no soporta geolocalización.' });
+            return;
+        }
+
+        setMessage({ type: 'success', text: 'Detectando ubicación...' });
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setFormData(prev => ({
+                    ...prev,
+                    latitude: pos.coords.latitude.toString(),
+                    longitude: pos.coords.longitude.toString()
+                }));
+                setMessage({ type: 'success', text: 'Ubicación detectada correctamente.' });
+            },
+            (err) => {
+                console.error('Geo error:', err);
+                setMessage({ type: 'error', text: 'No se pudo obtener la ubicación. Asegúrate de dar permisos.' });
+            }
+        );
     };
 
     const handleSubmit = async (e?: React.FormEvent) => {
@@ -86,6 +115,9 @@ export default function BusinessSettingsPage() {
                     longitude: formData.longitude ? parseFloat(formData.longitude) : null,
                     logo_url: formData.logo_url,
                     banner_url: formData.banner_url,
+                    instagram_url: formData.instagram_url.trim(),
+                    website_url: formData.website_url.trim(),
+                    gallery: formData.gallery,
                 })
                 .eq('id', currentBusiness.id);
 
@@ -209,7 +241,11 @@ export default function BusinessSettingsPage() {
                             <Input label="URL de Reserva (Slug)" name="slug" value={formData.slug} onChange={handleChange} required placeholder="ej-barberia" />
                         </div>
                         
-                        <Input label="Teléfono de contacto" name="phone" value={formData.phone} onChange={handleChange} placeholder="(809) 555-5555" />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                             <Input label="Teléfono de contacto" name="phone" value={formData.phone} onChange={handleChange} placeholder="(809) 555-5555" />
+                             <Input label="Instagram (URL)" name="instagram_url" value={formData.instagram_url} onChange={handleChange} placeholder="https://instagram.com/tu_barberia" />
+                             <Input label="Sitio Web" name="website_url" value={formData.website_url} onChange={handleChange} placeholder="https://www.tuweb.com" />
+                        </div>
 
                         <div>
                             <label className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2 mb-2 block">Descripción</label>
@@ -225,7 +261,44 @@ export default function BusinessSettingsPage() {
                     </div>
                 </section>
 
-                {/* Section 3: Location */}
+                {/* Section 3: Gallery */}
+                <section className="bg-white rounded-[2.5rem] p-6 sm:p-10 border border-space-border/20 shadow-[0_20px_60px_rgba(0,0,0,0.035)] group">
+                    <div className="flex items-center gap-3 mb-10 overflow-hidden">
+                        <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:bg-space-primary group-hover:text-white transition-all duration-500">
+                            <Sparkles size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-black text-space-text uppercase tracking-tight leading-none">Trabajos Reales (Galería)</h2>
+                            <p className="text-[10px] text-space-muted uppercase font-bold tracking-widest mt-1.5 opacity-70">Muestra lo que sabes hacer</p>
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                        {formData.gallery.map((url, idx) => (
+                            <div key={idx} className="relative group/item aspect-[3/4] rounded-2xl overflow-hidden border-2 border-space-border/20">
+                                <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button 
+                                        onClick={() => setFormData(p => ({ ...p, gallery: p.gallery.filter((_, i) => i !== idx) }))}
+                                        className="bg-white/20 text-white p-2 rounded-xl hover:bg-space-danger transition-colors"
+                                    >
+                                        <Info size={16} /> {/* Using Info as a placeholder for trash icon if not imported, but let's assume X is better */}
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        {formData.gallery.length < 8 && (
+                            <ImageUploadWithCrop 
+                                label="Añadir Foto"
+                                value=""
+                                onUploadComplete={(url) => setFormData(p => ({ ...p, gallery: [...p.gallery, url] }))}
+                                aspect={3 / 4}
+                            />
+                        )}
+                    </div>
+                </section>
+
+                {/* Section 4: Location */}
                 <section className="bg-white rounded-[2.5rem] p-6 sm:p-10 border border-space-border/20 shadow-[0_20px_60px_rgba(0,0,0,0.035)]">
                     <div className="flex items-center gap-3 mb-10">
                         <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary">
@@ -243,21 +316,31 @@ export default function BusinessSettingsPage() {
                             <Input label="Ciudad" name="city" value={formData.city} onChange={handleChange} placeholder="Santo Domingo" />
                         </div>
 
-                        <div className="p-8 bg-neutral-50/80 rounded-[2rem] border border-neutral-100 flex flex-col md:flex-row gap-8 items-center">
-                            <div className="md:w-1/3">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Map size={18} className="text-space-primary" />
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-space-text">GPS Coordenadas</h3>
+                        <div className="p-8 bg-neutral-50/80 rounded-[2rem] border border-neutral-100 flex flex-col items-center">
+                            <div className="w-full flex flex-col md:flex-row gap-8 items-center mb-6">
+                                <div className="md:w-1/3">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Map size={18} className="text-space-primary" />
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-space-text">GPS Coordenadas</h3>
+                                    </div>
+                                    <p className="text-[10px] text-space-muted leading-relaxed font-bold">
+                                        Esencial para el filtro de "Cerca de mí" y el mapa interactivo. 
+                                    </p>
                                 </div>
-                                <p className="text-[10px] text-space-muted leading-relaxed font-bold">
-                                    Esencial para el filtro de "Cerca de mí" y el mapa interactivo. 
-                                </p>
+                                
+                                <div className="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                                    <Input label="Latitud" name="latitude" type="number" step="any" value={formData.latitude} onChange={handleChange} placeholder="18.4861" />
+                                    <Input label="Longitud" name="longitude" type="number" step="any" value={formData.longitude} onChange={handleChange} placeholder="-69.9312" />
+                                </div>
                             </div>
                             
-                            <div className="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                                <Input label="Latitud" name="latitude" type="number" step="any" value={formData.latitude} onChange={handleChange} placeholder="18.4861" />
-                                <Input label="Longitud" name="longitude" type="number" step="any" value={formData.longitude} onChange={handleChange} placeholder="-69.9312" />
-                            </div>
+                            <button
+                                onClick={handleDetectLocation}
+                                className="w-full py-4 bg-white border-2 border-space-primary/30 text-space-primary hover:bg-space-primary hover:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-sm"
+                            >
+                                <MapPin size={16} />
+                                Detectar mi ubicación actual (GPS)
+                            </button>
                         </div>
                     </div>
                 </section>
