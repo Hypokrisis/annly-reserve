@@ -173,7 +173,7 @@ export default function ServicesPage() {
                         </button>
                     </div>
                 ) : (
-                    <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
+                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                         {services.map((service) => (
                             <div key={service.id}
                                 className={`card p-4 sm:p-5 hover:shadow-card-lg transition-all group overflow-hidden ${!service.is_active ? 'opacity-60' : ''}`}
@@ -235,31 +235,33 @@ export default function ServicesPage() {
 
                 {/* Create/Edit Modal */}
                 <Modal isOpen={isModalOpen} onClose={handleCloseModal}
-                    title={editingService ? 'Editar Servicio' : 'Nuevo Servicio'}>
-                    <form onSubmit={handleSubmit} className="space-y-5 max-h-[70vh] overflow-y-auto px-1 scrollbar-hide">
-                        <Input label="Nombre del Servicio" value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            error={formErrors.name} placeholder="Ej: Corte de pelo + Lavado" required />
+                    title={editingService ? 'Editar Servicio' : 'Nuevo Servicio'} size="lg">
+                    <form onSubmit={handleSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto px-1 pr-3 scrollbar-custom">
+                        <div className="space-y-4">
+                            <Input label="Nombre del Servicio" value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                error={formErrors.name} placeholder="Ej: Corte de pelo + Lavado" required />
 
-                        <div>
-                            <label className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2 mb-1.5 block">Descripción</label>
-                            <textarea value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="w-full px-5 py-3 bg-neutral-50 border-transparent rounded-2xl text-sm font-medium text-space-text focus:bg-white focus:ring-2 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-neutral-300 resize-none" rows={3} placeholder="Describe brevemente qué incluye este servicio..." />
+                            <div>
+                                <label className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2 mb-1.5 block">Descripción</label>
+                                <textarea value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    className="w-full px-5 py-3 bg-neutral-50 border border-space-border/20 rounded-2xl text-sm font-medium text-space-text focus:bg-white focus:ring-4 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-neutral-300 resize-none min-h-[100px]" placeholder="Describe brevemente qué incluye este servicio..." />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <Input label="Duración (minutos)" type="number" value={formData.duration_minutes}
+                                    onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
+                                    error={formErrors.duration_minutes} placeholder="30" min="1" required />
+                                <Input label="Precio ($)" type="number" step="0.01" value={formData.price}
+                                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                    error={formErrors.price} placeholder="0.00" min="0" required />
+                            </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Input label="Duración (minutos)" type="number" value={formData.duration_minutes}
-                                onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
-                                error={formErrors.duration_minutes} placeholder="30" min="1" required />
-                            <Input label="Precio ($)" type="number" step="0.01" value={formData.price}
-                                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                error={formErrors.price} placeholder="0.00" min="0" required />
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-neutral-100 mt-4">
-                            <button type="button" onClick={handleCloseModal} className="btn-secondary w-full sm:w-auto order-2 sm:order-1 h-12 rounded-2xl font-bold uppercase tracking-widest text-[10px]">Cancelar</button>
-                            <button type="submit" disabled={loading} className="btn-primary w-full sm:w-auto order-1 sm:order-2 h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-space-primary/20">
+                        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-neutral-100 sticky bottom-0 bg-white z-10 pb-2">
+                            <button type="button" onClick={handleCloseModal} className="btn-secondary w-full sm:w-auto h-12 rounded-2xl font-bold uppercase tracking-widest text-[10px]">Cancelar</button>
+                            <button type="submit" disabled={loading} className="btn-primary w-full sm:w-auto h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-space-primary/15">
                                 {loading ? 'Guardando...' : editingService ? 'Actualizar Servicio' : 'Crear Servicio'}
                             </button>
                         </div>

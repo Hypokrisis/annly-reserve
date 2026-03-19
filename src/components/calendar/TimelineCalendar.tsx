@@ -114,40 +114,43 @@ export function TimelineCalendar({
       </div>
 
       {/* Timeline Grid */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden min-h-[400px]">
         {/* Y-Axis (Barbers) */}
-        <div className="w-24 sm:w-40 border-r border-space-border bg-white shrink-0 z-20 flex flex-col">
-          <div className="h-12 border-b border-space-border flex items-center justify-center bg-space-card2/30">
-            <span className="text-[10px] font-black uppercase tracking-widest text-space-muted">Equipo</span>
+        <div className="w-20 sm:w-32 border-r border-space-border bg-white shrink-0 z-30 flex flex-col sticky left-0 shadow-[4px_0_12px_-4px_rgba(34,50,28,0.05)]">
+          <div className="h-10 sm:h-12 border-b border-space-border flex items-center justify-center bg-white">
+            <span className="text-[9px] font-black uppercase tracking-tight text-space-muted">Equipo</span>
           </div>
           <div className="flex-1 overflow-y-auto hidden-scrollbar">
-            {activeBarbers.map(barber => (
-              <div key={barber.id} className="h-24 border-b border-space-border flex flex-col items-center sm:flex-row sm:items-center sm:px-4 justify-center sm:justify-start gap-3 bg-white">
-                <div className="w-10 h-10 rounded-full bg-space-primary-light/30 flex items-center justify-center text-space-primary font-bold text-sm shrink-0 border border-space-primary/20">
+            {activeBarbers.length > 0 ? activeBarbers.map(barber => (
+              <div key={barber.id} className="h-20 sm:h-24 border-b border-space-border flex flex-col items-center justify-center gap-1 sm:gap-2 bg-white px-2">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-space-card2 flex items-center justify-center text-space-primary font-bold text-xs sm:text-sm shrink-0 border border-space-primary/10">
                   {barber.name.charAt(0)}
                 </div>
-                <div className="hidden sm:block min-w-0">
-                  <p className="font-bold text-space-text text-sm truncate">{barber.name}</p>
-                  <p className="text-[10px] text-space-muted uppercase tracking-wider truncate">Barbero</p>
+                <div className="min-w-0 text-center">
+                  <p className="font-bold text-space-text text-[10px] sm:text-xs truncate max-w-full">{barber.name.split(' ')[0]}</p>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="flex-1 flex items-center justify-center p-4">
+                <p className="text-[10px] text-space-muted text-center italic">Sin equipo</p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* X-Axis & Scrollable Grid */}
         <div 
           ref={scrollContainerRef}
-          className="flex-1 overflow-x-auto overflow-y-auto relative bg-[#fbfdf9]"
+          className="flex-1 overflow-x-auto overflow-y-auto relative bg-[#fdfdfc] scroll-smooth"
         >
-          <div style={{ width: `${hoursCount * hourWidth}px` }} className="min-h-full">
+          <div style={{ width: `${hoursCount * hourWidth}px` }} className="min-h-full flex flex-col">
             {/* Hours Header */}
-            <div className="h-12 border-b border-space-border flex relative bg-space-card2/30 sticky top-0 z-10">
+            <div className="h-10 sm:h-12 border-b border-space-border flex relative bg-white/90 backdrop-blur-sm sticky top-0 z-20">
               {hours.map((hour) => (
                 <div 
                   key={hour} 
                   style={{ width: `${hourWidth}px` }}
-                  className="shrink-0 flex items-center border-r border-space-border/50 text-xs font-bold text-space-muted px-3"
+                  className="shrink-0 flex items-center border-r border-space-border/50 text-[10px] sm:text-xs font-bold text-space-muted px-3"
                 >
                   <Clock size={12} className="mr-1.5 opacity-50" />
                   {hour.toString().padStart(2, '0')}:00
@@ -156,20 +159,20 @@ export function TimelineCalendar({
             </div>
 
             {/* Grid Body */}
-            <div className="relative">
+            <div className="relative flex-1">
               {/* Vertical Grid Lines */}
               <div className="absolute inset-0 flex pointer-events-none">
                 {hours.map((hour) => (
-                  <div key={`line-${hour}`} style={{ width: `${hourWidth}px` }} className="shrink-0 border-r border-space-border/30 h-full"></div>
+                  <div key={`line-${hour}`} style={{ width: `${hourWidth}px` }} className="shrink-0 border-r border-space-border/20 h-full"></div>
                 ))}
               </div>
 
               {/* Rows for Barbers */}
-              {activeBarbers.map(barber => {
+              {activeBarbers.length > 0 ? activeBarbers.map(barber => {
                 const barberApts = appointments.filter(a => a.barber_id === barber.id);
                 
                 return (
-                  <div key={`row-${barber.id}`} className="h-24 border-b border-space-border relative hover:bg-space-gold/5 transition-colors">
+                  <div key={`row-${barber.id}`} className="h-20 sm:h-24 border-b border-space-border/30 relative hover:bg-space-card2/20 transition-colors">
                     {barberApts.map(apt => {
                       const { style, classes } = getAppointmentStyle(apt);
                       
@@ -182,17 +185,17 @@ export function TimelineCalendar({
                           key={apt.id}
                           onClick={() => onAppointmentClick(apt)}
                           style={style}
-                          className={`absolute top-2 bottom-2 rounded-xl p-2 cursor-pointer transition-all overflow-hidden border ${classes}`}
+                          className={`absolute top-1.5 bottom-1.5 sm:top-2 sm:bottom-2 rounded-lg sm:rounded-xl p-1.5 sm:p-2 cursor-pointer transition-all overflow-hidden border ${classes}`}
                           title={`${getServiceName(apt.service_id)} - ${apt.customer_name} (${apt.start_time})`}
                         >
-                          <div className="text-xs font-bold truncate leading-tight mb-1">{apt.customer_name}</div>
-                          <div className="text-[10px] opacity-90 truncate flex items-center gap-1">
+                          <div className="text-[10px] sm:text-xs font-bold truncate leading-tight">{apt.customer_name}</div>
+                          <div className="text-[9px] sm:text-[10px] opacity-80 truncate leading-tight mt-0.5">
                             {getServiceName(apt.service_id)}
                           </div>
                           
                           {/* If pill is wide enough, show time */}
-                          {parseInt(style.width) > 80 && (
-                            <div className="absolute bottom-2 right-2 text-[9px] font-black opacity-70 bg-black/10 px-1.5 rounded">
+                          {parseInt(style.width) > 70 && (
+                            <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 text-[8px] sm:text-[9px] font-black opacity-60 bg-black/5 px-1 rounded uppercase">
                               {apt.start_time.slice(0, 5)}
                             </div>
                           )}
@@ -201,7 +204,11 @@ export function TimelineCalendar({
                     })}
                   </div>
                 );
-              })}
+              }) : (
+                <div className="flex flex-col items-center justify-center py-20 text-space-muted italic text-sm">
+                  Configura tu equipo para ver la agenda
+                </div>
+              )}
             </div>
           </div>
         </div>

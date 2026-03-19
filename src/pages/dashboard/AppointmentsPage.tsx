@@ -69,7 +69,8 @@ export default function AppointmentsPage() {
             // "today" is now "Agenda" which uses currentDate
             const selectedDateStr = currentDate.toISOString().split('T')[0];
             filters.date = selectedDateStr;
-            filters.status = 'confirmed';
+            // Fetch both confirmed and completed for the daily agenda
+            filters.status = 'confirmed'; 
         } else if (activeTab === 'upcoming') {
             // For upcoming, we fetch all (or maybe should fetch from today onwards if backend supported it)
             // We will filter client-side for > today
@@ -153,7 +154,7 @@ export default function AppointmentsPage() {
     const filteredAppointments = appointments.filter(apt => {
         if (activeTab === 'today') {
             const selectedDateStr = currentDate.toISOString().split('T')[0];
-            return apt.appointment_date === selectedDateStr && apt.status === 'confirmed';
+            return apt.appointment_date === selectedDateStr && (apt.status === 'confirmed' || apt.status === 'completed');
         }
 
         if (activeTab === 'upcoming') {
@@ -241,66 +242,69 @@ export default function AppointmentsPage() {
                 </div>
 
                 {/* Appointments List */}
-                {loading ? (
+                {loading && (appointments.length === 0 || (activeTab === 'today' && !appointments.some(a => a.appointment_date === currentDate.toISOString().split('T')[0]))) ? (
                     <div className="flex justify-center py-20"><LoadingSpinner /></div>
-                ) : filteredAppointments.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-16 text-center border-2 border-dashed border-space-border">
-                        <div className="w-14 h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <CalendarIcon size={28} className="text-space-muted" />
-                        </div>
-                        <h3 className="text-lg font-bold text-space-text mb-1">No hay citas</h3>
-                        <p className="text-space-muted text-sm max-w-xs mx-auto">
-                            {activeTab === 'today' ? 'No hay citas para este día.' :
-                             activeTab === 'upcoming' ? 'No hay citas próximas.' : 'No hay historial.'}
-                        </p>
-                    </div>
-                ) : activeTab === 'today' ? (
-                    <div className="animate-fade-in">
-                        <TimelineCalendar 
-                            appointments={filteredAppointments}
-                            selectedDate={currentDate}
-                            onDateChange={setCurrentDate}
-                            onAppointmentClick={handleViewDetails}
-                            barbers={selectedBarberId === 'all' ? barbers : barbers.filter(b => b.id === selectedBarberId)}
-                            services={services}
-                        />
-                    </div>
                 ) : (
-                    <div className="space-y-3">
-                        {filteredAppointments.map((appointment) => (
-                            <div key={appointment.id} onClick={() => handleViewDetails(appointment)}
-                                className="card p-5 hover:shadow-card-lg transition-all cursor-pointer group hover:border-space-primary/40">
-                                <div className="flex items-center justify-between gap-4">
-                                    <div className="flex gap-4 items-center overflow-hidden">
-                                        {/* Time block */}
-                                        <div className="flex flex-col items-center justify-center bg-space-card2 border border-space-border w-14 h-14 rounded-xl shrink-0">
-                                            <span className="text-[10px] font-bold uppercase text-space-muted">{formatTimeDisplay(appointment.start_time).split(' ')[1]}</span>
-                                            <span className="text-lg font-black text-space-text">{formatTimeDisplay(appointment.start_time).split(' ')[0]}</span>
-                                        </div>
-                                        <div className="min-w-0">
-                                            <h4 className="font-bold text-space-text truncate group-hover:text-space-primary transition-colors">
-                                                {appointment.customer_name}
-                                            </h4>
-                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-space-muted mt-1">
-                                                <span className="flex items-center gap-1">
-                                                    <User size={12} className="text-space-primary" />
-                                                    {getBarberName(appointment.barber_id)}
+                    <div className="space-y-6">
+                        {activeTab === 'today' ? (
+                            <div className="animate-fade-in">
+                                <TimelineCalendar 
+                                    appointments={filteredAppointments}
+                                    selectedDate={currentDate}
+                                    onDateChange={setCurrentDate}
+                                    onAppointmentClick={handleViewDetails}
+                                    barbers={selectedBarberId === 'all' ? barbers : barbers.filter(b => b.id === selectedBarberId)}
+                                    services={services}
+                                />
+                            </div>
+                        ) : filteredAppointments.length === 0 ? (
+                            <div className="bg-white rounded-2xl p-16 text-center border-2 border-dashed border-space-border animate-fade-up">
+                                <div className="w-14 h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <CalendarIcon size={28} className="text-space-muted" />
+                                </div>
+                                <h3 className="text-lg font-bold text-space-text mb-1">No hay citas</h3>
+                                <p className="text-space-muted text-sm max-w-xs mx-auto">
+                                    {activeTab === 'upcoming' ? 'No hay citas próximas confirmadas.' : 'No hay historial para mostrar.'}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3 animate-fade-in">
+                                {filteredAppointments.map((appointment) => (
+                                    <div key={appointment.id} onClick={() => handleViewDetails(appointment)}
+                                        className="card p-5 hover:shadow-card-lg transition-all cursor-pointer group hover:border-space-primary/40">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex gap-4 items-center overflow-hidden">
+                                                {/* Time block */}
+                                                <div className="flex flex-col items-center justify-center bg-space-card2 border border-space-border w-14 h-14 rounded-xl shrink-0">
+                                                    <span className="text-[10px] font-bold uppercase text-space-muted">{formatTimeDisplay(appointment.start_time).split(' ')[1]}</span>
+                                                    <span className="text-lg font-black text-space-text">{formatTimeDisplay(appointment.start_time).split(' ')[0]}</span>
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <h4 className="font-bold text-space-text truncate group-hover:text-space-primary transition-colors">
+                                                        {appointment.customer_name}
+                                                    </h4>
+                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-space-muted mt-1">
+                                                        <span className="flex items-center gap-1">
+                                                            <User size={12} className="text-space-primary" />
+                                                            {getBarberName(appointment.barber_id)}
+                                                        </span>
+                                                        <span className="hidden sm:block">·</span>
+                                                        <span>{getServicesName(appointment.service_id!)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="shrink-0 flex flex-col items-end gap-1.5">
+                                                {getStatusBadge(appointment.status)}
+                                                <span className="text-[10px] text-space-muted flex items-center gap-1">
+                                                    <Clock size={10} />
+                                                    {formatRelativeTime(appointment.appointment_date, appointment.start_time)}
                                                 </span>
-                                                <span className="hidden sm:block">·</span>
-                                                <span>{getServicesName(appointment.service_id!)}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="shrink-0 flex flex-col items-end gap-1.5">
-                                        {getStatusBadge(appointment.status)}
-                                        <span className="text-[10px] text-space-muted flex items-center gap-1">
-                                            <Clock size={10} />
-                                            {formatRelativeTime(appointment.appointment_date, appointment.start_time)}
-                                        </span>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
-                        ))}
+                        )}
                     </div>
                 )}
 

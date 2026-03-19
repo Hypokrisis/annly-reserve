@@ -56,19 +56,18 @@ export const Modal: React.FC<ModalProps> = ({
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Luxury Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-space-border/50 bg-gradient-to-r from-space-card2 to-space-card">
-                        <h2 className="text-2xl font-bold text-white font-serif">{title}</h2>
+                    <div className="flex items-center justify-between p-5 sm:p-6 border-b border-space-border bg-white sticky top-0 z-50">
+                        <h2 className="text-xl sm:text-2xl font-bold text-space-text font-sans">{title}</h2>
                         <button
                             onClick={onClose}
-                            className="w-10 h-10 flex items-center justify-center rounded-full text-space-muted hover:text-white hover:bg-space-card2 transition-all border border-transparent hover:border-space-gold/20"
+                            className="w-10 h-10 flex items-center justify-center rounded-xl text-space-muted hover:text-white hover:bg-space-danger transition-all border border-space-border group"
                         >
-                            <X size={20} />
+                            <X size={18} className="group-hover:scale-110 transition-transform" />
                         </button>
                     </div>
 
                     {/* Content with subtle texture */}
-                    <div className="p-6 relative">
-                        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#d4af37 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                    <div className="p-5 sm:p-8 relative bg-white">
                         <div className="relative z-10 text-space-text">
                             {children}
                         </div>

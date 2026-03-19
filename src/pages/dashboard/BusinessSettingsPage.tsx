@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/supabaseClient';
 import { Input } from '@/components/common/Input';
-import { Store, Check, Info, ArrowLeft } from 'lucide-react';
+import { ImageUploadWithCrop } from '@/components/common/ImageUploadWithCrop';
+import { Store, Check, Info, Save, MapPin, Sparkles, Map, Loader2, ChevronLeft } from 'lucide-react';
 
 export default function BusinessSettingsPage() {
     const navigate = useNavigate();
@@ -46,8 +47,8 @@ export default function BusinessSettingsPage() {
         setMessage(null);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         setMessage(null);
 
         if (!currentBusiness) return;
@@ -83,15 +84,17 @@ export default function BusinessSettingsPage() {
                     city: formData.city.trim(),
                     latitude: formData.latitude ? parseFloat(formData.latitude) : null,
                     longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-                    logo_url: formData.logo_url.trim(),
-                    banner_url: formData.banner_url.trim(),
+                    logo_url: formData.logo_url,
+                    banner_url: formData.banner_url,
                 })
                 .eq('id', currentBusiness.id);
 
             if (error) throw error;
 
             setMessage({ type: 'success', text: 'Configuración guardada exitosamente.' });
-            setTimeout(() => window.location.reload(), 1500);
+            
+            // Give time for feedback before potential refresh or just staying
+            setTimeout(() => setMessage(null), 3000);
 
         } catch (error: any) {
             console.error('Error updating business:', error);
@@ -103,130 +106,161 @@ export default function BusinessSettingsPage() {
 
     if (!currentBusiness) return (
         <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-space-primary"></div>
+            <Loader2 className="w-8 h-8 animate-spin text-space-primary" />
         </div>
     );
 
     return (
-        <div className="max-w-4xl mx-auto animate-fade-up pb-20">
-            <div className="mb-8">
+        <div className="max-w-4xl mx-auto animate-fade-up px-4 sm:px-6 lg:px-8 pb-20">
+            {/* Action Bar */}
+            <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-4 z-40">
                 <button
                     onClick={() => navigate('/dashboard')}
-                    className="group inline-flex items-center text-space-muted hover:text-space-primary transition-all font-black uppercase tracking-widest text-[10px]"
+                    className="group w-full sm:w-auto flex items-center gap-3 bg-white border-2 border-space-border/40 hover:border-space-primary/40 px-6 py-4 rounded-2xl transition-all shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 group"
                 >
-                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                    Volver al Dashboard
+                    <div className="w-8 h-8 rounded-xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:scale-110 transition-transform">
+                        <ChevronLeft size={20} />
+                    </div>
+                    <span className="font-black uppercase tracking-widest text-[11px] text-space-text">Volver al Dashboard</span>
+                </button>
+
+                <button
+                    onClick={() => handleSubmit()}
+                    disabled={loading}
+                    className="w-full sm:w-auto flex btn-primary h-16 px-10 items-center justify-center gap-3 shadow-xl shadow-space-primary/25 active:scale-95 disabled:opacity-50 transition-all font-black uppercase tracking-[0.2em] text-xs"
+                >
+                    {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
+                    {loading ? 'Guardando...' : 'Guardar Todo'}
                 </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
-                <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 bg-gradient-to-br from-space-primary to-space-primary-dark rounded-[1.25rem] flex items-center justify-center text-white shadow-xl shadow-space-primary/20 rotate-3">
-                        <Store size={28} className="-rotate-3" />
-                    </div>
-                    <div>
-                        <h1 className="text-3xl font-black text-space-text tracking-tighter uppercase italic">Configuración</h1>
-                        <p className="text-space-muted text-xs font-bold uppercase tracking-widest mt-1">Personaliza la cara pública de tu negocio</p>
-                    </div>
+            {/* Title Section */}
+            <div className="flex items-center gap-5 mb-10 pl-2">
+                <div className="w-12 h-12 bg-space-card2 rounded-2xl flex items-center justify-center text-space-primary rotate-3">
+                    <Store size={26} className="-rotate-3" />
+                </div>
+                <div>
+                    <h1 className="text-2xl font-black text-space-text tracking-tight uppercase">Mi Negocio</h1>
+                    <p className="text-space-muted text-[10px] font-bold uppercase tracking-widest mt-0.5">Configuración y presencia pública</p>
                 </div>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-neutral-100 overflow-hidden">
-                <form onSubmit={handleSubmit}>
-                    {/* Status Message */}
-                    {message && (
-                        <div className={`mx-8 mt-8 p-5 rounded-2xl flex items-center gap-3 animate-fade-in ${
-                            message.type === 'success' 
-                            ? 'bg-emerald-50 border border-emerald-100 text-emerald-700' 
-                            : 'bg-red-50 border border-red-100 text-red-700'
+            {/* Main Form Content */}
+            <div className="space-y-8">
+                {/* Status Message */}
+                {message && (
+                    <div className={`p-5 rounded-3xl flex items-center gap-4 animate-fade-in shadow-sm ${
+                        message.type === 'success' 
+                        ? 'bg-emerald-50 border border-emerald-100 text-emerald-800' 
+                        : 'bg-red-50 border border-red-100 text-red-800'
+                    }`}>
+                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
+                            message.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
                         }`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                                message.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
-                            }`}>
-                                {message.type === 'success' ? <Check size={16} /> : <Info size={16} />}
-                            </div>
-                            <p className="text-xs font-black uppercase tracking-tight">{message.text}</p>
+                            {message.type === 'success' ? <Check size={20} /> : <Info size={20} />}
                         </div>
-                    )}
+                        <p className="text-xs font-black uppercase tracking-tight leading-relaxed">{message.text}</p>
+                    </div>
+                )}
 
-                    <div className="p-8 sm:p-10 space-y-10">
-                        {/* Section: Basic Info */}
-                        <div className="space-y-6">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-1.5 h-6 bg-space-primary rounded-full"></div>
-                                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-space-text">Información General</h2>
-                            </div>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <Input label="Nombre del Negocio" name="name" value={formData.name} onChange={handleChange} required placeholder="Ej: Barbería El Jefe" />
-                                <Input label="URL Personalizado (Slug)" name="slug" value={formData.slug} onChange={handleChange} required placeholder="ej-barberia" className="font-mono" />
-                            </div>
-                            <Input label="Teléfono de Contacto" name="phone" value={formData.phone} onChange={handleChange} placeholder="+1 234 567 890" />
-                            <div>
-                                <label className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2 mb-1.5 block">Descripción / Biografía</label>
-                                <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full px-5 py-3 bg-neutral-50 border-transparent rounded-2xl text-sm font-medium text-space-text focus:bg-white focus:ring-2 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-neutral-300 resize-none" placeholder="Cuenta la historia de tu barbería..." />
-                            </div>
+                {/* Section 1: Visual Identity */}
+                <section className="bg-white rounded-[2.5rem] p-6 sm:p-10 border border-space-border/20 shadow-[0_20px_60px_rgba(0,0,0,0.035)] group">
+                    <div className="flex items-center gap-3 mb-10 overflow-hidden">
+                        <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:bg-space-primary group-hover:text-white transition-all duration-500">
+                            <Sparkles size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-black text-space-text uppercase tracking-tight leading-none">Identidad Visual</h2>
+                            <p className="text-[10px] text-space-muted uppercase font-bold tracking-widest mt-1.5 opacity-70">Haz que tu perfil destaque</p>
+                        </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <ImageUploadWithCrop 
+                            label="Logo Principal (1:1)"
+                            value={formData.logo_url}
+                            onUploadComplete={(url) => setFormData(p => ({ ...p, logo_url: url }))}
+                            aspect={1}
+                        />
+                        <ImageUploadWithCrop 
+                            label="Banner de Portada (21:9)"
+                            value={formData.banner_url}
+                            onUploadComplete={(url) => setFormData(p => ({ ...p, banner_url: url }))}
+                            aspect={21 / 9}
+                        />
+                    </div>
+                </section>
+
+                {/* Section 2: General Info */}
+                <section className="bg-white rounded-[2.5rem] p-6 sm:p-10 border border-space-border/20 shadow-[0_20px_60px_rgba(0,0,0,0.035)]">
+                    <div className="flex items-center gap-3 mb-10">
+                        <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary">
+                            <Info size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-black text-space-text uppercase tracking-tight leading-none">Información General</h2>
+                            <p className="text-[10px] text-space-muted uppercase font-bold tracking-widest mt-1.5 opacity-70">Detalles básicos del negocio</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Input label="Nombre del Negocio" name="name" value={formData.name} onChange={handleChange} required placeholder="Ej: Barbería El Jefe" />
+                            <Input label="URL de Reserva (Slug)" name="slug" value={formData.slug} onChange={handleChange} required placeholder="ej-barberia" />
+                        </div>
+                        
+                        <Input label="Teléfono de contacto" name="phone" value={formData.phone} onChange={handleChange} placeholder="(809) 555-5555" />
+
+                        <div>
+                            <label className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2 mb-2 block">Descripción</label>
+                            <textarea
+                                name="description"
+                                value={formData.description}
+                                onChange={handleChange}
+                                rows={4}
+                                className="w-full px-6 py-4 bg-neutral-50/50 border-2 border-transparent rounded-[1.5rem] text-sm font-medium text-space-text focus:bg-white focus:ring-4 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-neutral-300 resize-none min-h-[120px]"
+                                placeholder="Cuéntanos un poco sobre tu barbería y lo que la hace especial..."
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* Section 3: Location */}
+                <section className="bg-white rounded-[2.5rem] p-6 sm:p-10 border border-space-border/20 shadow-[0_20px_60px_rgba(0,0,0,0.035)]">
+                    <div className="flex items-center gap-3 mb-10">
+                        <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary">
+                            <MapPin size={24} />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-black text-space-text uppercase tracking-tight leading-none">Ubicación & GPS</h2>
+                            <p className="text-[10px] text-space-muted uppercase font-bold tracking-widest mt-1.5 opacity-70">Ayuda a tus clientes a llegarte</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Input label="Dirección Física" name="address" value={formData.address} onChange={handleChange} placeholder="Calle Principal #123" />
+                            <Input label="Ciudad" name="city" value={formData.city} onChange={handleChange} placeholder="Santo Domingo" />
                         </div>
 
-                        {/* Section: Location */}
-                        <div className="space-y-6 pt-10 border-t border-neutral-50">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-1.5 h-6 bg-space-purple rounded-full"></div>
-                                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-space-text">Ubicación Geográfica</h2>
-                            </div>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <Input label="Dirección Física" name="address" value={formData.address} onChange={handleChange} placeholder="Calle Principal #123" />
-                                <Input label="Ciudad" name="city" value={formData.city} onChange={handleChange} placeholder="Santo Domingo" />
-                            </div>
-                            <div className="bg-neutral-50 p-6 rounded-[2rem] border border-neutral-100">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Info size={14} className="text-space-primary" />
-                                    <p className="text-[9px] font-black text-space-muted uppercase tracking-widest">Coordenadas para el mapa (Opcional)</p>
+                        <div className="p-8 bg-neutral-50/80 rounded-[2rem] border border-neutral-100 flex flex-col md:flex-row gap-8 items-center">
+                            <div className="md:w-1/3">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Map size={18} className="text-space-primary" />
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-space-text">GPS Coordenadas</h3>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <Input label="Latitud" name="latitude" type="number" step="any" value={formData.latitude} onChange={handleChange} placeholder="18.4861" />
-                                    <Input label="Longitud" name="longitude" type="number" step="any" value={formData.longitude} onChange={handleChange} placeholder="-69.9312" />
-                                </div>
-                                <p className="mt-4 text-[9px] text-space-muted font-bold leading-relaxed px-2">
-                                    * Estas coordenadas permiten que tu negocio aparezca en el filtro "Cerca de mí". Puedes obtenerlas de Google Maps (clic derecho sobre tu local → copiar coordenadas).
+                                <p className="text-[10px] text-space-muted leading-relaxed font-bold">
+                                    Esencial para el filtro de "Cerca de mí" y el mapa interactivo. 
                                 </p>
                             </div>
-                        </div>
-
-                        {/* Section: Visuals */}
-                        <div className="space-y-6 pt-10 border-t border-neutral-50">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-1.5 h-6 bg-amber-400 rounded-full"></div>
-                                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-space-text">Identidad Visual</h2>
-                            </div>
-                            <div className="space-y-6">
-                                <Input label="URL del Logo (Cuadrado)" name="logo_url" value={formData.logo_url} onChange={handleChange} placeholder="https://ejemplo.com/logo.png" />
-                                <Input label="URL del Banner (Horizontal)" name="banner_url" value={formData.banner_url} onChange={handleChange} placeholder="https://ejemplo.com/banner.jpg" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4 mt-6">
-                                <div className="aspect-square bg-neutral-100 rounded-3xl border border-dashed border-neutral-300 flex items-center justify-center overflow-hidden">
-                                    {formData.logo_url ? <img src={formData.logo_url} className="w-full h-full object-cover" alt="Logo Preview" /> : <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Logo Preview</p>}
-                                </div>
-                                <div className="aspect-video bg-neutral-100 rounded-3xl border border-dashed border-neutral-300 flex items-center justify-center overflow-hidden">
-                                    {formData.banner_url ? <img src={formData.banner_url} className="w-full h-full object-cover" alt="Banner Preview" /> : <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Banner Preview</p>}
-                                </div>
+                            
+                            <div className="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                                <Input label="Latitud" name="latitude" type="number" step="any" value={formData.latitude} onChange={handleChange} placeholder="18.4861" />
+                                <Input label="Longitud" name="longitude" type="number" step="any" value={formData.longitude} onChange={handleChange} placeholder="-69.9312" />
                             </div>
                         </div>
                     </div>
-
-                    <div className="bg-neutral-50 p-8 sm:p-10 flex flex-col sm:flex-row justify-between items-center gap-6">
-                        <div className="text-center sm:text-left">
-                            <p className="text-xs font-bold text-space-text tracking-tight italic">¿Listo para brillar?</p>
-                            <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest mt-0.5">Los cambios se reflejarán instantáneamente en tu página de reservas.</p>
-                        </div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="btn-primary w-full sm:w-auto h-16 px-12 rounded-[1.25rem] font-black uppercase tracking-[0.2em] shadow-xl shadow-space-primary/30 transition-all active:scale-[0.98] disabled:opacity-50"
-                        >
-                            {loading ? 'Guardando...' : 'Guardar Configuración'}
-                        </button>
-                    </div>
-                </form>
+                </section>
             </div>
         </div>
     );
