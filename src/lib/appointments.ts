@@ -38,10 +38,9 @@ export async function createAppointment(payload: CreateAppointmentPayload) {
                 customer_email: payload.customer_email,
                 customer_phone: payload.customer_phone,
                 customer_notes: payload.customer_notes ?? null,
-                // IMPORTANTE: customer_user_id se asigna automáticamente mediante RLS o default si se quisiera,
-                // pero idealmente RLS o el backend lo asocian. 
-                // Si queremos asociarlo explícitamente:
-                customer_user_id: session.user.id
+                // IMPORTANTE: client_id y customer_user_id se asignan para compatibilidad
+                customer_user_id: session.user.id,
+                client_id: session.user.id
             },
         ])
         .select("*")

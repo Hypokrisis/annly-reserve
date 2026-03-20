@@ -27,6 +27,7 @@ export interface Appointment {
     cancelled_at?: string;
     cancellation_reason?: string;
     customer_user_id?: string; // Link to authenticated user (new SaaS model)
+    client_id?: string; // Link to authenticated user (consistent with RLS)
 }
 
 export interface CreateAppointmentData {
@@ -40,6 +41,7 @@ export interface CreateAppointmentData {
     appointment_date: string;
     start_time: string;
     customer_user_id?: string; // Link to authenticated user
+    client_id?: string; // Link to authenticated user
 }
 
 export interface UpdateAppointmentData {

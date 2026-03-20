@@ -47,7 +47,7 @@ export default function Appointments() {
                     barbers (name),
                     businesses (name, slug)
                 `)
-                .eq('customer_user_id', user.id)
+                .or(`customer_user_id.eq.${user.id},client_id.eq.${user.id}`)
                 .order('start_time', { ascending: false });
 
             if (fetchError) throw fetchError;
