@@ -23,6 +23,11 @@ export interface Business {
     cancellation_window_hours: number;
     max_advance_booking_days: number;
 
+    // WhatsApp & Reminders
+    whatsapp_bot_active: boolean;
+    whatsapp_reminder_template?: string;
+    whatsapp_booking_link?: string;
+
     // Metadata
     created_at: string;
     updated_at: string;
@@ -58,4 +63,9 @@ export interface UpdateBusinessData {
     booking_buffer_minutes?: number;
     cancellation_window_hours?: number;
     max_advance_booking_days?: number;
+
+    // WhatsApp
+    whatsapp_bot_active?: boolean;
+    whatsapp_reminder_template?: string;
+    whatsapp_booking_link?: string;
 }

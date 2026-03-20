@@ -25,6 +25,7 @@ import ServicesPage from './pages/dashboard/ServicesPage';
 import BarbersPage from './pages/dashboard/BarbersPage';
 import SchedulesPage from './pages/dashboard/SchedulesPage';
 import AppointmentsPage from './pages/dashboard/AppointmentsPage';
+import ClientsPage from './pages/dashboard/ClientsPage';
 import BusinessSettingsPage from './pages/dashboard/BusinessSettingsPage';
 import CreateBusinessPage from './pages/dashboard/CreateBusinessPage';
 
@@ -112,6 +113,21 @@ export default function App() {
                     <RequireOwner>
                       <RequireBusiness>
                         <AppointmentsPage />
+                      </RequireBusiness>
+                    </RequireOwner>
+                  </AuthGuard>
+                }
+              />
+
+              <Route
+                path="/dashboard/clients"
+                element={
+                  <AuthGuard>
+                    <RequireOwner>
+                      <RequireBusiness>
+                        <RequireRole requiredRole={['owner', 'admin']}>
+                          <ClientsPage />
+                        </RequireRole>
                       </RequireBusiness>
                     </RequireOwner>
                   </AuthGuard>

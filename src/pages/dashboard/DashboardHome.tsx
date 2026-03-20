@@ -16,6 +16,8 @@ export default function DashboardHome() {
         totalCustomers: 0,
         returningRate: 0,
         topServices: [] as { name: string; count: number; revenue: number }[],
+        topBarbers: [] as { name: string; count: number; revenue: number }[],
+        weeklyRevenue: [] as { day: string; amount: number }[],
         loading: true
     });
 
@@ -28,7 +30,7 @@ export default function DashboardHome() {
         try {
             const { data: appointments, error } = await supabase
                 .from('appointments')
-                .select('service_id, customer_email, status, services(name, price)')
+                .select('service_id, barber_id, customer_email, status, appointment_date, services(name, price), barbers(name)')
                 .eq('business_id', business?.id);
 
             if (error) throw error;
@@ -62,11 +64,45 @@ export default function DashboardHome() {
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 3);
 
+            // Top Barbers
+            const barberStats = confirmed.reduce((acc, curr) => {
+                const bName = (curr.barbers as any)?.name || 'Sin Nombre';
+                if (!acc[bName]) acc[bName] = { count: 0, revenue: 0 };
+                acc[bName].count += 1;
+                acc[bName].revenue += (curr.services as any)?.price || 0;
+                return acc;
+            }, {} as Record<string, { count: number; revenue: number }>);
+
+            const topB = Object.entries(barberStats)
+                .map(([name, data]) => ({ name, ...data }))
+                .sort((a, b) => b.revenue - a.revenue)
+                .slice(0, 3);
+
+            // Weekly Revenue (Last 7 days)
+            const days = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+            const last7Days = Array.from({ length: 7 }, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (6 - i));
+                return {
+                    dateStr: d.toISOString().split('T')[0],
+                    label: days[d.getDay()]
+                };
+            });
+
+            const weekly = last7Days.map(day => {
+                const dayRevenue = confirmed
+                    .filter(a => a.appointment_date === day.dateStr)
+                    .reduce((acc, curr) => acc + ((curr.services as any)?.price || 0), 0);
+                return { day: day.label, amount: dayRevenue };
+            });
+
             setStatsData({
                 totalRevenue: revenue,
                 totalCustomers: totalCust,
                 returningRate: rate,
                 topServices: top,
+                topBarbers: topB,
+                weeklyRevenue: weekly,
                 loading: false
             });
         } catch (err) {
@@ -235,8 +271,9 @@ export default function DashboardHome() {
                 </div>
 
                 {/* ── Brutal Insights ────────────────────────────── */}
+                {/* ── Brutal Insights ────────────────────────────── */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                     <div className="card p-8 bg-white border-2 border-space-primary/10 overflow-hidden relative">
+                    <div className="card p-8 bg-white border-2 border-space-primary/10 overflow-hidden relative">
                         <div className="absolute top-0 right-0 p-8 opacity-10">
                             <TrendingUp size={120} className="text-space-primary" />
                         </div>
@@ -263,7 +300,7 @@ export default function DashboardHome() {
                                             <div className="w-full h-2.5 bg-space-bg rounded-full overflow-hidden border border-space-border/50">
                                                 <div 
                                                     className="h-full bg-space-primary shadow-[0_0_10px_rgba(74,132,99,0.3)] transition-all duration-1000"
-                                                    style={{ width: `${(s.count / statsData.topServices[0].count) * 100}%` }}
+                                                    style={{ width: `${(s.count / (statsData.topServices[0]?.count || 1)) * 100}%` }}
                                                 />
                                             </div>
                                         </div>
@@ -272,6 +309,77 @@ export default function DashboardHome() {
                                     <p className="text-xs text-space-muted font-bold uppercase tracking-widest">Sin datos suficientes</p>
                                 )}
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="card p-8 bg-white border-2 border-indigo-500/10 overflow-hidden relative">
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-2 mb-6">
+                                <Users size={18} className="text-indigo-600" />
+                                <h2 className="text-xs font-black text-space-muted uppercase tracking-[0.3em]">Top Equipo</h2>
+                            </div>
+                            <div className="space-y-4">
+                                {statsData.loading ? (
+                                    <div className="animate-pulse space-y-4">
+                                        {[1,2].map(i => <div key={i} className="h-12 bg-space-bg rounded-2xl w-full" />)}
+                                    </div>
+                                ) : statsData.topBarbers.length > 0 ? (
+                                    statsData.topBarbers.map((b, i) => (
+                                        <div key={b.name} className="flex items-center justify-between p-4 bg-neutral-50 rounded-2xl border border-neutral-100">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-black text-sm">
+                                                    {i + 1}
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-sm font-black text-space-text uppercase tracking-tight">{b.name}</h3>
+                                                    <p className="text-[10px] text-space-muted font-bold uppercase tracking-widest">{b.count} servicios</p>
+                                                </div>
+                                            </div>
+                                            <p className="text-sm font-black text-indigo-600 italic">{formatCurrency(b.revenue)}</p>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-xs text-space-muted font-bold uppercase tracking-widest">Sin datos</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                     <div className="lg:col-span-2 card p-8 bg-white border-2 border-space-border/50">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-2">
+                                <TrendingUp size={18} className="text-space-primary" />
+                                <h2 className="text-xs font-black text-space-muted uppercase tracking-[0.3em]">Ingresos Semanales</h2>
+                            </div>
+                            <div className="text-[10px] font-black text-space-primary uppercase tracking-widest bg-space-primary/10 px-3 py-1 rounded-lg">Últimos 7 días</div>
+                        </div>
+
+                        <div className="flex items-end justify-between h-48 gap-2 px-2">
+                            {statsData.loading ? (
+                                <div className="w-full h-full flex items-center justify-center text-space-muted animate-pulse font-black text-[10px] uppercase tracking-widest">Cargando gráfica...</div>
+                            ) : statsData.weeklyRevenue.map((d, i) => {
+                                const maxAmount = Math.max(...statsData.weeklyRevenue.map(w => w.amount), 1);
+                                const height = (d.amount / maxAmount) * 100;
+                                return (
+                                    <div key={i} className="flex-1 flex flex-col items-center gap-4 group">
+                                        <div className="relative w-full flex flex-col items-center">
+                                            {/* Tooltip on hover */}
+                                            <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-space-text text-white text-[10px] font-black px-2 py-1 rounded-md mb-2 pointer-events-none z-20">
+                                                {formatCurrency(d.amount)}
+                                            </div>
+                                            <div 
+                                                className="w-full max-w-[40px] bg-space-primary/20 group-hover:bg-space-primary rounded-t-lg transition-all duration-500 overflow-hidden relative"
+                                                style={{ height: `${height}%`, minHeight: '4px' }}
+                                            >
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+                                            </div>
+                                        </div>
+                                        <span className="text-[10px] font-black text-space-muted uppercase tracking-tighter">{d.day}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
                      </div>
 

@@ -23,6 +23,9 @@ export default function BusinessSettingsPage() {
         instagram_url: '',
         website_url: '',
         gallery: [] as string[],
+        whatsapp_bot_active: true,
+        whatsapp_reminder_template: '',
+        whatsapp_booking_link: '',
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -43,6 +46,9 @@ export default function BusinessSettingsPage() {
                 instagram_url: currentBusiness.instagram_url || '',
                 website_url: currentBusiness.website_url || '',
                 gallery: currentBusiness.gallery || [],
+                whatsapp_bot_active: currentBusiness.whatsapp_bot_active ?? true,
+                whatsapp_reminder_template: currentBusiness.whatsapp_reminder_template || '',
+                whatsapp_booking_link: currentBusiness.whatsapp_booking_link || '',
             });
         }
     }, [currentBusiness]);
@@ -118,6 +124,9 @@ export default function BusinessSettingsPage() {
                     instagram_url: formData.instagram_url.trim(),
                     website_url: formData.website_url.trim(),
                     gallery: formData.gallery,
+                    whatsapp_bot_active: formData.whatsapp_bot_active,
+                    whatsapp_reminder_template: formData.whatsapp_reminder_template.trim(),
+                    whatsapp_booking_link: formData.whatsapp_booking_link.trim(),
                 })
                 .eq('id', currentBusiness.id);
 
@@ -341,6 +350,69 @@ export default function BusinessSettingsPage() {
                                 <MapPin size={16} />
                                 Detectar mi ubicación actual (GPS)
                             </button>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Section 5: WhatsApp & Automation */}
+                <section className="bg-space-text rounded-[2.5rem] p-6 sm:p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-space-primary/10 rounded-full blur-[80px] -mr-32 -mt-32 group-hover:bg-space-primary/20 transition-all duration-700" />
+                    
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-10">
+                            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-space-primary border border-white/10">
+                                <Sparkles size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-black text-white uppercase tracking-tight leading-none">WhatsApp & Automatización</h2>
+                                <p className="text-[10px] text-white/50 uppercase font-bold tracking-widest mt-1.5 opacity-70">Controla tu bot y recordatorios</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-8">
+                             <div className="flex items-center justify-between p-6 bg-white/5 rounded-3xl border border-white/10">
+                                <div>
+                                    <h3 className="text-sm font-black text-white uppercase tracking-tight">Bot de Reservas</h3>
+                                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Habilita notificaciones automáticas</p>
+                                </div>
+                                <button
+                                    onClick={() => setFormData(p => ({ ...p, whatsapp_bot_active: !p.whatsapp_bot_active }))}
+                                    className={`w-14 h-8 rounded-full relative transition-all duration-300 ${formData.whatsapp_bot_active ? 'bg-space-primary' : 'bg-white/10'}`}
+                                >
+                                    <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 ${formData.whatsapp_bot_active ? 'left-7 shadow-[0_0_15px_rgba(74,132,99,0.5)]' : 'left-1'}`} />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] ml-2 block">Link de Reserva para WA (Opcional)</label>
+                                    <input 
+                                        type="text"
+                                        name="whatsapp_booking_link"
+                                        value={formData.whatsapp_booking_link}
+                                        onChange={handleChange}
+                                        placeholder={`Default: ${window.location.origin}/book/${formData.slug}`}
+                                        className="w-full h-14 bg-white/5 border-2 border-white/10 rounded-2xl px-6 text-sm font-medium text-white focus:bg-white/10 focus:border-space-primary outline-none transition-all placeholder:text-white/20"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] ml-2 block">Mensaje de Recordatorio ("Toca Recorte")</label>
+                                    <textarea
+                                        name="whatsapp_reminder_template"
+                                        value={formData.whatsapp_reminder_template}
+                                        onChange={handleChange}
+                                        rows={4}
+                                        className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-[1.5rem] text-sm font-medium text-white focus:bg-white/10 focus:border-space-primary transition-all outline-none placeholder:text-white/20 resize-none min-h-[120px]"
+                                        placeholder="Ej: ¡Hola {{customer_name}}! Ya toca recorte..."
+                                    />
+                                    <div className="flex flex-wrap gap-2 mt-2 px-2">
+                                        {['{{customer_name}}', '{{business_name}}', '{{booking_link}}'].map(tag => (
+                                            <span key={tag} className="text-[9px] font-black text-space-primary uppercase tracking-widest bg-space-primary/10 px-2 py-1 rounded-md border border-space-primary/20 pointer-events-none">{tag}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>

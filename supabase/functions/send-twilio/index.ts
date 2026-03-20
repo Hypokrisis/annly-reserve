@@ -73,7 +73,8 @@ serve(async (req) => {
                     .select(`
                         *,
                         barbers:barber_id (name, phone),
-                        services:service_id (name)
+                        services:service_id (name),
+                        businesses:business_id (name, whatsapp_bot_active)
                     `)
                     .eq('id', appointmentId)
                     .single();
@@ -227,7 +228,9 @@ serve(async (req) => {
                 const logs: any[] = [];
 
                 // ── CUSTOMER: WhatsApp via Template → fallback to SMS ──────
-                if (customerPhone) {
+                const botActive = (apt.businesses as any)?.whatsapp_bot_active ?? true;
+
+                if (customerPhone && botActive) {
                     if (contentSid && whatsappNumber) {
                         try {
                             const res = await sendWhatsAppTemplate(customerPhone, contentSid, templateVars);
@@ -256,6 +259,8 @@ serve(async (req) => {
                     } else {
                         logs.push({ target: 'customer', status: 'skipped', error: 'No template or SMS configured' });
                     }
+                } else if (customerPhone && !botActive) {
+                    logs.push({ target: 'customer', status: 'skipped', error: 'WhatsApp Bot is disabled in settings' });
                 } else {
                     logs.push({ target: 'customer', status: 'skipped', error: 'Missing phone' });
                 }
