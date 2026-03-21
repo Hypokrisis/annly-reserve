@@ -120,8 +120,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         bootstrap();
-        const { data: sub } = supabase.auth.onAuthStateChange(() => {
-            bootstrap();
+        const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_OUT') {
+                // Clear all state immediately, don't re-bootstrap
+                hardResetClientState();
+                setUser(null);
+                setBusinesses([]);
+                setCurrentBusiness(null);
+                setRole(null);
+                setLoading(false);
+            } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                bootstrap();
+            }
         });
         return () => sub.subscription.unsubscribe();
     }, []);
@@ -157,22 +167,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const logout = async () => {
-        setLoading(true);
         try {
-            // Attempt Supabase logout but don't block local cleanup if it fails
-            await authService.logout().catch(e => console.warn('Supabase logout warning:', e));
+            await authService.logout();
         } catch (error) {
-            console.error('Logout error (handled):', error);
-        } finally {
-            // Always clear local state
+            // Even if Supabase call fails, clear local state
             hardResetClientState();
             setUser(null);
             setBusinesses([]);
             setCurrentBusiness(null);
             setRole(null);
-            setLoading(false);
-            // Force reload to ensure clean slate
-            window.location.href = '/';
+            console.warn('Logout warning:', error);
+        } finally {
+            window.location.href = '/login';
         }
     };
 
