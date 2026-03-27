@@ -1,10 +1,4 @@
-// supabase/functions/send-reminders/index.ts
 // Deploy: supabase functions deploy send-reminders --no-verify-jwt
-// Called by a Cron Job or manually.
-// Finds clients who have NOT had an appointment in 14+ days
-// and sends them a WhatsApp reminder via freeform message (wa.me link is generated)
-// OR via Twilio if a Content SID is configured in TWILIO_TEMPLATE_REMINDER.
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
@@ -32,32 +26,33 @@ serve(async (req) => {
             throw new Error("Missing Twilio credentials");
         }
 
-        // Accept optional inactiveDays override from request body
+        // Parse Request Body Options
         let bodyInactiveDays: number | null = null;
-        let bodyCustomClients: { phone: string, name: string }[] | null = null;
         let bodyBusinessId: string | null = null;
+        let bodyCustomClients: any[] | null = null;
 
         try {
             const body = await req.json();
             if (body?.inactiveDays && typeof body.inactiveDays === 'number') {
                 bodyInactiveDays = body.inactiveDays;
             }
-            if (body?.customClients && Array.isArray(body.customClients)) {
-                bodyCustomClients = body.customClients;
-            }
             if (body?.businessId) {
                 bodyBusinessId = body.businessId;
+            }
+            if (body?.customClients && Array.isArray(body.customClients)) {
+                bodyCustomClients = body.customClients;
             }
         } catch (_) { /* no body is fine */ }
 
         const credential = btoa(`${accountSid}:${authToken}`);
 
-        // ── 1. Get businesses ──────────────────────────────────────
+        // ── 1. Get businesses with bot active ──────────────────
         let query = supabase
             .from('businesses')
             .select('id, name, whatsapp_bot_active, whatsapp_reminder_template, whatsapp_booking_link, reminder_inactive_days')
             .eq('whatsapp_bot_active', true);
 
+        // If manual trigger is for a specific business, only fetch that one
         if (bodyBusinessId) {
             query = query.eq('id', bodyBusinessId);
         }
@@ -66,7 +61,7 @@ serve(async (req) => {
 
         if (bizErr) throw bizErr;
         if (!businesses || businesses.length === 0) {
-            return new Response(JSON.stringify({ message: 'No active businesses' }), {
+            return new Response(JSON.stringify({ message: 'No active businesses found' }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 200,
             });
@@ -75,15 +70,15 @@ serve(async (req) => {
         const results: any[] = [];
 
         for (const biz of businesses) {
-            let inactiveClients: { name: string; phone: string; lastDate?: string }[] = [];
+            let targetClients: any[] = [];
+            const inactiveDays = bodyInactiveDays ?? biz.reminder_inactive_days ?? 14;
 
+            // ── A. Manual Mode ──────────────────
             if (bodyCustomClients && bodyCustomClients.length > 0) {
-                // User manually selected specific clients from dashboard
-                inactiveClients = bodyCustomClients;
-            } else {
-                // ── 2. Find clients who haven't visited in X days ──────
-                const inactiveDays = bodyInactiveDays ?? biz.reminder_inactive_days ?? 14;
-
+                targetClients = bodyCustomClients;
+            } 
+            // ── B. Automatic Inactivity Mode ──────────────────
+            else {
                 const { data: appointments, error: aptErr } = await supabase
                     .from('appointments')
                     .select('customer_name, customer_phone, appointment_date')
@@ -108,15 +103,15 @@ serve(async (req) => {
                 const cutoff = new Date();
                 cutoff.setDate(cutoff.getDate() - inactiveDays);
                 const cutoffStr = cutoff.toISOString().split('T')[0];
-                inactiveClients = Object.values(clientMap).filter(c => c.lastDate <= cutoffStr);
+                targetClients = Object.values(clientMap).filter(c => c.lastDate <= cutoffStr);
             }
 
-            if (inactiveClients.length === 0) {
+            if (targetClients.length === 0) {
                 results.push({ business: biz.name, sent: 0, reason: 'No inactive clients' });
                 continue;
             }
 
-            // ── 3. Send reminder to each inactive client ─────────────
+            // ── 3. Send message to targets ─────────────
             const bookingLink = biz.whatsapp_booking_link || '';
             const defaultTemplate = biz.whatsapp_reminder_template
                 || `¡Hola {{name}}! Ya llevas un tiempo sin visitarnos 💈 Te echamos de menos. Reserva tu próxima cita aquí: ${bookingLink}`;
@@ -124,7 +119,7 @@ serve(async (req) => {
             let sentCount = 0;
             const sendErrors: string[] = [];
 
-            for (const client of inactiveClients) {
+            for (const client of targetClients) {
                 try {
                     const message = defaultTemplate.replace('{{name}}', client.name);
                     const cleanPhone = normalizePhone(client.phone);
@@ -136,12 +131,10 @@ serve(async (req) => {
                     params.append('To', `whatsapp:${cleanPhone}`);
                     params.append('From', fromNum);
 
-                    // If there's an approved reminder template, use it
                     if (tmplReminder) {
                         params.append('ContentSid', tmplReminder);
                         params.append('ContentVariables', JSON.stringify({ "1": client.name, "2": bookingLink }));
                     } else {
-                        // Freeform (only works if client has messaged you first / in sandbox)
                         params.append('Body', message);
                     }
 
@@ -169,7 +162,7 @@ serve(async (req) => {
 
             results.push({
                 business: biz.name,
-                inactiveClients: inactiveClients.length,
+                targetClients: targetClients.length,
                 sent: sentCount,
                 errors: sendErrors.length > 0 ? sendErrors : undefined,
             });
