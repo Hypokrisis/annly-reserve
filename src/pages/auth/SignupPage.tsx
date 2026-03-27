@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/supabaseClient';
 import { isValidEmail } from '@/utils';
 import { Scissors, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export default function SignupPage() {
     const { signup } = useAuth();
+    const navigate = useNavigate();
 
     const [userType, setUserType] = useState<'client' | 'owner'>('client');
     const [formData, setFormData] = useState({
@@ -64,28 +66,53 @@ export default function SignupPage() {
         }
     };
 
+    // Listen for email confirmation in another tab
+    React.useEffect(() => {
+        let authListener: any;
+        if (success) {
+            const { data } = supabase.auth.onAuthStateChange((event: string, session: any) => {
+                if (event === 'SIGNED_IN' && session) {
+                    const role = session.user?.user_metadata?.role;
+                    navigate(role === 'owner' ? '/dashboard' : '/');
+                }
+            });
+            authListener = data.subscription;
+        }
+        return () => {
+            if (authListener) authListener.unsubscribe();
+        };
+    }, [success, navigate]);
+
     // ── Success Screen
     if (success) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-space-bg px-4">
-                <div className="max-w-md w-full card p-10 text-center shadow-card-lg animate-fade-up">
-                    <div className="w-16 h-16 bg-space-primary-light rounded-full flex items-center justify-center mx-auto mb-5">
-                        <svg className="w-8 h-8 text-space-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                        </svg>
+                <div className="max-w-md w-full card p-10 text-center shadow-card-lg animate-fade-up border-2 border-space-primary/20">
+                    <div className="relative w-20 h-20 mx-auto mb-6">
+                        <div className="absolute inset-0 bg-space-primary/10 rounded-full animate-ping opacity-75"></div>
+                        <div className="relative w-full h-full bg-space-primary rounded-full flex items-center justify-center shadow-lg">
+                            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </div>
                     </div>
-                    <h2 className="text-2xl font-bold text-space-text mb-2">¡Cuenta creada!</h2>
+                    <h2 className="text-2xl font-black text-space-text uppercase tracking-tight mb-2">¡Revisa tu Email!</h2>
                     <p className="text-space-muted mb-2 text-sm">
                         Hemos enviado un enlace de confirmación a{' '}
                         <strong className="text-space-text">{formData.email}</strong>.
                     </p>
-                    <p className="text-space-muted text-sm mb-8">
-                        {userType === 'owner'
-                            ? 'Una vez confirmes tu email, podrás configurar tu negocio.'
-                            : 'Una vez confirmes tu email, podrás reservar citas.'}
+                    <p className="text-space-muted font-bold text-sm mb-6 mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
+                        <span className="flex items-center justify-center gap-2 mb-1 text-amber-700">
+                           <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                           </svg>
+                           Esperando confirmación...
+                        </span>
+                        Esta página se actualizará automáticamente en cuanto confirmes tu email.
                     </p>
-                    <Link to="/login" className="btn-primary w-full py-3 text-base justify-center">
-                        Ir al inicio de sesión
+                    <Link to="/login" className="text-[10px] uppercase font-black tracking-widest text-space-muted hover:text-space-primary transition-colors">
+                        Volver al inicio de sesión
                     </Link>
                 </div>
             </div>

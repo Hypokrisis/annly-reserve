@@ -18,9 +18,10 @@ export default function AuthCallbackPage() {
 
                 if (data.session) {
                     // Already logged in via the token in URL
+                    const role = data.session.user?.user_metadata?.role;
                     setStatus('success');
                     setMessage('¡Email confirmado! Iniciando sesión...');
-                    setTimeout(() => navigate('/dashboard'), 2000);
+                    setTimeout(() => navigate(role === 'owner' ? '/dashboard' : '/'), 2000);
                 } else {
                     // Try exchanging the code from URL params (PKCE flow)
                     const params = new URLSearchParams(window.location.search);
@@ -29,18 +30,21 @@ export default function AuthCallbackPage() {
                     if (code) {
                         const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
                         if (exchangeError) throw exchangeError;
+                        const { data: { session } } = await supabase.auth.getSession();
+                        const role = session?.user?.user_metadata?.role;
                         setStatus('success');
                         setMessage('¡Email confirmado! Iniciando sesión...');
-                        setTimeout(() => navigate('/dashboard'), 2000);
+                        setTimeout(() => navigate(role === 'owner' ? '/dashboard' : '/'), 2000);
                     } else {
                         // Check hash for token (implicit flow)
                         const hash = window.location.hash;
                         if (hash && hash.includes('access_token')) {
                             const { data: refreshed } = await supabase.auth.getSession();
                             if (refreshed.session) {
+                                const role = refreshed.session.user?.user_metadata?.role;
                                 setStatus('success');
                                 setMessage('¡Email confirmado! Iniciando sesión...');
-                                setTimeout(() => navigate('/dashboard'), 2000);
+                                setTimeout(() => navigate(role === 'owner' ? '/dashboard' : '/'), 2000);
                                 return;
                             }
                         }
