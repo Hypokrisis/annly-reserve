@@ -20,7 +20,6 @@ serve(async (req) => {
         const accountSid     = Deno.env.get('TWILIO_ACCOUNT_SID');
         const authToken      = Deno.env.get('TWILIO_AUTH_TOKEN');
         const whatsappNumber = Deno.env.get('TWILIO_WHATSAPP_NUMBER');
-        const tmplReminder   = Deno.env.get('TWILIO_TEMPLATE_REMINDER');
 
         if (!accountSid || !authToken || !whatsappNumber) {
             throw new Error("Missing Twilio credentials");
@@ -49,7 +48,7 @@ serve(async (req) => {
         // ── 1. Get businesses with bot active ──────────────────
         let query = supabase
             .from('businesses')
-            .select('id, name, whatsapp_bot_active, whatsapp_reminder_template, whatsapp_booking_link, reminder_inactive_days')
+            .select('id, name, slug, whatsapp_bot_active, whatsapp_reminder_template, whatsapp_booking_link, reminder_inactive_days')
             .eq('whatsapp_bot_active', true);
 
         // If manual trigger is for a specific business, only fetch that one
@@ -111,17 +110,27 @@ serve(async (req) => {
                 continue;
             }
 
-            // ── 3. Send message to targets ─────────────
-            const bookingLink = biz.whatsapp_booking_link || '';
-            const defaultTemplate = biz.whatsapp_reminder_template
-                || `¡Hola {{name}}! Ya llevas un tiempo sin visitarnos 💈 Te echamos de menos. Reserva tu próxima cita aquí: ${bookingLink}`;
+            // Match the approved Twilio template string exactly so Twilio recognizes it
+            const bookingLink = biz.whatsapp_booking_link || `https://spaceyreserve.netlify.app/book/${biz.slug}`;
+            const dbTemplate = biz.whatsapp_reminder_template;
+            
+            // If the user hasn't configured a template in their Spacey dashboard, fallback to the one from the Twilio screenshot
+            const activeTemplate = dbTemplate && dbTemplate.length > 10 
+                ? dbTemplate 
+                : `¡Hola! Te escribimos de tu barbería 💈 {{client_name}}, ya llevas un tiempo sin visitarnos. Reserva tu próxima cita aquí: {{booking_link}} ¡Te esperamos pronto!`;
 
             let sentCount = 0;
             const sendErrors: string[] = [];
 
             for (const client of targetClients) {
                 try {
-                    const message = defaultTemplate.replace('{{name}}', client.name);
+                    // Replace variables accurately
+                    const message = activeTemplate
+                        .replace('{{client_name}}', client.name)
+                        .replace('{{customer_name}}', client.name) // fallback for old syntax
+                        .replace('{{name}}', client.name)
+                        .replace('{{booking_link}}', bookingLink);
+
                     const cleanPhone = normalizePhone(client.phone);
 
                     let fromNum = whatsappNumber!;
@@ -130,13 +139,7 @@ serve(async (req) => {
                     const params = new URLSearchParams();
                     params.append('To', `whatsapp:${cleanPhone}`);
                     params.append('From', fromNum);
-
-                    if (tmplReminder) {
-                        params.append('ContentSid', tmplReminder);
-                        params.append('ContentVariables', JSON.stringify({ "1": client.name, "2": bookingLink }));
-                    } else {
-                        params.append('Body', message);
-                    }
+                    params.append('Body', message);
 
                     const resp = await fetch(
                         `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,

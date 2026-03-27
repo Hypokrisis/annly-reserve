@@ -279,10 +279,22 @@ export default function ClientsPage() {
                                 }
                                 <div>
                                     {reminderResult.results.map((r, i) => (
-                                        <p key={i}>{reminderResult.ok
-                                            ? `✅ ${r.sent ?? 0} mensajes enviados con éxito a ${r.business}.${r.reason ? ` (${r.reason})` : ''}`
-                                            : `❌ ${r.reason || 'Error crítico al enviar.'}`
-                                        }</p>
+                                        <div key={i} className="mb-2 last:mb-0">
+                                            <p>{reminderResult.ok
+                                                ? `✅ ${r.sent ?? 0} mensajes enviados con éxito a ${r.business}.${r.reason ? ` (${r.reason})` : ''}`
+                                                : `❌ ${r.reason || 'Error crítico al enviar.'}`
+                                            }</p>
+                                            {r.errors && r.errors.length > 0 && (
+                                                <div className="mt-1 text-red-600 font-normal text-[10px] bg-red-100 p-2 rounded-lg">
+                                                    <strong>Errores de Twilio:</strong>
+                                                    <ul className="list-disc pl-4 mt-1">
+                                                        {r.errors.map((errText: string, idx: number) => (
+                                                            <li key={idx}>{errText}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
                                     ))}
                                 </div>
                             </div>
