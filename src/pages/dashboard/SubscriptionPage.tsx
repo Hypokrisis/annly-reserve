@@ -1,8 +1,40 @@
 import React from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Check, Star, Zap, Crown, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Check, Star, Zap, Crown, ArrowRight, ShieldCheck, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 
 export default function SubscriptionPage() {
+    const { currentBusiness } = useAuth();
+    const [isLoading, setIsLoading] = React.useState<string | null>(null);
+
+    const handleSubscribe = async (tierId: string) => {
+        if (!currentBusiness?.id) return alert('Negocio no encontrado');
+        
+        setIsLoading(tierId);
+        try {
+            const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+                body: {
+                    businessId: currentBusiness.id,
+                    tierId,
+                    successUrl: `${window.location.origin}/dashboard/settings?payment=success`,
+                    cancelUrl: `${window.location.origin}/dashboard/billing?payment=cancelled`,
+                }
+            });
+
+            if (error) throw error;
+            if (data?.url) {
+                window.location.href = data.url; // Redirect to Stripe Checkout
+            } else {
+                throw new Error('No URL returned from Stripe');
+            }
+        } catch (err: any) {
+            console.error(err);
+            alert(err.message || 'Error al conectar con pago seguro');
+        } finally {
+            setIsLoading(null);
+        }
+    };
     const plans = [
         {
             id: 'starter',
@@ -121,12 +153,22 @@ export default function SubscriptionPage() {
                                     <span className="text-space-muted font-medium mb-1.5">/mes</span>
                                 </div>
 
-                                <button className={`
-                                    w-full py-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-200 uppercase tracking-widest text-xs font-bold shadow-btn mb-8
-                                    ${plan.buttonBase}
-                                `}>
-                                    Seleccionar Plan
-                                    <ArrowRight size={16} />
+                                <button 
+                                    disabled={isLoading !== null}
+                                    onClick={() => handleSubscribe(plan.id)}
+                                    className={`
+                                        w-full py-4 rounded-2xl flex items-center justify-center gap-2 transition-all duration-200 uppercase tracking-widest text-xs font-bold shadow-btn mb-8 disabled:opacity-50
+                                        ${plan.buttonBase}
+                                    `}
+                                >
+                                    {isLoading === plan.id ? (
+                                        <Loader2 size={16} className="animate-spin" />
+                                    ) : (
+                                        <>
+                                            Seleccionar Plan
+                                            <ArrowRight size={16} />
+                                        </>
+                                    )}
                                 </button>
 
                                 <div className="space-y-4 flex-1">
