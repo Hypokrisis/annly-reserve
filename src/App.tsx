@@ -18,6 +18,7 @@ import BookingPage from './pages/public/BookingPage';
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import AuthCallbackPage from './pages/auth/AuthCallbackPage';
 
 // Dashboard pages
 import DashboardHome from './pages/dashboard/DashboardHome';
@@ -46,6 +47,7 @@ export default function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
               {/* DASHBOARD */}
               <Route

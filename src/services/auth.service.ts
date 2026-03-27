@@ -27,7 +27,7 @@ export const signup = async (data: {
         email: data.email,
         password: data.password,
         options: {
-            emailRedirectTo: `${window.location.origin}/login`,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
             data: {
                 role: data.role || 'client',
                 full_name: data.full_name,
