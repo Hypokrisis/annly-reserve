@@ -3,7 +3,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/supabaseClient';
-import { User, MessageSquare, Calendar, History, Search, Filter, Send, CheckCircle2, XCircle, Loader2, Bell } from 'lucide-react';
+import { User, MessageSquare, Calendar, History, Search, Filter, Send, CheckCircle2, XCircle, Loader2, Bell, CheckSquare, Square } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -34,10 +34,12 @@ export default function ClientsPage() {
     const [sending, setSending] = useState(false);
     const [reminderResult, setReminderResult] = useState<{ ok: boolean; results: ReminderResult[] } | null>(null);
 
+    // Manual selection
+    const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
+
     useEffect(() => {
         if (business?.id) {
             loadClients();
-            // Load configured reminder days
             if ((business as any).reminder_inactive_days) {
                 setInactiveDays((business as any).reminder_inactive_days);
             }
@@ -99,6 +101,19 @@ export default function ClientsPage() {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
+            let payload: any = { 
+                inactiveDays,
+                businessId: business?.id 
+            };
+
+            // If user manually selected clients, send only to them bypassing the day threshold
+            if (selectedEmails.size > 0) {
+                const customClients = clients
+                    .filter(c => selectedEmails.has(c.email))
+                    .map(c => ({ phone: c.phone, name: c.name, lastDate: c.last_visit }));
+                payload.customClients = customClients;
+            }
+
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
             const resp = await fetch(`${supabaseUrl}/functions/v1/send-reminders`, {
                 method: 'POST',
@@ -106,12 +121,19 @@ export default function ClientsPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ inactiveDays }),
+                body: JSON.stringify(payload),
             });
 
             const json = await resp.json();
             if (!resp.ok) throw new Error(json.error || 'Error al enviar recordatorios');
+            
             setReminderResult({ ok: true, results: json.results || [] });
+            
+            // Clear selection on success
+            if (json.results && json.results.some((r: any) => r.sent > 0)) {
+                setSelectedEmails(new Set());
+            }
+
         } catch (err: any) {
             setReminderResult({ ok: false, results: [{ business: 'Error', reason: err.message }] });
         } finally {
@@ -125,6 +147,21 @@ export default function ClientsPage() {
             .from('businesses')
             .update({ reminder_inactive_days: inactiveDays })
             .eq('id', business.id);
+    };
+
+    const toggleSelection = (email: string) => {
+        const newSet = new Set(selectedEmails);
+        if (newSet.has(email)) newSet.delete(email);
+        else newSet.add(email);
+        setSelectedEmails(newSet);
+    };
+
+    const toggleAll = () => {
+        if (selectedEmails.size === filteredClients.length) {
+            setSelectedEmails(new Set());
+        } else {
+            setSelectedEmails(new Set(filteredClients.map(c => c.email)));
+        }
     };
 
     const filteredClients = clients.filter(c =>
@@ -146,6 +183,13 @@ export default function ClientsPage() {
         return diff >= inactiveDays;
     }).length;
 
+    // Send button label logic
+    const sendButtonLabel = sending 
+        ? 'Enviando...' 
+        : selectedEmails.size > 0 
+            ? `Enviar a ${selectedEmails.size} Seleccionados`
+            : `Enviar a ${inactiveCount} Inactivos`;
+
     return (
         <DashboardLayout>
             <div className="animate-fade-up">
@@ -163,21 +207,27 @@ export default function ClientsPage() {
                 <div className="card p-6 mb-8 bg-white border-2 border-space-primary/20 overflow-hidden relative">
                     <div className="absolute -right-8 -top-8 w-32 h-32 bg-space-primary/5 rounded-full" />
                     <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-5">
-                            <div className="w-10 h-10 bg-space-primary/10 rounded-xl flex items-center justify-center">
-                                <Bell size={20} className="text-space-primary" />
-                            </div>
-                            <div>
-                                <h2 className="font-black text-space-text uppercase tracking-tight text-sm">Panel de Recordatorios</h2>
-                                <p className="text-[10px] text-space-muted font-bold uppercase tracking-widest">Envía WhatsApp automático a clientes inactivos</p>
+                        <div className="flex items-center justify-between mb-5">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-space-primary/10 rounded-xl flex items-center justify-center">
+                                    <Bell size={20} className="text-space-primary" />
+                                </div>
+                                <div>
+                                    <h2 className="font-black text-space-text uppercase tracking-tight text-sm">Campañas & Recordatorios</h2>
+                                    <p className="text-[10px] text-space-muted font-bold uppercase tracking-widest">
+                                        Automatiza por días o selecciona clientes manualmente
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
-                            {/* Days Config */}
-                            <div className="lg:col-span-2">
+                            {/* Days Config - Disabled visually if manual selection is active */}
+                            <div className={`lg:col-span-2 transition-opacity ${selectedEmails.size > 0 ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
                                 <div className="flex items-center justify-between mb-2">
-                                    <label className="text-[10px] font-black text-space-muted uppercase tracking-widest">Días de inactividad para recordar</label>
+                                    <label className="text-[10px] font-black text-space-muted uppercase tracking-widest">
+                                        Modo Automático: Inactividad
+                                    </label>
                                     <span className="text-lg font-black text-space-primary">{inactiveDays} días</span>
                                 </div>
                                 <input
@@ -194,21 +244,28 @@ export default function ClientsPage() {
                                 </div>
                                 <p className="text-[10px] text-space-muted font-bold mt-3 uppercase tracking-widest">
                                     {inactiveCount > 0
-                                        ? <span className="text-amber-600">⚠️ {inactiveCount} cliente{inactiveCount !== 1 ? 's' : ''} lleva{inactiveCount === 1 ? '' : 'n'} más de {inactiveDays} días sin visitar.</span>
-                                        : <span className="text-emerald-600">✅ Todos tus clientes han visitado en los últimos {inactiveDays} días.</span>
+                                        ? <span className="text-amber-600">⚠️ {inactiveCount} cliente(s) inactivo(s).</span>
+                                        : <span className="text-emerald-600">✅ Todos han visitado recientemente.</span>
                                     }
                                 </p>
                             </div>
 
                             {/* Send Button */}
-                            <div>
+                            <div className="flex flex-col gap-2">
+                                {selectedEmails.size > 0 && (
+                                    <p className="text-[10px] text-space-primary font-black uppercase tracking-widest text-center">
+                                        Modo Manual Activo
+                                    </p>
+                                )}
                                 <button
                                     onClick={handleBulkReminders}
-                                    disabled={sending || inactiveCount === 0}
-                                    className="w-full h-14 bg-space-primary hover:bg-space-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg shadow-space-primary/20 flex items-center justify-center gap-3"
+                                    disabled={sending || (selectedEmails.size === 0 && inactiveCount === 0)}
+                                    className={`w-full h-14 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg flex items-center justify-center gap-3 ${
+                                        selectedEmails.size > 0 ? 'bg-space-text hover:bg-space-text/90 shadow-space-text/20' : 'bg-space-primary hover:bg-space-primary/90 shadow-space-primary/20'
+                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
                                     {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                                    {sending ? 'Enviando...' : `Enviar a ${inactiveCount} Clientes`}
+                                    {sendButtonLabel}
                                 </button>
                             </div>
                         </div>
@@ -223,8 +280,8 @@ export default function ClientsPage() {
                                 <div>
                                     {reminderResult.results.map((r, i) => (
                                         <p key={i}>{reminderResult.ok
-                                            ? `✅ ${r.sent ?? 0} recordatorios enviados de ${r.inactiveClients ?? 0} clientes inactivos.${r.reason ? ` (${r.reason})` : ''}`
-                                            : `❌ ${r.reason}`
+                                            ? `✅ ${r.sent ?? 0} mensajes enviados con éxito a ${r.business}.${r.reason ? ` (${r.reason})` : ''}`
+                                            : `❌ ${r.reason || 'Error crítico al enviar.'}`
                                         }</p>
                                     ))}
                                 </div>
@@ -233,19 +290,37 @@ export default function ClientsPage() {
                     </div>
                 </div>
 
-                {/* Search Bar */}
-                <div className="card p-4 mb-8 flex items-center gap-4 bg-white border-2 border-space-border/50">
-                    <Search className="text-space-muted" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Buscar cliente por nombre, email o teléfono..."
-                        className="flex-1 bg-transparent border-none outline-none text-space-text font-bold text-sm"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-space-bg rounded-lg border border-space-border text-[10px] font-black text-space-muted uppercase">
-                         <Filter size={10} /> {filteredClients.length} Clientes
+                {/* Filter and Select All Bar */}
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                    <div className="card p-2 flex items-center gap-4 bg-white border-2 border-space-border/50 flex-1">
+                        <div className="pl-3">
+                            <Search className="text-space-muted" size={20} />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Buscar cliente..."
+                            className="flex-1 bg-transparent border-none outline-none text-space-text font-bold text-sm h-10"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-space-bg rounded-lg border border-space-border text-[10px] font-black text-space-muted uppercase mr-2">
+                             <Filter size={10} /> {filteredClients.length}
+                        </div>
                     </div>
+                    
+                    {filteredClients.length > 0 && (
+                        <button
+                            onClick={toggleAll}
+                            className={`px-5 h-[60px] rounded-2xl border-2 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${
+                                selectedEmails.size === filteredClients.length 
+                                    ? 'bg-space-primary/10 border-space-primary text-space-primary' 
+                                    : 'bg-white border-space-border/50 text-space-muted hover:border-space-border'
+                            }`}
+                        >
+                            {selectedEmails.size === filteredClients.length ? <CheckSquare size={16} /> : <Square size={16} />}
+                            {selectedEmails.size === filteredClients.length ? 'Deseleccionar' : 'Sel. Todos'}
+                        </button>
+                    )}
                 </div>
 
                 {loading ? (
@@ -260,13 +335,31 @@ export default function ClientsPage() {
                     <div className="grid grid-cols-1 gap-4">
                         {filteredClients.map((client) => {
                             const status = getClientStatus(client.last_visit);
+                            const isSelected = selectedEmails.has(client.email);
+                            
                             return (
-                                <div key={client.email} className="card p-6 bg-white border-2 border-space-border/50 hover:border-space-primary transition-all group overflow-hidden relative">
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-space-primary/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-all duration-700" />
+                                <div key={client.email} 
+                                    onClick={() => toggleSelection(client.email)}
+                                    className={`card p-6 border-2 transition-all group overflow-hidden relative cursor-pointer ${
+                                        isSelected 
+                                            ? 'bg-space-primary/5 border-space-primary shadow-sm' 
+                                            : 'bg-white border-space-border/50 hover:border-space-primary/50'
+                                    }`}
+                                >
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-space-primary/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-all duration-700 pointer-events-none" />
                                     
-                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10 pointer-events-none">
                                         <div className="flex items-center gap-5">
-                                            <div className="w-16 h-16 bg-space-text text-white rounded-[1.2rem] flex items-center justify-center font-black text-2xl shadow-lg">
+                                            {/* Checkbox */}
+                                            <div className="pointer-events-auto" onClick={(e) => { e.stopPropagation(); toggleSelection(client.email); }}>
+                                                {isSelected ? (
+                                                    <CheckSquare size={24} className="text-space-primary" />
+                                                ) : (
+                                                    <Square size={24} className="text-space-border group-hover:text-space-primary/50 transition-colors" />
+                                                )}
+                                            </div>
+                                            
+                                            <div className="w-14 h-14 bg-space-text text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg">
                                                 {client.name.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
@@ -291,7 +384,7 @@ export default function ClientsPage() {
                                         </div>
 
                                         <div className="flex flex-col sm:flex-row items-center gap-4 border-t lg:border-t-0 pt-4 lg:pt-0 border-space-border/50">
-                                            <div className="text-right flex-1 lg:flex-initial">
+                                            <div className="text-right flex-1 lg:flex-initial pr-4">
                                                 <p className="text-[9px] font-black text-space-muted uppercase tracking-widest mb-1">Última Visita</p>
                                                 <p className="text-sm font-black text-space-text uppercase tracking-tight flex items-center gap-2">
                                                     <Calendar size={14} className="text-space-primary" />
@@ -300,10 +393,13 @@ export default function ClientsPage() {
                                             </div>
 
                                             <button
-                                                onClick={() => handleSendReminder(client)}
-                                                className="w-full sm:w-auto px-6 h-12 bg-space-primary hover:bg-space-primary/90 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-lg shadow-space-primary/20 flex items-center justify-center gap-3"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleSendReminder(client);
+                                                }}
+                                                className="w-full sm:w-auto px-6 h-12 bg-gray-100 hover:bg-gray-200 text-space-text rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3 pointer-events-auto"
                                             >
-                                                <MessageSquare size={16} /> Recordar vía WA
+                                                <MessageSquare size={16} /> WA Manual
                                             </button>
                                         </div>
                                     </div>

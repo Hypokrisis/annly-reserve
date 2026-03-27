@@ -34,20 +34,35 @@ serve(async (req) => {
 
         // Accept optional inactiveDays override from request body
         let bodyInactiveDays: number | null = null;
+        let bodyCustomClients: { phone: string, name: string }[] | null = null;
+        let bodyBusinessId: string | null = null;
+
         try {
             const body = await req.json();
             if (body?.inactiveDays && typeof body.inactiveDays === 'number') {
                 bodyInactiveDays = body.inactiveDays;
             }
+            if (body?.customClients && Array.isArray(body.customClients)) {
+                bodyCustomClients = body.customClients;
+            }
+            if (body?.businessId) {
+                bodyBusinessId = body.businessId;
+            }
         } catch (_) { /* no body is fine */ }
 
         const credential = btoa(`${accountSid}:${authToken}`);
 
-        // ── 1. Get all businesses with bot active ──────────────────
-        const { data: businesses, error: bizErr } = await supabase
+        // ── 1. Get businesses ──────────────────────────────────────
+        let query = supabase
             .from('businesses')
             .select('id, name, whatsapp_bot_active, whatsapp_reminder_template, whatsapp_booking_link, reminder_inactive_days')
             .eq('whatsapp_bot_active', true);
+
+        if (bodyBusinessId) {
+            query = query.eq('id', bodyBusinessId);
+        }
+
+        const { data: businesses, error: bizErr } = await query;
 
         if (bizErr) throw bizErr;
         if (!businesses || businesses.length === 0) {
@@ -60,37 +75,41 @@ serve(async (req) => {
         const results: any[] = [];
 
         for (const biz of businesses) {
-            // Use request override > business setting > default 14 days
-            const inactiveDays = bodyInactiveDays ?? biz.reminder_inactive_days ?? 14;
+            let inactiveClients: { name: string; phone: string; lastDate?: string }[] = [];
 
-            // Get the most recent appointment per customer
-            const { data: appointments, error: aptErr } = await supabase
-                .from('appointments')
-                .select('customer_name, customer_phone, appointment_date')
-                .eq('business_id', biz.id)
-                .eq('status', 'confirmed')
-                .order('appointment_date', { ascending: false });
+            if (bodyCustomClients && bodyCustomClients.length > 0) {
+                // User manually selected specific clients from dashboard
+                inactiveClients = bodyCustomClients;
+            } else {
+                // ── 2. Find clients who haven't visited in X days ──────
+                const inactiveDays = bodyInactiveDays ?? biz.reminder_inactive_days ?? 14;
 
-            if (aptErr || !appointments) continue;
+                const { data: appointments, error: aptErr } = await supabase
+                    .from('appointments')
+                    .select('customer_name, customer_phone, appointment_date')
+                    .eq('business_id', biz.id)
+                    .eq('status', 'confirmed')
+                    .order('appointment_date', { ascending: false });
 
-            // Group by phone, keep the most recent visit
-            const clientMap: Record<string, { name: string; phone: string; lastDate: string }> = {};
-            for (const apt of appointments) {
-                if (!apt.customer_phone) continue;
-                if (!clientMap[apt.customer_phone]) {
-                    clientMap[apt.customer_phone] = {
-                        name: apt.customer_name || 'Cliente',
-                        phone: apt.customer_phone,
-                        lastDate: apt.appointment_date,
-                    };
+                if (aptErr || !appointments) continue;
+
+                const clientMap: Record<string, { name: string; phone: string; lastDate: string }> = {};
+                for (const apt of appointments) {
+                    if (!apt.customer_phone) continue;
+                    if (!clientMap[apt.customer_phone]) {
+                        clientMap[apt.customer_phone] = {
+                            name: apt.customer_name || 'Cliente',
+                            phone: apt.customer_phone,
+                            lastDate: apt.appointment_date,
+                        };
+                    }
                 }
-            }
 
-            // Filter: only those whose last visit was before the cutoff
-            const cutoff = new Date();
-            cutoff.setDate(cutoff.getDate() - inactiveDays);
-            const cutoffStr = cutoff.toISOString().split('T')[0];
-            const inactiveClients = Object.values(clientMap).filter(c => c.lastDate <= cutoffStr);
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - inactiveDays);
+                const cutoffStr = cutoff.toISOString().split('T')[0];
+                inactiveClients = Object.values(clientMap).filter(c => c.lastDate <= cutoffStr);
+            }
 
             if (inactiveClients.length === 0) {
                 results.push({ business: biz.name, sent: 0, reason: 'No inactive clients' });
