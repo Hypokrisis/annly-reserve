@@ -29,6 +29,7 @@ import AppointmentsPage from './pages/dashboard/AppointmentsPage';
 import ClientsPage from './pages/dashboard/ClientsPage';
 import BusinessSettingsPage from './pages/dashboard/BusinessSettingsPage';
 import CreateBusinessPage from './pages/dashboard/CreateBusinessPage';
+import SubscriptionPage from './pages/dashboard/SubscriptionPage';
 
 export default function App() {
   return (
@@ -115,6 +116,21 @@ export default function App() {
                     <RequireOwner>
                       <RequireBusiness>
                         <AppointmentsPage />
+                      </RequireBusiness>
+                    </RequireOwner>
+                  </AuthGuard>
+                }
+              />
+
+              <Route
+                path="/dashboard/billing"
+                element={
+                  <AuthGuard>
+                    <RequireOwner>
+                      <RequireBusiness>
+                        <RequireRole requiredRole={['owner', 'admin']}>
+                          <SubscriptionPage />
+                        </RequireRole>
                       </RequireBusiness>
                     </RequireOwner>
                   </AuthGuard>

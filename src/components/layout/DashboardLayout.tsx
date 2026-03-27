@@ -11,7 +11,8 @@ import {
     X,
     Settings,
     Globe,
-    Clock
+    Clock,
+    CreditCard
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -31,6 +32,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         { name: 'Horarios',       href: '/dashboard/schedules',    icon: Clock,           roles: ['owner', 'admin'] },
         { name: 'Citas',          href: '/dashboard/appointments', icon: Calendar,        roles: ['owner', 'admin', 'staff'] },
         { name: 'Clientes',       href: '/dashboard/clients',      icon: Users,           roles: ['owner', 'admin'] },
+        { name: 'Suscripción',    href: '/dashboard/billing',      icon: CreditCard,      roles: ['owner', 'admin'] },
         { name: 'Configuración',  href: '/dashboard/settings',     icon: Settings,        roles: ['owner', 'admin'] },
         { name: 'Ver Página',     href: '/',                       icon: Globe,           roles: ['owner', 'admin', 'staff'] },
     ];
