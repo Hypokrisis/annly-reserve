@@ -26,19 +26,27 @@ serve(async (req) => {
         const accountSid     = Deno.env.get('TWILIO_ACCOUNT_SID');
         const authToken      = Deno.env.get('TWILIO_AUTH_TOKEN');
         const whatsappNumber = Deno.env.get('TWILIO_WHATSAPP_NUMBER');
-        // Optional: a specific approved template for reminders
         const tmplReminder   = Deno.env.get('TWILIO_TEMPLATE_REMINDER');
 
         if (!accountSid || !authToken || !whatsappNumber) {
             throw new Error("Missing Twilio credentials");
         }
 
+        // Accept optional inactiveDays override from request body
+        let bodyInactiveDays: number | null = null;
+        try {
+            const body = await req.json();
+            if (body?.inactiveDays && typeof body.inactiveDays === 'number') {
+                bodyInactiveDays = body.inactiveDays;
+            }
+        } catch (_) { /* no body is fine */ }
+
         const credential = btoa(`${accountSid}:${authToken}`);
 
         // ── 1. Get all businesses with bot active ──────────────────
         const { data: businesses, error: bizErr } = await supabase
             .from('businesses')
-            .select('id, name, whatsapp_bot_active, whatsapp_reminder_template, whatsapp_booking_link')
+            .select('id, name, whatsapp_bot_active, whatsapp_reminder_template, whatsapp_booking_link, reminder_inactive_days')
             .eq('whatsapp_bot_active', true);
 
         if (bizErr) throw bizErr;
@@ -52,10 +60,8 @@ serve(async (req) => {
         const results: any[] = [];
 
         for (const biz of businesses) {
-            // ── 2. Find clients who haven't visited in 14+ days ──────
-            const cutoff = new Date();
-            cutoff.setDate(cutoff.getDate() - 14);
-            const cutoffStr = cutoff.toISOString().split('T')[0];
+            // Use request override > business setting > default 14 days
+            const inactiveDays = bodyInactiveDays ?? biz.reminder_inactive_days ?? 14;
 
             // Get the most recent appointment per customer
             const { data: appointments, error: aptErr } = await supabase
@@ -81,6 +87,9 @@ serve(async (req) => {
             }
 
             // Filter: only those whose last visit was before the cutoff
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - inactiveDays);
+            const cutoffStr = cutoff.toISOString().split('T')[0];
             const inactiveClients = Object.values(clientMap).filter(c => c.lastDate <= cutoffStr);
 
             if (inactiveClients.length === 0) {
