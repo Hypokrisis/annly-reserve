@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/supabaseClient';
 import { isValidEmail } from '@/utils';
 import { Scissors, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export default function SignupPage() {
-    const { signup } = useAuth();
+    const { signup, user } = useAuth();
     const navigate = useNavigate();
 
     const [userType, setUserType] = useState<'client' | 'owner'>('client');
@@ -66,22 +65,13 @@ export default function SignupPage() {
         }
     };
 
-    // Listen for email confirmation in another tab
+    // Listen for email confirmation or instant auto-login
     React.useEffect(() => {
-        let authListener: any;
-        if (success) {
-            const { data } = supabase.auth.onAuthStateChange((event: string, session: any) => {
-                if (event === 'SIGNED_IN' && session) {
-                    const role = session.user?.user_metadata?.role;
-                    navigate(role === 'owner' ? '/dashboard' : '/');
-                }
-            });
-            authListener = data.subscription;
+        if (success && user) {
+            const role = user.user_metadata?.role || localStorage.getItem('intended_role');
+            navigate(role === 'owner' ? '/dashboard' : '/');
         }
-        return () => {
-            if (authListener) authListener.unsubscribe();
-        };
-    }, [success, navigate]);
+    }, [success, user, navigate]);
 
     // ── Success Screen
     if (success) {
