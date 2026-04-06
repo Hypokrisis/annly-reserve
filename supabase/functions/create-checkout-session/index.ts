@@ -8,20 +8,18 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-    // 1. Manejo de CORS (Preflight request)
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
 
     try {
-        // 2. Variables de Entorno Supabase
         const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
         const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
         const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
         const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
 
         if (!stripeKey) {
-            throw new Error('STRIPE_SECRET_KEY is not set in Supabase Secrets');
+            throw new Error('STRIPE_SECRET_KEY no está configurado en Supabase Secrets');
         }
 
         const stripe = new Stripe(stripeKey, {
@@ -29,27 +27,23 @@ serve(async (req) => {
             httpClient: Stripe.createFetchHttpClient(),
         });
 
-        // Cliente Supabase del usuario autenticado
         const authHeader = req.headers.get('Authorization')!;
         const supabaseUserClient = createClient(supabaseUrl, supabaseKey, {
             global: { headers: { Authorization: authHeader } }
         });
-
-        // Cliente Supabase con permisos de Admin (Service Role)
         const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-        // 3. Obtener Usuario Autenticado
+        // Verificar usuario autenticado
         const { data: { user }, error: userError } = await supabaseUserClient.auth.getUser();
-        if (userError || !user) throw new Error('Unauthorized');
+        if (userError || !user) throw new Error('No autorizado');
 
-        // 4. Leer argumentos de la petición
+        // Leer argumentos
         const { businessId, tierId, successUrl, cancelUrl } = await req.json();
-
         if (!businessId || !tierId || !successUrl || !cancelUrl) {
-             throw new Error('Faltan parametros requeridos: businessId, tierId, successUrl, cancelUrl');
+            throw new Error('Faltan parámetros: businessId, tierId, successUrl, cancelUrl');
         }
 
-        // 5. Validar que el usuario es dueño del negocio
+        // Verificar que el usuario es dueño del negocio
         const { data: businessRole, error: roleErr } = await supabaseAdmin
             .from('users_businesses')
             .select('role, businesses(name)')
@@ -61,20 +55,19 @@ serve(async (req) => {
             throw new Error('Solo los dueños pueden administrar la suscripción');
         }
 
-        const businessName = businessRole.businesses?.name;
+        const businessName = (businessRole.businesses as any)?.name;
 
-        // 6. Obtener info del Plan (Tier) de la DB
+        // Obtener el plan (tier) con su stripe_price_id real
         const { data: tier, error: tierErr } = await supabaseAdmin
             .from('subscription_tiers')
             .select('*')
             .eq('id', tierId)
             .single();
 
-        if (tierErr || !tier) {
-             throw new Error('Plan seleccionado no existe en la base de datos');
-        }
+        if (tierErr || !tier) throw new Error('Plan no existe en la base de datos');
+        if (!tier.stripe_price_id) throw new Error(`El plan "${tier.name}" no tiene un stripe_price_id configurado. Ejecuta STRIPE_PRICE_IDS.sql en Supabase.`);
 
-        // 7. Buscar si ya existe la suscripción de este negocio en DB
+        // Buscar suscripción existente para obtener el customer_id
         const { data: existingSub } = await supabaseAdmin
             .from('business_subscriptions')
             .select('stripe_customer_id')
@@ -83,19 +76,15 @@ serve(async (req) => {
 
         let customerId = existingSub?.stripe_customer_id;
 
-        // Si no existe el cliente en Stripe, crearlo!
+        // Crear el cliente en Stripe si no existe
         if (!customerId) {
             const customer = await stripe.customers.create({
                 email: user.email,
-                name: `${businessName} (Dueño: ${user.email})`,
-                metadata: {
-                    business_id: businessId,
-                    user_id: user.id
-                }
+                name: businessName || user.email,
+                metadata: { business_id: businessId, user_id: user.id }
             });
             customerId = customer.id;
 
-            // Guardar stub de suscripción en DB
             await supabaseAdmin.from('business_subscriptions').upsert({
                 business_id: businessId,
                 tier_id: tierId,
@@ -104,37 +93,20 @@ serve(async (req) => {
             });
         }
 
-        // 8. Crear la sesión de Checkout 
+        // Crear la sesión de Checkout con el Price ID real de Stripe
         const session = await stripe.checkout.sessions.create({
             customer: customerId,
             mode: 'subscription',
             payment_method_types: ['card'],
-            line_items: [
-                {
-                    price_data: {
-                        currency: 'usd',
-                        product_data: {
-                            name: tier.name, // ej: "Spacey Premium"
-                            description: `Suscripción para ${businessName}`,
-                        },
-                        unit_amount: Math.round(tier.price_monthly * 100), // En centavos
-                        recurring: {
-                            interval: 'month',
-                        },
-                    },
-                    quantity: 1,
-                },
-            ],
+            line_items: [{ price: tier.stripe_price_id, quantity: 1 }],
             success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: cancelUrl,
             subscription_data: {
-                trial_period_days: 14, // Siempre le damos 14 días gratis al iniciar
-                metadata: {
-                    business_id: businessId,
-                    tier_id: tierId
-                }
+                trial_period_days: 14,
+                metadata: { business_id: businessId, tier_id: tierId }
             },
-            client_reference_id: businessId
+            client_reference_id: businessId,
+            allow_promotion_codes: true,
         });
 
         return new Response(JSON.stringify({ url: session.url }), {
