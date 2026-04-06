@@ -14,7 +14,7 @@ export default {
         'space-text':         '#22321c',   // Deepest green for text
         'space-muted':        '#7ba06c',   // Mid green (darkest from image)
         'space-border':       '#c6e9bc',   // Light border
-        'space-primary':      '#22321c',   // Logo green (Darkest)
+        'space-primary':      '#7ba06c',   // Main brand green
         'space-primary-dark': '#5e7d50',   // Hover state for primary
         'space-primary-light':'#a5cc90',   // Lighter brand green
         'space-purple':       '#a5cc90',   // Accent
