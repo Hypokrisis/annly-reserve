@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
-import { CheckCircle2, XCircle, Loader2, Scissors } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 
 export default function AuthCallbackPage() {
     const navigate = useNavigate();
@@ -65,11 +65,11 @@ export default function AuthCallbackPage() {
         <div className="min-h-screen bg-space-bg flex items-center justify-center px-4">
             <div className="card p-10 max-w-md w-full text-center bg-white border-2 border-space-border/50 shadow-xl rounded-3xl">
                 {/* Logo */}
-                <div className="w-16 h-16 bg-space-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                    <Scissors size={32} className="text-white" />
+                <div className="w-16 h-16 bg-space-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl overflow-hidden">
+                    <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                 </div>
 
-                <h1 className="text-2xl font-black text-space-text uppercase tracking-tight mb-2">Spacey</h1>
+                <h1 className="text-3xl font-black text-space-text tracking-tight mb-2">Spacey</h1>
                 <p className="text-[10px] text-space-muted font-black uppercase tracking-[0.3em] mb-8">Confirmación de Cuenta</p>
 
                 <div className="flex flex-col items-center gap-4">

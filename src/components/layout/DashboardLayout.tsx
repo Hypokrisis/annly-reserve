@@ -57,8 +57,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             {/* ── Mobile Header (Pill Bar) ───────────────────── */}
             <header className="lg:hidden fixed top-4 left-4 right-4 z-40 h-16 bg-white/95 backdrop-blur-md rounded-full border border-space-border shadow-lg flex items-center justify-between px-6">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 bg-space-primary rounded-full flex items-center justify-center shadow-btn">
-                        <Scissors size={18} className="text-white" />
+                    <div className="w-10 h-10 bg-space-primary rounded-xl flex items-center justify-center shadow-btn overflow-hidden">
+                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                     </div>
                     <span className="font-bold text-space-text text-lg tracking-tight uppercase">Spacey</span>
                 </div>
@@ -91,8 +91,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 {/* Logo */}
                 <div className="h-16 px-5 flex items-center border-b border-space-border flex-shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-space-primary rounded-xl flex items-center justify-center shadow-btn flex-shrink-0">
-                            <Scissors size={18} className="text-white" />
+                        <div className="w-10 h-10 bg-space-primary rounded-xl flex items-center justify-center shadow-btn overflow-hidden flex-shrink-0">
+                            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                         </div>
                         <div>
                             <p className="font-bold text-space-text leading-tight">Spacey</p>
@@ -173,8 +173,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 </Link>
                 
                 <div className="relative">
-                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-14 h-14 bg-space-primary rounded-full flex items-center justify-center text-white shadow-xl border-4 border-white active:scale-90 transition-transform">
-                        <Scissors size={24} />
+                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-16 h-16 bg-space-primary rounded-full flex items-center justify-center text-white shadow-xl border-4 border-white active:scale-90 transition-transform overflow-hidden">
+                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                     </div>
                 </div>
 

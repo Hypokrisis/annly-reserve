@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { resetPassword } from '@/services/auth.service';
 import { isValidEmail } from '@/utils';
-import { Scissors, ArrowLeft, Mail } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
@@ -34,19 +34,19 @@ export default function ForgotPasswordPage() {
             <div className="w-full max-w-md animate-fade-up">
 
                 {/* Logo */}
-                <div className="flex items-center gap-2.5 mb-8 justify-center">
-                    <div className="w-9 h-9 bg-space-primary rounded-xl flex items-center justify-center shadow-btn">
-                        <Scissors size={18} className="text-white" />
+                <div className="flex items-center gap-3 mb-8 justify-center">
+                    <div className="w-10 h-10 bg-space-primary rounded-xl flex items-center justify-center shadow-btn overflow-hidden">
+                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                     </div>
-                    <span className="font-bold text-space-text text-xl">Spacey</span>
+                    <span className="font-bold text-space-text text-2xl tracking-tight font-outfit">Spacey</span>
                 </div>
 
                 <div className="card p-8 shadow-card-lg">
                     <div className="text-center mb-6">
-                        <div className="w-14 h-14 bg-space-primary-light rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Mail size={24} className="text-space-primary" />
+                        <div className="w-16 h-16 bg-space-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl overflow-hidden">
+                            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                         </div>
-                        <h1 className="text-xl font-bold text-space-text">Recuperar Contraseña</h1>
+                        <h1 className="text-3xl font-black text-space-text tracking-tight mb-2 font-outfit">Spacey</h1>
                         <p className="text-space-muted text-sm mt-1">Te enviaremos un link para restablecerla</p>
                     </div>
 

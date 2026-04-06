@@ -343,16 +343,15 @@ function Home() {
         <div className="max-w-7xl mx-auto flex justify-center">
           <div className="pill-nav flex justify-between items-center w-full max-w-[95%] sm:max-w-none px-4 sm:px-6 h-14 sm:h-16 rounded-full backdrop-blur-xl bg-white/80 border border-space-border shadow-lg shadow-space-primary/5">
             {/* Logo */}
-            <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-space-primary rounded-full flex items-center justify-center text-white shadow-lg shadow-space-primary/20 hover:scale-105 transition-transform rotate-3">
-                <Scissors size={16} className="text-white -rotate-3 sm:hidden" />
-                <Scissors size={20} className="text-white -rotate-3 hidden sm:block" />
+              <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-space-primary rounded-xl flex items-center justify-center text-white shadow-xl shadow-space-primary/10 hover:scale-105 transition-transform overflow-hidden relative">
+                   <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
+                </div>
+                <div>
+                  <span className="text-xl sm:text-2xl font-black tracking-tight text-space-text">Spacey</span>
+                  <div className="text-[7px] sm:text-[9px] uppercase tracking-[0.2em] text-space-muted font-black -mt-1 hidden xs:block">Reserva tu Barbero</div>
+                </div>
               </div>
-              <div>
-                <span className="text-lg sm:text-xl font-black tracking-tight text-space-text uppercase">Spacey</span>
-                <div className="text-[7px] sm:text-[9px] uppercase tracking-[0.2em] text-space-muted font-bold -mt-1 hidden xs:block">Reserva tu Barbero</div>
-              </div>
-            </div>
 
             {/* Desktop Nav Links */}
             <div className="hidden md:flex items-center gap-8">
@@ -423,7 +422,7 @@ function Home() {
               <MapPin size={12} className={isLocating ? 'animate-bounce' : ''} />
               <span>{isLocating ? 'Ubicando...' : sortByDistance ? 'Cerca de ti: ACTIVADO' : '¿Usar mi ubicación?'}</span>
             </button>
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black mb-6 tracking-tighter leading-[0.9] text-space-text uppercase">
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black mb-6 tracking-tighter leading-[0.9] text-space-text">
               RESERVA TU <br />
               <span className="text-space-primary">PRÓXIMO NIVEL</span>
             </h1>
@@ -610,11 +609,11 @@ function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="text-center md:text-left">
-              <div className="flex items-center gap-3 justify-center md:justify-start">
-                <div className="w-10 h-10 bg-space-text rounded-xl flex items-center justify-center text-white shadow-md">
-                  <Scissors size={20} />
+              <div className="flex items-center gap-4 justify-center md:justify-start">
+                <div className="w-12 h-12 bg-space-text rounded-xl flex items-center justify-center text-white shadow-xl overflow-hidden relative">
+                   <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                 </div>
-                <span className="text-2xl font-black tracking-tight text-space-text uppercase">Spacey</span>
+                <span className="text-3xl font-black tracking-tight text-space-text">Spacey</span>
               </div>
               <p className="text-space-muted text-sm mt-3 font-semibold">Agenda en segundos, brilla todo el día.</p>
             </div>

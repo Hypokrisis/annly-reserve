@@ -117,11 +117,11 @@ export default function SignupPage() {
                 <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full -mr-20 -mt-20" />
                 <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full -ml-24 -mb-24" />
 
-                <div className="relative flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                        <Scissors size={20} className="text-white" />
+                <div className="relative flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
+                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                     </div>
-                    <span className="text-white font-bold text-xl tracking-tight">Spacey</span>
+                    <span className="text-white font-bold text-2xl tracking-tight">Spacey</span>
                 </div>
 
                 <div className="relative">
@@ -152,11 +152,11 @@ export default function SignupPage() {
                 <div className="w-full max-w-md animate-fade-up">
 
                     {/* Mobile logo */}
-                    <div className="lg:hidden flex items-center gap-2 mb-8">
-                        <div className="w-9 h-9 bg-space-primary rounded-xl flex items-center justify-center shadow-btn">
-                            <Scissors size={18} className="text-white" />
+                    <div className="lg:hidden flex items-center gap-3 mb-8">
+                        <div className="w-10 h-10 bg-space-primary rounded-xl flex items-center justify-center shadow-btn overflow-hidden">
+                            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                         </div>
-                        <span className="font-bold text-space-text text-xl">Spacey</span>
+                        <span className="font-bold text-space-text text-2xl tracking-tight">Spacey</span>
                     </div>
 
                     <h1 className="text-2xl font-bold text-space-text mb-1">Crea tu cuenta</h1>

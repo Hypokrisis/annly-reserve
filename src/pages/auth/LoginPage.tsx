@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { isValidEmail } from '@/utils';
-import { Scissors, Eye, EyeOff, ArrowRight, Zap, MessageSquare, ShieldCheck, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Zap, MessageSquare, ShieldCheck, Sparkles } from 'lucide-react';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -60,11 +60,11 @@ export default function LoginPage() {
                 <div className="absolute top-0 right-0 w-full h-full opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
 
                 {/* Top logo */}
-                <div className="relative flex items-center gap-3 animate-fade-in">
-                    <div className="w-12 h-12 bg-gradient-to-br from-space-primary to-space-primary-dark rounded-2xl flex items-center justify-center shadow-lg shadow-space-primary/20">
-                        <Scissors size={24} className="text-white" />
+                <div className="relative flex items-center gap-4 animate-fade-in">
+                    <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-2xl border border-white/20 overflow-hidden">
+                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                     </div>
-                    <span className="text-white font-black text-2xl tracking-tighter uppercase italic">Spacey</span>
+                    <span className="text-white font-black text-3xl tracking-tight">Spacey</span>
                 </div>
 
                 {/* Main Content */}
@@ -113,15 +113,15 @@ export default function LoginPage() {
                 <div className="w-full max-w-sm relative z-10">
                     
                     {/* Brand for Mobile */}
-                    <div className="lg:hidden flex items-center gap-3 mb-10 justify-center">
-                        <div className="w-10 h-10 bg-space-primary rounded-xl flex items-center justify-center shadow-xl shadow-space-primary/20">
-                            <Scissors size={20} className="text-white" />
+                    <div className="lg:hidden flex items-center gap-4 mb-10 justify-center">
+                        <div className="w-12 h-12 bg-space-primary rounded-2xl flex items-center justify-center shadow-xl shadow-space-primary/20 overflow-hidden">
+                            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                         </div>
-                        <span className="font-black text-space-text text-2xl tracking-tighter uppercase italic">Spacey</span>
+                        <span className="font-black text-space-text text-3xl tracking-tight">Spacey</span>
                     </div>
 
                     <div className="text-center mb-10">
-                        <h1 className="text-3xl font-black text-space-text mb-2 tracking-tight uppercase italic">Bienvenido</h1>
+                        <h1 className="text-4xl font-black text-space-text mb-2 tracking-tight">Bienvenido</h1>
                         <p className="text-space-muted text-xs font-bold uppercase tracking-widest">Inicia sesión en tu panel de control</p>
                     </div>
 
