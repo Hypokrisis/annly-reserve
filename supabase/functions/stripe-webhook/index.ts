@@ -2,22 +2,28 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import Stripe from "https://esm.sh/stripe@14.10.0"
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') as string, {
-    apiVersion: '2023-10-16',
-    httpClient: Stripe.createFetchHttpClient(),
-});
-
-const cryptoProvider = Stripe.createCryptoProvider();
-
 serve(async (req) => {
     try {
+        const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+        const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+        
+        if (!stripeKey || !webhookSecret) {
+            console.error('Missing Stripe secrets');
+            return new Response('Config error', { status: 500 });
+        }
+
+        const stripe = new Stripe(stripeKey, {
+            apiVersion: '2023-10-16',
+            httpClient: Stripe.createFetchHttpClient(),
+        });
+        const cryptoProvider = Stripe.createCryptoProvider();
+
         const signature = req.headers.get('stripe-signature');
         if (!signature) {
             return new Response('No signature', { status: 400 });
         }
 
         const body = await req.text();
-        const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') as string;
         let event;
 
         try {
@@ -36,23 +42,24 @@ serve(async (req) => {
         switch (event.type) {
             case 'checkout.session.completed': {
                 const session = event.data.object as Stripe.Checkout.Session;
-                if (session.mode === 'subscription') {
-                    const businessId = session.subscription_details?.metadata?.business_id || session.metadata?.business_id;
-                    const tierId = session.subscription_details?.metadata?.tier_id || session.metadata?.tier_id;
-                    
-                    if (businessId && tierId) {
-                        try {
-                            const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+                if (session.mode === 'subscription' && session.subscription) {
+                    try {
+                        const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+                        
+                        const businessId = subscription.metadata.business_id || session.client_reference_id;
+                        const tierId = subscription.metadata.tier_id;
+                        
+                        if (businessId && tierId) {
                             await supabase.from('business_subscriptions').update({
                                 stripe_subscription_id: subscription.id,
                                 status: subscription.status,
                                 current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                                tier_id: tierId, // Aseguramos mantener el tier seleccionado
+                                tier_id: tierId,
                             }).eq('business_id', businessId);
                             console.log(`[Stripe Webhook] Checkout completed for business: ${businessId}`);
-                        } catch (e: any) {
-                             console.error(`Error updating business tracking after checkout: ${e.message}`);
                         }
+                    } catch (e: any) {
+                         console.error(`Error processing checkout: ${e.message}`);
                     }
                 }
                 break;
@@ -61,8 +68,6 @@ serve(async (req) => {
             case 'customer.subscription.updated':
             case 'customer.subscription.deleted': {
                 const subscription = event.data.object as Stripe.Subscription;
-                
-                // Obtener el business_id o mediante metadatos si no se guardaron directamente
                 const customerId = subscription.customer as string;
                 
                 await supabase.from('business_subscriptions').update({
@@ -70,7 +75,6 @@ serve(async (req) => {
                     current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
                     cancel_at_period_end: subscription.cancel_at_period_end,
                 }).eq('stripe_customer_id', customerId);
-                
                 break;
             }
 
@@ -79,7 +83,7 @@ serve(async (req) => {
                 if (invoice.subscription) {
                     const customerId = invoice.customer as string;
                     await supabase.from('business_subscriptions').update({
-                        status: 'active'
+                        status: 'active' // Overrides trialing if they just paid
                     }).eq('stripe_customer_id', customerId);
                 }
                 break;
@@ -103,9 +107,10 @@ serve(async (req) => {
         });
 
     } catch (error: any) {
+        console.error('Unhandled webhook error:', error);
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { 'Content-Type': 'application/json' },
-            status: 400,
+            status: 500,
         });
     }
 });
