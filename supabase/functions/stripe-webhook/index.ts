@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-import Stripe from "https://esm.sh/stripe@14.10.0"
+import Stripe from "https://esm.sh/stripe@14.10.0?target=deno"
 
 serve(async (req) => {
     try {
@@ -16,7 +16,7 @@ serve(async (req) => {
             apiVersion: '2023-10-16',
             httpClient: Stripe.createFetchHttpClient(),
         });
-        const cryptoProvider = Stripe.createCryptoProvider();
+        const cryptoProvider = Stripe.createSubtleCryptoProvider();
 
         const signature = req.headers.get('stripe-signature');
         if (!signature) {
