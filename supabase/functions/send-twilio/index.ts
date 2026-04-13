@@ -195,7 +195,6 @@ serve(async (req) => {
 
                 // ── D. BUILD CONTENT ─────────────────────────────────────
 
-                // Variables for template (must match your template's {{1}}, {{2}}, etc.)
                 let contentSid: string | null = null;
                 let templateVars: Record<string, string> = {};
 
@@ -212,6 +211,15 @@ serve(async (req) => {
                     contentSid = tmplRescheduled ?? null;
                     templateVars = { "1": customerName, "2": oldDateHuman, "3": oldTime, "4": humanDate, "5": time };
                     barberSmsBody = `✏️ Cita Reagendada\nCliente: ${customerName}\nAntes: ${oldDateHuman} ${oldTime}\nAhora: ${humanDate} a las ${time}`;
+                } else if (job.event_type.startsWith('reminder')) {
+                    // Recordatorios
+                    contentSid = tmplConfirmed ?? null; // Ideally use TWILIO_TEMPLATE_REMINDER if available
+                    templateVars = { "1": customerName, "2": serviceName, "3": humanDate, "4": time };
+                    let tiempoTxt = "pronto";
+                    if (job.event_type === 'reminder_24h') tiempoTxt = "en 24 horas";
+                    if (job.event_type === 'reminder_30m') tiempoTxt = "en 30 minutos";
+                    
+                    barberSmsBody = `⏱️ Recordatorio (${tiempoTxt})\nCliente: ${customerName}\nServicio: ${serviceName}\n📅 ${humanDate} a las ${time}`;
                 } else {
                     // New / Confirmed
                     contentSid = tmplConfirmed ?? null;
@@ -222,7 +230,8 @@ serve(async (req) => {
                 // Fallback SMS body for customer (if WhatsApp template fails)
                 const customerSmsFallbackBody = barberSmsBody
                     .replace("Barbero\n", "")
-                    .replace("Nueva Cita", `Hola ${customerName}, tu cita está confirmada`);
+                    .replace("Nueva Cita", `Hola ${customerName}, tu cita está confirmada`)
+                    .replace(/Recordatorio.*/, `Hola ${customerName}, te recordamos tu cita hoy a las ${time}`);
 
                 // ── E. SEND NOTIFICATIONS ──────────────────────────────────
                 const logs: any[] = [];

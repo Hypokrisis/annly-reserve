@@ -354,15 +354,34 @@ export default function AppointmentsPage() {
                             )}
 
                             {selectedAppointment.status === 'confirmed' && (
-                                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-space-border">
-                                    <button onClick={() => handleMarkCompleted(selectedAppointment.id)}
-                                        className="w-full py-2.5 rounded-xl text-sm font-semibold bg-green-50 text-space-success hover:bg-space-success hover:text-white border border-green-200 transition flex items-center justify-center gap-2">
-                                        <Check size={15} />Completar
+                                <div className="space-y-3 pt-4 border-t border-space-border">
+                                    <button 
+                                        onClick={async () => {
+                                            if (!confirm('¿Enviar recordatorio de prueba a este cliente?')) return;
+                                            try {
+                                                const { data, error } = await import('@/lib/supabase').then(m => m.supabase.rpc('force_send_reminder', {
+                                                    p_appointment_id: selectedAppointment.id
+                                                }));
+                                                if (error) throw error;
+                                                alert('¡Recordatorio añadido a la cola! Se enviará en unos instantes.');
+                                            } catch (e: any) {
+                                                alert('Error: ' + e.message);
+                                            }
+                                        }}
+                                        className="w-full py-2.5 rounded-xl text-sm font-semibold bg-space-primary/10 text-space-primary hover:bg-space-primary hover:text-white border border-space-primary/20 transition flex items-center justify-center gap-2">
+                                        <Mail size={15} /> Enviar Recordatorio Manual
                                     </button>
-                                    <button onClick={() => handleCancel(selectedAppointment.id)}
-                                        className="w-full py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-space-danger hover:bg-space-danger hover:text-white border border-red-200 transition flex items-center justify-center gap-2">
-                                        <X size={15} />Cancelar
-                                    </button>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button onClick={() => handleMarkCompleted(selectedAppointment.id)}
+                                            className="w-full py-2.5 rounded-xl text-sm font-semibold bg-green-50 text-space-success hover:bg-space-success hover:text-white border border-green-200 transition flex items-center justify-center gap-2">
+                                            <Check size={15} />Completar
+                                        </button>
+                                        <button onClick={() => handleCancel(selectedAppointment.id)}
+                                            className="w-full py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-space-danger hover:bg-space-danger hover:text-white border border-red-200 transition flex items-center justify-center gap-2">
+                                            <X size={15} />Cancelar
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
