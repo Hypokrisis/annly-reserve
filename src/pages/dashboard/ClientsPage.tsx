@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/supabaseClient';
 import { User, MessageSquare, Calendar, History, Search, Filter, Send, CheckCircle2, XCircle, Loader2, Bell, CheckSquare, Square } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { useToast } from '@/contexts/ToastContext';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -27,6 +28,7 @@ type ReminderResult = {
 export default function ClientsPage() {
     const { business } = useBusiness();
     const { user } = useAuth();
+    const toast = useToast();
     const [clients, setClients] = useState<Client[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -82,31 +84,57 @@ export default function ClientsPage() {
         }
     };
 
-    const handleSendReminder = (client: Client) => {
-        if (!business) return;
-        const bookingLink = (business as any).whatsapp_booking_link || `${window.location.origin}/book/${business.slug}`;
-        const template = (business as any).whatsapp_reminder_template || '¡Hola! Te escribimos de tu barbería 💈 {{customer_name}}, ya llevas un tiempo sin visitarnos. Reserva tu próxima cita aquí: {{booking_link}} ¡Te esperamos pronto!';
-        const message = template
-            .replace('{{customer_name}}', client.name)
-            .replace('{{business_name}}', business.name)
-            .replace('{{booking_link}}', bookingLink);
-        const waUrl = `https://wa.me/${client.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-        window.open(waUrl, '_blank');
+    // Individual manual send — queues via notification_jobs
+    // so the same Twilio worker handles it (with template support)
+    const handleSendReminder = async (client: Client) => {
+        if (!business || !client.phone) {
+            toast.error('Este cliente no tiene número de teléfono registrado.');
+            return;
+        }
+        try {
+            // Find the most recent appointment for this client
+            const { data: apt, error } = await supabase
+                .from('appointments')
+                .select('id, business_id')
+                .eq('business_id', business.id)
+                .eq('customer_phone', client.phone)
+                .order('appointment_date', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (error || !apt) {
+                toast.error('No se encontró una cita asociada a este cliente para enviar el recordatorio.');
+                return;
+            }
+
+            const { error: rpcError } = await supabase.rpc('force_send_reminder', {
+                p_appointment_id: apt.id
+            });
+
+            if (rpcError) throw rpcError;
+            toast.success(`¡Recordatorio enviado a ${client.name}! Llegará en unos instantes.`);
+        } catch (e: any) {
+            toast.error('Error al enviar recordatorio: ' + e.message);
+        }
     };
 
     const handleBulkReminders = async () => {
+        if (selectedEmails.size === 0 && inactiveCount === 0) {
+            toast.warning('No hay clientes para enviar. Ajusta los días o selecciona clientes manualmente.');
+            return;
+        }
+
         setSending(true);
         setReminderResult(null);
         try {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            let payload: any = { 
+            let payload: any = {
                 inactiveDays,
-                businessId: business?.id 
+                businessId: business?.id
             };
 
-            // If user manually selected clients, send only to them bypassing the day threshold
             if (selectedEmails.size > 0) {
                 const customClients = clients
                     .filter(c => selectedEmails.has(c.email))
@@ -126,16 +154,21 @@ export default function ClientsPage() {
 
             const json = await resp.json();
             if (!resp.ok) throw new Error(json.error || 'Error al enviar recordatorios');
-            
+
             setReminderResult({ ok: true, results: json.results || [] });
-            
-            // Clear selection on success
-            if (json.results && json.results.some((r: any) => r.sent > 0)) {
+
+            const totalSent = (json.results || []).reduce((acc: number, r: any) => acc + (r.sent ?? 0), 0);
+            if (totalSent > 0) {
+                toast.success(`¡${totalSent} mensaje(s) enviados con éxito!`);
                 setSelectedEmails(new Set());
+            } else {
+                const reason = json.results?.[0]?.reason;
+                toast.warning(reason || 'No se enviaron mensajes. Verifica la configuración.');
             }
 
         } catch (err: any) {
             setReminderResult({ ok: false, results: [{ business: 'Error', reason: err.message }] });
+            toast.error('Error: ' + err.message);
         } finally {
             setSending(false);
         }
