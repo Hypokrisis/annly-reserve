@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, User, Mail, Phone, X, Check, Filter, Trash2, Clock } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { Calendar as CalendarIcon, User, Mail, Phone, X, Check, Filter, Trash2, Clock, Bell } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Modal } from '@/components/common/Modal';
@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { formatDateDisplay, formatTimeDisplay, formatRelativeTime } from '@/utils';
 import { supabase } from '@/lib/supabase';
+import { useToast } from '@/contexts/ToastContext';
 import type { Appointment } from '@/types';
 
 type Tab = 'today' | 'upcoming' | 'all';
@@ -19,6 +20,8 @@ export default function AppointmentsPage() {
     const { role } = useAuth();
     const { canViewAllAppointments } = usePermissions();
     const { user } = useAuth();
+    const toast = useToast();
+    const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
     // Barber Filter State
     const [selectedBarberId, setSelectedBarberId] = useState<string>('all');
@@ -52,6 +55,33 @@ export default function AppointmentsPage() {
             loadAppointments();
         }
     }, [business, selectedBarberId, activeTab]);
+
+    // ── Realtime subscription ──────────────────────────────
+    useEffect(() => {
+        if (!business?.id) return;
+
+        channelRef.current = supabase
+            .channel(`appointments:${business.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'appointments',
+                    filter: `business_id=eq.${business.id}`,
+                },
+                (payload) => {
+                    const apt = payload.new as Appointment;
+                    toast.info(`📅 Nueva cita: ${apt.customer_name || 'Cliente'} ha reservado`);
+                    loadAppointments();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            channelRef.current?.unsubscribe();
+        };
+    }, [business?.id]);
 
     const loadAppointments = () => {
         if (!business) return;
@@ -97,40 +127,46 @@ export default function AppointmentsPage() {
     };
 
     const handleCancel = async (appointmentId: string) => {
-        if (!confirm('¿Estás seguro de cancelar esta cita?')) return;
+        if (!window.confirm('¿Estás seguro de cancelar esta cita?')) return;
 
         const success = await updateAppointmentStatus(appointmentId, 'cancelled');
         if (success) {
             setIsModalOpen(false);
-            // No alert needed if UI updates automatically, brings better UX
+            toast.success('Cita cancelada correctamente.');
+        } else {
+            toast.error('No se pudo cancelar la cita. Intenta de nuevo.');
         }
     };
 
     const handleMarkCompleted = async (appointmentId: string) => {
-        if (!confirm('¿Marcar cita como completada?')) return;
+        if (!window.confirm('¿Marcar cita como completada?')) return;
 
         const success = await updateAppointmentStatus(appointmentId, 'completed');
         if (success) {
             setIsModalOpen(false);
+            toast.success('¡Cita completada!');
+        } else {
+            toast.error('No se pudo actualizar la cita.');
         }
     };
 
     const handleClearHistory = async () => {
         if (!business) return;
 
-        // Count cancelled/completed/no_show appointments
         const historyCount = appointments.filter(a => ['cancelled', 'completed', 'no_show'].includes(a.status)).length;
 
         if (historyCount === 0) {
-            alert('No hay citas en el historial para limpiar.');
+            toast.warning('No hay citas en el historial para limpiar.');
             return;
         }
 
-        if (!confirm(`Esto borrará permanentemente ${historyCount} citas del historial (canceladas y completadas). Esta acción no se puede deshacer. ¿Continuar?`)) return;
+        if (!window.confirm(`Esto borrará permanentemente ${historyCount} citas del historial. ¿Continuar?`)) return;
 
         const deletedCount = await clearHistory(business.id);
         if (deletedCount > 0) {
-            alert(`Se han eliminado ${deletedCount} citas del historial.`);
+            toast.success(`Se eliminaron ${deletedCount} citas del historial.`);
+        } else {
+            toast.error('No se pudo limpiar el historial.');
         }
     };
 
@@ -358,19 +394,20 @@ export default function AppointmentsPage() {
                                 <div className="space-y-3 pt-4 border-t border-space-border">
                                     <button 
                                         onClick={async () => {
-                                            if (!confirm('¿Enviar recordatorio de prueba a este cliente?')) return;
+                                            if (!window.confirm('¿Enviar recordatorio a este cliente?')) return;
                                             try {
                                                 const { error } = await supabase.rpc('force_send_reminder', {
                                                     p_appointment_id: selectedAppointment.id
                                                 });
                                                 if (error) throw error;
-                                                alert('¡Recordatorio añadido a la cola! Se enviará en unos instantes.');
+                                                toast.success('¡Recordatorio añadido a la cola! Se enviará en unos instantes.');
+                                                setIsModalOpen(false);
                                             } catch (e: any) {
-                                                alert('Error: ' + e.message);
+                                                toast.error('Error al enviar recordatorio: ' + e.message);
                                             }
                                         }}
                                         className="w-full py-2.5 rounded-xl text-sm font-semibold bg-space-primary/10 text-space-primary hover:bg-space-primary hover:text-white border border-space-primary/20 transition flex items-center justify-center gap-2">
-                                        <Mail size={15} /> Enviar Recordatorio Manual
+                                        <Bell size={15} /> Enviar Recordatorio Manual
                                     </button>
 
                                     <div className="grid grid-cols-2 gap-3">

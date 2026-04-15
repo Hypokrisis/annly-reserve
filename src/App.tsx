@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 import { AuthProvider } from '@/contexts/AuthContext';
 import { BusinessProvider } from '@/contexts/BusinessContext';
+import { ToastProvider } from '@/contexts/ToastContext';
 
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { RequireOwner } from '@/components/auth/RequireOwner';
@@ -33,6 +34,7 @@ import SubscriptionPage from './pages/dashboard/SubscriptionPage';
 
 export default function App() {
   return (
+    <ToastProvider>
     <AuthProvider>
       <BusinessProvider>
         <Router>
@@ -186,5 +188,6 @@ export default function App() {
         </Router>
       </BusinessProvider>
     </AuthProvider>
+    </ToastProvider>
   );
 }

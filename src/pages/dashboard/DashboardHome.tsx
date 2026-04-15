@@ -2,15 +2,16 @@ import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Scissors, Users, Calendar, Settings, ArrowRight, Copy, Check, Clock, TrendingUp, Award, PieChart, Sparkles, MessageSquare, MapPin } from 'lucide-react';
+import { Scissors, Users, Calendar, Settings, ArrowRight, Copy, Check, Clock, TrendingUp, Award, PieChart, Sparkles, MessageSquare, MapPin, Bell, ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/supabaseClient';
-import { formatCurrency } from '@/utils';
+import { formatCurrency, formatTimeDisplay } from '@/utils';
 
 export default function DashboardHome() {
     const { business, barbers, services } = useBusiness();
     const { user, role } = useAuth();
     const [copied, setCopied] = useState(false);
+    const [todayApts, setTodayApts] = useState<any[]>([]);
     const [statsData, setStatsData] = useState({
         totalRevenue: 0,
         totalCustomers: 0,
@@ -24,6 +25,7 @@ export default function DashboardHome() {
     useEffect(() => {
         if (!business?.id) return;
         loadAnalytics();
+        loadTodayAppointments();
     }, [business?.id]);
 
     const loadAnalytics = async () => {
@@ -111,6 +113,20 @@ export default function DashboardHome() {
         }
     };
 
+    const loadTodayAppointments = async () => {
+        if (!business?.id) return;
+        const today = new Date().toISOString().split('T')[0];
+        const { data } = await supabase
+            .from('appointments')
+            .select('id, customer_name, start_time, services(name), barbers(name)')
+            .eq('business_id', business.id)
+            .eq('appointment_date', today)
+            .eq('status', 'confirmed')
+            .order('start_time', { ascending: true })
+            .limit(4);
+        setTodayApts(data || []);
+    };
+
     const handleCopyLink = () => {
         navigator.clipboard.writeText(`${window.location.origin}/book/${business?.slug}`);
         setCopied(true);
@@ -159,7 +175,7 @@ export default function DashboardHome() {
                 {/* ── Header ──────────────────────────────────── */}
                 <div className="mb-8">
                     <h1 className="page-title text-3xl">
-                        Hola, <span className="text-space-primary">{user?.email?.split('@')[0]}</span> 👋
+                        Hola, <span className="text-space-primary">{business?.name || user?.email?.split('@')[0]}</span> 👋
                     </h1>
                     <p className="page-subtitle flex items-center gap-2 mt-1">
                         Rol actual:
@@ -167,6 +183,53 @@ export default function DashboardHome() {
                             {role}
                         </span>
                     </p>
+                </div>
+
+                {/* ── TODAY'S APPOINTMENTS WIDGET ──────────────────────── */}
+                <div className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-base font-bold text-space-text flex items-center gap-2">
+                            <span className="w-1 h-5 bg-space-primary rounded-full inline-block" />
+                            Citas de Hoy
+                            {todayApts.length > 0 && (
+                                <span className="ml-1 w-5 h-5 bg-space-primary text-white rounded-full text-[10px] font-black flex items-center justify-center">
+                                    {todayApts.length}
+                                </span>
+                            )}
+                        </h2>
+                        <Link to="/dashboard/appointments" className="text-xs font-semibold text-space-primary flex items-center gap-1 hover:underline">
+                            Ver todas <ExternalLink size={12} />
+                        </Link>
+                    </div>
+
+                    {todayApts.length === 0 ? (
+                        <div className="card p-6 text-center border-2 border-dashed border-space-border">
+                            <Calendar size={32} className="text-space-muted mx-auto mb-2 opacity-40" />
+                            <p className="text-sm text-space-muted font-semibold">No hay citas confirmadas para hoy</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            {todayApts.map((apt) => (
+                                <Link key={apt.id} to="/dashboard/appointments"
+                                    className="card p-4 hover:shadow-card-lg hover:border-space-primary/30 transition-all group">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-10 h-10 bg-space-primary/10 rounded-xl flex flex-col items-center justify-center">
+                                            <span className="text-[9px] font-bold text-space-primary">{formatTimeDisplay(apt.start_time).split(' ')[1]}</span>
+                                            <span className="text-sm font-black text-space-primary leading-none">{formatTimeDisplay(apt.start_time).split(':')[0]}</span>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-bold text-space-text text-sm truncate group-hover:text-space-primary transition-colors">{apt.customer_name}</p>
+                                            <p className="text-[10px] text-space-muted truncate">{(apt.services as any)?.name || 'Servicio'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-[10px] text-space-muted font-semibold">
+                                        <Bell size={10} className="text-space-primary" />
+                                        {(apt.barbers as any)?.name || 'Sin asignar'}
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* ── Stats ───────────────────────────────────── */}
@@ -228,9 +291,6 @@ export default function DashboardHome() {
                                         className="px-6 py-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
                                     >
                                         <MessageSquare size={14} /> Compartir por WhatsApp
-                                    </button>
-                                    <button className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2">
-                                        <PieChart size={14} /> Ver Estadísticas de Link
                                     </button>
                                 </div>
                             </div>
