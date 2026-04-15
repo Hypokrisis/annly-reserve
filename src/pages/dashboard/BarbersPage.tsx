@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Edit2, Users as UsersIcon, ShieldAlert, UserMinus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Edit2, Users as UsersIcon, ShieldAlert, UserMinus, TrendingUp, Award, Calendar } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Modal } from '@/components/common/Modal';
@@ -8,12 +8,51 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useBarbers } from '@/hooks/useBarbers';
 import { useServices } from '@/hooks/useServices';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useBusiness } from '@/contexts/BusinessContext';
+import { useToast } from '@/contexts/ToastContext';
 import type { Barber } from '@/types';
 
 export default function BarbersPage() {
     const { barbers, loading, createBarber, updateBarber, deleteBarber, hardDeleteBarber, getBarberServices } = useBarbers();
     const { services } = useServices();
     const { canManageBarbers } = usePermissions();
+    const { business } = useBusiness();
+    const toast = useToast();
+
+    // ── Analytics per barber ──
+    type BarberStats = { total: number; thisMonth: number; thisWeek: number };
+    const [barberStats, setBarberStats] = useState<Record<string, BarberStats>>({});
+
+    useEffect(() => {
+        if (business?.id && barbers.length > 0) {
+            loadBarberStats();
+        }
+    }, [business?.id, barbers.length]);
+
+    const loadBarberStats = async () => {
+        if (!business?.id) return;
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+        const weekStart = new Date(now.setDate(now.getDate() - now.getDay())).toISOString().split('T')[0];
+
+        const { data } = await supabase
+            .from('appointments')
+            .select('barber_id, appointment_date')
+            .eq('business_id', business.id)
+            .in('status', ['confirmed', 'completed']);
+
+        if (!data) return;
+
+        const stats: Record<string, BarberStats> = {};
+        for (const apt of data) {
+            if (!apt.barber_id) continue;
+            if (!stats[apt.barber_id]) stats[apt.barber_id] = { total: 0, thisMonth: 0, thisWeek: 0 };
+            stats[apt.barber_id].total++;
+            if (apt.appointment_date >= monthStart) stats[apt.barber_id].thisMonth++;
+            if (apt.appointment_date >= weekStart) stats[apt.barber_id].thisWeek++;
+        }
+        setBarberStats(stats);
+    };
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBarber, setEditingBarber] = useState<Barber | null>(null);
@@ -109,15 +148,11 @@ export default function BarbersPage() {
     };
 
     const handleDelete = async (barber: Barber) => {
-        if (!confirm(`¿Estás seguro de desactivar a "${barber.name}"? El barbero dejará de estar disponible para reservas.`)) {
-            return;
-        }
-
+        if (!confirm(`¿Estás seguro de desactivar a "${barber.name}"? El barbero dejará de estar disponible para reservas.`)) return;
         await deleteBarber(barber.id);
     };
 
     const handleHardDelete = async (barber: Barber) => {
-        // Check for active appointments
         const { data: activeApts } = await supabase
             .from('appointments')
             .select('id')
@@ -126,13 +161,11 @@ export default function BarbersPage() {
             .limit(1);
 
         if (activeApts && activeApts.length > 0) {
-            alert('No se puede eliminar permanentemente: este barbero tiene citas CONFIRMADAS activas. Cancela las citas primero o solo desactiva al barbero.');
+            toast.error('No se puede eliminar: este barbero tiene citas CONFIRMADAS activas.');
             return;
         }
 
-        if (!confirm(`⚠️ ALERTA DE SEGURIDAD\n\n¿Estás ABSOLUTAMENTE seguro de eliminar permanentemente a "${barber.name}"?\n\n- Se borrará su perfil y asociaciones.\n- Las citas históricas mostrarán "Barbero eliminado".\n- Esta acción NO se puede deshacer.`)) {
-            return;
-        }
+        if (!confirm(`⚠️ ALERTA DE SEGURIDAD\n\n¿Estás ABSOLUTAMENTE seguro de eliminar permanentemente a "${barber.name}"?\n\n- Se borrará su perfil y asociaciones.\n- Las citas históricas mostrarán "Barbero eliminado".\n- Esta acción NO se puede deshacer.`)) return;
 
         await hardDeleteBarber(barber.id);
     };
@@ -220,6 +253,24 @@ export default function BarbersPage() {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* ── Analytics Strip ── */}
+                                    {barberStats[barber.id] && (
+                                        <div className="grid grid-cols-3 gap-2 py-3 border-t border-b border-space-border/20 my-1">
+                                            <div className="text-center">
+                                                <p className="text-[9px] font-black text-space-muted uppercase tracking-widest">Total</p>
+                                                <p className="text-lg font-black text-space-text">{barberStats[barber.id].total}</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-[9px] font-black text-space-muted uppercase tracking-widest">Este Mes</p>
+                                                <p className="text-lg font-black text-space-primary">{barberStats[barber.id].thisMonth}</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-[9px] font-black text-space-muted uppercase tracking-widest">Esta Semana</p>
+                                                <p className="text-lg font-black text-emerald-600">{barberStats[barber.id].thisWeek}</p>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className="flex items-center justify-between pt-4 border-t border-space-border/20">
                                         <div className="flex items-center gap-1.5">

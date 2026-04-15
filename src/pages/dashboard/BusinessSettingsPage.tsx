@@ -4,11 +4,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/supabaseClient';
 import { Input } from '@/components/common/Input';
 import { ImageUploadWithCrop } from '@/components/common/ImageUploadWithCrop';
-import { Store, Check, Info, Save, MapPin, Sparkles, Map, Loader2, ChevronLeft } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
+import { Store, Check, Info, Save, MapPin, Sparkles, Map, Loader2, ChevronLeft, Eye, Tag, MessageSquare, Gift, Zap } from 'lucide-react';
 
 export default function BusinessSettingsPage() {
     const navigate = useNavigate();
     const { currentBusiness } = useAuth();
+    const toast = useToast();
+    const [previewOpen, setPreviewOpen] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
@@ -26,6 +29,7 @@ export default function BusinessSettingsPage() {
         whatsapp_bot_active: true,
         whatsapp_reminder_template: '',
         whatsapp_booking_link: '',
+        whatsapp_offer: '',
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -49,6 +53,7 @@ export default function BusinessSettingsPage() {
                 whatsapp_bot_active: currentBusiness.whatsapp_bot_active ?? true,
                 whatsapp_reminder_template: currentBusiness.whatsapp_reminder_template || '',
                 whatsapp_booking_link: currentBusiness.whatsapp_booking_link || '',
+                whatsapp_offer: (currentBusiness as any).whatsapp_offer || '',
             });
         }
     }, [currentBusiness]);
@@ -127,14 +132,14 @@ export default function BusinessSettingsPage() {
                     whatsapp_bot_active: formData.whatsapp_bot_active,
                     whatsapp_reminder_template: formData.whatsapp_reminder_template.trim(),
                     whatsapp_booking_link: formData.whatsapp_booking_link.trim(),
+                    whatsapp_offer: formData.whatsapp_offer.trim(),
                 })
                 .eq('id', currentBusiness.id);
 
             if (error) throw error;
 
+            toast.success('¡Configuración guardada!');
             setMessage({ type: 'success', text: 'Configuración guardada exitosamente.' });
-            
-            // Give time for feedback before potential refresh or just staying
             setTimeout(() => setMessage(null), 3000);
 
         } catch (error: any) {
@@ -396,21 +401,86 @@ export default function BusinessSettingsPage() {
                                     />
                                 </div>
 
+                                {/* ── OFFER PROMO FIELD ── */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] ml-2 block">Mensaje de Recordatorio ("Toca Recorte")</label>
+                                    <label className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] ml-2 flex items-center gap-2">
+                                        <Gift size={12} className="text-amber-400" />
+                                        Oferta / Promo Activa (Opcional)
+                                    </label>
+                                    <input 
+                                        type="text"
+                                        name="whatsapp_offer"
+                                        value={formData.whatsapp_offer}
+                                        onChange={handleChange}
+                                        placeholder="Ej: 20% de descuento en tu próximo corte hoy"
+                                        className="w-full h-14 bg-white/5 border-2 border-white/10 rounded-2xl px-6 text-sm font-medium text-white focus:bg-white/10 focus:border-amber-400/50 outline-none transition-all placeholder:text-white/20"
+                                    />
+                                    <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest ml-2">
+                                        Usa <span className="text-amber-400">{{'{'}{'{'}}offer{'}'}{'}'}</span> en tu mensaje para mostrar esta oferta. Deja en blanco para no incluirla.
+                                    </p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between ml-2 mr-1">
+                                        <label className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] block">Mensaje de Recordatorio ("Toca Recorte")</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPreviewOpen(p => !p)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl text-[9px] font-black uppercase tracking-widest text-white/60 hover:text-white transition-all"
+                                        >
+                                            <Eye size={11} /> {previewOpen ? 'Ocultar' : 'Vista Previa'}
+                                        </button>
+                                    </div>
                                     <textarea
                                         name="whatsapp_reminder_template"
                                         value={formData.whatsapp_reminder_template}
                                         onChange={handleChange}
                                         rows={4}
                                         className="w-full px-6 py-4 bg-white/5 border-2 border-white/10 rounded-[1.5rem] text-sm font-medium text-white focus:bg-white/10 focus:border-space-primary transition-all outline-none placeholder:text-white/20 resize-none min-h-[120px]"
-                                        placeholder="Ej: ¡Hola {{customer_name}}! Ya toca recorte..."
+                                        placeholder="Ej: ¡Hola {{customer_name}}! Ya toca recorte en {{business_name}}. {{offer}} Reserva aquí: {{booking_link}}"
                                     />
                                     <div className="flex flex-wrap gap-2 mt-2 px-2">
-                                        {['{{customer_name}}', '{{business_name}}', '{{booking_link}}'].map(tag => (
-                                            <span key={tag} className="text-[9px] font-black text-space-primary uppercase tracking-widest bg-space-primary/10 px-2 py-1 rounded-md border border-space-primary/20 pointer-events-none">{tag}</span>
+                                        {[
+                                            { tag: '{{customer_name}}', label: 'Nombre cliente', icon: '👤' },
+                                            { tag: '{{business_name}}', label: 'Tu negocio', icon: '✂️' },
+                                            { tag: '{{booking_link}}', label: 'Link reserva', icon: '🔗' },
+                                            { tag: '{{offer}}', label: 'Oferta activa', icon: '🎁' },
+                                        ].map(({ tag, label, icon }) => (
+                                            <button
+                                                key={tag}
+                                                type="button"
+                                                onClick={() => setFormData(p => ({
+                                                    ...p,
+                                                    whatsapp_reminder_template: p.whatsapp_reminder_template + ' ' + tag
+                                                }))}
+                                                title={`Insertar ${label}`}
+                                                className="text-[9px] font-black text-space-primary uppercase tracking-widest bg-space-primary/10 hover:bg-space-primary/20 px-3 py-1.5 rounded-lg border border-space-primary/20 transition-all cursor-pointer flex items-center gap-1"
+                                            >
+                                                <span>{icon}</span> {tag}
+                                            </button>
                                         ))}
                                     </div>
+
+                                    {/* Live Preview */}
+                                    {previewOpen && (
+                                        <div className="mt-4 p-5 bg-[#0d1117] rounded-3xl border border-white/5">
+                                            <p className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                                <Zap size={10} className="text-space-primary" /> Vista previa del mensaje
+                                            </p>
+                                            {/* WhatsApp bubble */}
+                                            <div className="flex justify-start">
+                                                <div className="max-w-[85%] bg-white/90 rounded-2xl rounded-tl-sm p-4 shadow-lg text-space-text text-sm font-medium leading-relaxed">
+                                                    {(formData.whatsapp_reminder_template || '¡Hola! Te escribimos de tu barbería 💈 {{customer_name}}, ya llevas un tiempo sin visitarnos. Reserva aquí: {{booking_link}}')
+                                                        .replace('{{customer_name}}', 'Loann Santiago')
+                                                        .replace('{{business_name}}', formData.name || 'Tu Barbería')
+                                                        .replace('{{booking_link}}', `${window.location.origin}/book/${formData.slug}`)
+                                                        .replace('{{offer}}', formData.whatsapp_offer || '(sin oferta activa)')
+                                                    }
+                                                    <p className="text-[10px] text-space-muted text-right mt-2">8:55 PM ✓✓</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
