@@ -416,7 +416,7 @@ export default function BusinessSettingsPage() {
                                         className="w-full h-14 bg-white/5 border-2 border-white/10 rounded-2xl px-6 text-sm font-medium text-white focus:bg-white/10 focus:border-amber-400/50 outline-none transition-all placeholder:text-white/20"
                                     />
                                     <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest ml-2">
-                                        Usa <span className="text-amber-400">{{'{'}{'{'}}offer{'}'}{'}'}</span> en tu mensaje para mostrar esta oferta. Deja en blanco para no incluirla.
+                                        Usa <span className="text-amber-400">{'{{offer}}'}</span> en tu mensaje para mostrar esta oferta. Deja en blanco para no incluirla.
                                     </p>
                                 </div>
 
