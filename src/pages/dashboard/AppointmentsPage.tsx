@@ -9,6 +9,7 @@ import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { formatDateDisplay, formatTimeDisplay, formatRelativeTime } from '@/utils';
+import { supabase } from '@/lib/supabase';
 import type { Appointment } from '@/types';
 
 type Tab = 'today' | 'upcoming' | 'all';
@@ -359,9 +360,9 @@ export default function AppointmentsPage() {
                                         onClick={async () => {
                                             if (!confirm('¿Enviar recordatorio de prueba a este cliente?')) return;
                                             try {
-                                                const { data, error } = await import('@/lib/supabase').then(m => m.supabase.rpc('force_send_reminder', {
+                                                const { error } = await supabase.rpc('force_send_reminder', {
                                                     p_appointment_id: selectedAppointment.id
-                                                }));
+                                                });
                                                 if (error) throw error;
                                                 alert('¡Recordatorio añadido a la cola! Se enviará en unos instantes.');
                                             } catch (e: any) {

@@ -67,7 +67,7 @@ export const Modal: React.FC<ModalProps> = ({
                     </div>
 
                     {/* Content with subtle texture */}
-                    <div className="p-5 sm:p-8 relative bg-white">
+                    <div className="p-5 sm:p-8 relative bg-white max-h-[calc(100vh-8rem)] overflow-y-auto">
                         <div className="relative z-10 text-space-text">
                             {children}
                         </div>
