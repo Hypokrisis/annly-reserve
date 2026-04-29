@@ -30,6 +30,7 @@ export default function BusinessSettingsPage() {
         whatsapp_reminder_template: '',
         whatsapp_booking_link: '',
         whatsapp_offer: '',
+        whatsapp_marketing_active: true,
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -54,6 +55,7 @@ export default function BusinessSettingsPage() {
                 whatsapp_reminder_template: currentBusiness.whatsapp_reminder_template || '',
                 whatsapp_booking_link: currentBusiness.whatsapp_booking_link || '',
                 whatsapp_offer: (currentBusiness as any).whatsapp_offer || '',
+                whatsapp_marketing_active: (currentBusiness as any).whatsapp_marketing_active ?? true,
             });
         }
     }, [currentBusiness]);
@@ -133,6 +135,7 @@ export default function BusinessSettingsPage() {
                     whatsapp_reminder_template: formData.whatsapp_reminder_template.trim(),
                     whatsapp_booking_link: formData.whatsapp_booking_link.trim(),
                     whatsapp_offer: formData.whatsapp_offer.trim(),
+                    whatsapp_marketing_active: formData.whatsapp_marketing_active,
                 })
                 .eq('id', currentBusiness.id);
 
@@ -385,6 +388,21 @@ export default function BusinessSettingsPage() {
                                     className={`w-14 h-8 rounded-full relative transition-all duration-300 ${formData.whatsapp_bot_active ? 'bg-space-primary' : 'bg-white/10'}`}
                                 >
                                     <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 ${formData.whatsapp_bot_active ? 'left-7 shadow-[0_0_15px_rgba(74,132,99,0.5)]' : 'left-1'}`} />
+                                </button>
+                            </div>
+
+                            <div className="flex items-center justify-between p-6 bg-white/5 rounded-[2rem] border-2 border-white/5">
+                                <div>
+                                    <h3 className="text-sm font-black text-white uppercase tracking-tight flex items-center gap-2">
+                                        <Zap size={16} className="text-amber-400" /> Campañas de Marketing
+                                    </h3>
+                                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Habilita envíos masivos y ofertas programadas</p>
+                                </div>
+                                <button
+                                    onClick={() => setFormData(p => ({ ...p, whatsapp_marketing_active: !p.whatsapp_marketing_active }))}
+                                    className={`w-14 h-8 rounded-full relative transition-all duration-300 ${formData.whatsapp_marketing_active ? 'bg-amber-500' : 'bg-white/10'}`}
+                                >
+                                    <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 ${formData.whatsapp_marketing_active ? 'left-7 shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'left-1'}`} />
                                 </button>
                             </div>
 

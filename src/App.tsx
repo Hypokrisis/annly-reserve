@@ -28,6 +28,7 @@ import BarbersPage from './pages/dashboard/BarbersPage';
 import SchedulesPage from './pages/dashboard/SchedulesPage';
 import AppointmentsPage from './pages/dashboard/AppointmentsPage';
 import ClientsPage from './pages/dashboard/ClientsPage';
+import CampaignsPage from './pages/dashboard/CampaignsPage';
 import BusinessSettingsPage from './pages/dashboard/BusinessSettingsPage';
 import CreateBusinessPage from './pages/dashboard/CreateBusinessPage';
 import SubscriptionPage from './pages/dashboard/SubscriptionPage';

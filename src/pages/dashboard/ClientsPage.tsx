@@ -35,6 +35,7 @@ export default function ClientsPage() {
     const [inactiveDays, setInactiveDays] = useState(14);
     const [sending, setSending] = useState(false);
     const [reminderResult, setReminderResult] = useState<{ ok: boolean; results: ReminderResult[] } | null>(null);
+    const [customMessage, setCustomMessage] = useState('Hoy tenemos una promoción especial de 2x1 en recortes.');
 
     // Manual selection
     const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
@@ -132,7 +133,8 @@ export default function ClientsPage() {
 
             let payload: any = {
                 inactiveDays,
-                businessId: business?.id
+                businessId: business?.id,
+                customMessage: customMessage.trim() || 'Esperamos verte pronto.'
             };
 
             if (selectedEmails.size > 0) {
@@ -283,8 +285,24 @@ export default function ClientsPage() {
                                 </p>
                             </div>
 
+                            {/* Custom Message Field */}
+                            <div className="lg:col-span-3 mt-2 mb-2">
+                                <label className="text-[10px] font-black text-space-text uppercase tracking-widest mb-2 block">
+                                    Mensaje de la Oferta <span className="text-space-primary">*</span>
+                                </label>
+                                <textarea
+                                    className="w-full bg-space-bg border border-space-border/50 rounded-xl p-3 text-sm font-medium text-space-text focus:outline-none focus:border-space-primary resize-none h-20 placeholder-space-muted"
+                                    placeholder="Ej. Hoy tenemos 2x1 en recortes..."
+                                    value={customMessage}
+                                    onChange={(e) => setCustomMessage(e.target.value)}
+                                />
+                                <p className="text-[9px] text-space-muted font-bold mt-1 uppercase tracking-widest">
+                                    Se insertará en el mensaje: "Queremos comentarte lo siguiente: [TU MENSAJE AQUÍ]."
+                                </p>
+                            </div>
+
                             {/* Send Button */}
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2 lg:col-span-3">
                                 {selectedEmails.size > 0 && (
                                     <p className="text-[10px] text-space-primary font-black uppercase tracking-widest text-center">
                                         Modo Manual Activo
