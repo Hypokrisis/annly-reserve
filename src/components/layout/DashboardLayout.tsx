@@ -12,7 +12,8 @@ import {
     Settings,
     Globe,
     Clock,
-    CreditCard
+    CreditCard,
+    Zap
 } from 'lucide-react';
 
 interface DashboardLayoutProps {

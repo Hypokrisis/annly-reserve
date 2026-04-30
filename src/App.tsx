@@ -156,6 +156,21 @@ export default function App() {
               />
 
               <Route
+                path="/dashboard/campaigns"
+                element={
+                  <AuthGuard>
+                    <RequireOwner>
+                      <RequireBusiness>
+                        <RequireRole requiredRole={['owner', 'admin']}>
+                          <CampaignsPage />
+                        </RequireRole>
+                      </RequireBusiness>
+                    </RequireOwner>
+                  </AuthGuard>
+                }
+              />
+
+              <Route
                 path="/dashboard/settings"
                 element={
                   <AuthGuard>
