@@ -5,6 +5,36 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --space-bg: 245 247 242;
+    --space-card: 255 255 255;
+    --space-card2: 236 244 204;
+    --space-text: 34 50 28;
+    --space-muted: 123 160 108;
+    --space-border: 198 233 188;
+    --space-primary: 123 160 108;
+    --space-primary-dark: 94 125 80;
+    --space-primary-light: 165 204 144;
+    --space-danger: 224 82 82;
+    --space-success: 61 153 112;
+    --space-yellow: 212 172 13;
+  }
+
+  .dark {
+    --space-bg: 11 17 14;
+    --space-card: 19 28 23;
+    --space-card2: 29 42 35;
+    --space-text: 240 244 238;
+    --space-muted: 140 166 128;
+    --space-border: 42 61 49;
+    --space-primary: 165 204 144;
+    --space-primary-dark: 123 160 108;
+    --space-primary-light: 198 233 188;
+    --space-danger: 239 68 68;
+    --space-success: 52 211 153;
+    --space-yellow: 250 204 21;
+  }
+
   * {
     box-sizing: border-box;
   }
