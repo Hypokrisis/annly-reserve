@@ -40,6 +40,7 @@ export default function CampaignsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [step, setStep] = useState(1);
     const [submitting, setSubmitting] = useState(false);
+    const [firingId, setFiringId] = useState<string | null>(null);
 
     // New Campaign Form
     const [formData, setFormData] = useState({
@@ -156,6 +157,38 @@ export default function CampaignsPage() {
             toast.success('Campaña eliminada');
         } catch (err: any) {
             toast.error('Error: ' + err.message);
+        }
+    };
+
+    const fireCampaign = async (campaign: Campaign) => {
+        if (!window.confirm(`¿Enviar la campaña "${campaign.name}" ahora a todos los clientes del segmento?`)) return;
+        setFiringId(campaign.id);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+            const resp = await fetch(`${supabaseUrl}/functions/v1/send-reminders`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    businessId: business?.id,
+                    campaignId: campaign.id,
+                }),
+            });
+
+            const json = await resp.json();
+            if (!resp.ok) throw new Error(json.error || 'Error al disparar campaña');
+
+            toast.success(`✅ Campaña enviada: ${json.sent ?? 0} mensaje(s) enviados.`);
+            loadCampaigns();
+        } catch (err: any) {
+            toast.error('Error al enviar: ' + err.message);
+        } finally {
+            setFiringId(null);
         }
     };
 
@@ -323,19 +356,29 @@ export default function CampaignsPage() {
                                             </td>
                                             <td className="px-8 py-5 text-right">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    {campaign.status === 'pending' || campaign.status === 'cancelled' ? (
+                                                    {/* SEND NOW button — most important action */}
+                                                    {(campaign.status === 'pending' || campaign.status === 'cancelled') && (
+                                                        <button 
+                                                            onClick={() => fireCampaign(campaign)}
+                                                            disabled={firingId === campaign.id}
+                                                            className="flex items-center gap-2 px-4 py-2 bg-space-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-space-primary/90 transition-all disabled:opacity-50"
+                                                            title="Enviar Ahora"
+                                                        >
+                                                            {firingId === campaign.id 
+                                                                ? <Loader2 size={14} className="animate-spin" />
+                                                                : <Send size={14} />}
+                                                            {firingId === campaign.id ? 'Enviando...' : 'Enviar'}
+                                                        </button>
+                                                    )}
+                                                    {campaign.status === 'pending' && (
                                                         <button 
                                                             onClick={() => toggleStatus(campaign)}
-                                                            className={`p-2 rounded-xl transition-all ${
-                                                                campaign.status === 'cancelled' 
-                                                                ? 'bg-green-50 text-green-600 hover:bg-green-100' 
-                                                                : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
-                                                            }`}
-                                                            title={campaign.status === 'cancelled' ? "Reactivar" : "Pausar"}
+                                                            className="p-2 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-xl transition-all"
+                                                            title="Pausar"
                                                         >
-                                                            {campaign.status === 'cancelled' ? <Send size={16} /> : <X size={16} />}
+                                                            <X size={16} />
                                                         </button>
-                                                    ) : null}
+                                                    )}
                                                     <button 
                                                         onClick={() => deleteCampaign(campaign.id)}
                                                         className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition-all"
