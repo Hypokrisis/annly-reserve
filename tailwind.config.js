@@ -1,30 +1,32 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
         sans: ['Outfit', 'Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
-        // ── Refined light green palette (based on user image) ──────────────
-        'space-bg': '#f5f7f2',   // Very light warm/greenish off-white
-        'space-card': '#ffffff',   // White
-        'space-card2': '#ecf4cc',   // Lightest cream/yellow-green 
-        'space-text': '#22321c',   // Deepest green for text
-        'space-muted': '#7ba06c',   // Mid green (darkest from image)
-        'space-border': '#c6e9bc',   // Light border
-        'space-primary': '#7ba06c',   // Main brand green
-        'space-primary-dark': '#5e7d50',   // Hover state for primary
-        'space-primary-light': '#a5cc90',   // Lighter brand green
-        'space-purple': '#a5cc90',   // Accent
-        'space-pink': '#c6e9bc',   // Accent
-        'space-danger': '#e05252',
-        'space-success': '#3d9970',
-        'space-yellow': '#d4ac0d',
-        'space-luxury': '#5e7d50',
-        'space-gold': '#7ba06c',
-        'space-gold-light': '#a5cc90',
+        'space-bg':           'rgb(var(--space-bg) / <alpha-value>)',
+        'space-card':         'rgb(var(--space-card) / <alpha-value>)',
+        'space-card2':        'rgb(var(--space-card2) / <alpha-value>)',
+        'space-text':         'rgb(var(--space-text) / <alpha-value>)',
+        'space-muted':        'rgb(var(--space-muted) / <alpha-value>)',
+        'space-border':       'rgb(var(--space-border) / <alpha-value>)',
+        'space-primary':      'rgb(var(--space-primary) / <alpha-value>)',
+        'space-primary-dark': 'rgb(var(--space-primary-dark) / <alpha-value>)',
+        'space-primary-light':'rgb(var(--space-primary-light) / <alpha-value>)',
+        'space-danger':       'rgb(var(--space-danger) / <alpha-value>)',
+        'space-success':      'rgb(var(--space-success) / <alpha-value>)',
+        'space-yellow':       'rgb(var(--space-yellow) / <alpha-value>)',
+        
+        // These can still use the primary variables for fallback
+        'space-purple':       'rgb(var(--space-primary-light) / <alpha-value>)',
+        'space-pink':         'rgb(var(--space-border) / <alpha-value>)',
+        'space-luxury':       'rgb(var(--space-primary-dark) / <alpha-value>)',
+        'space-gold':         'rgb(var(--space-primary) / <alpha-value>)',
+        'space-gold-light':   'rgb(var(--space-primary-light) / <alpha-value>)',
       },
       borderRadius: {
         'xl': '0.75rem',
