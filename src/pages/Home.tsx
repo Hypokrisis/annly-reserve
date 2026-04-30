@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, LogOut, LayoutDashboard, ArrowRight, Info, Instagram, Globe, X, Search } from 'lucide-react';
+import { MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, LogOut, LayoutDashboard, ArrowRight, Info, Instagram, Globe, X, Search, Moon, Sun } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import * as appointmentsService from '@/services/appointments.service';
 import { formatRelativeTime } from '@/utils/formatters';
 import { Appointment } from '@/types';
@@ -28,6 +29,7 @@ interface BusinessResult {
 function Home() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [allBusinesses, setAllBusinesses] = useState<BusinessResult[]>([]);
   const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
   const [customerAppointments, setCustomerAppointments] = useState<Appointment[]>([]);
@@ -228,11 +230,11 @@ function Home() {
 
   const BusinessCard = ({ business, isFavorite }: { business: BusinessResult, isFavorite: boolean }) => (
     <div
-      className="group bg-white border border-space-border hover:border-space-primary/40 rounded-[2rem] overflow-hidden hover:shadow-card-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative"
+      className="group bg-space-card border border-space-border hover:border-space-primary/40 rounded-[2rem] overflow-hidden hover:shadow-card-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative"
     >
       <button
         onClick={(e) => toggleFavorite(e, business.slug)}
-        className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center bg-white/90 backdrop-blur-md rounded-full border border-space-border/50 hover:bg-white transition shadow-sm hover:scale-110"
+        className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center bg-space-card/90 backdrop-blur-md rounded-full border border-space-border/50 hover:bg-space-card transition shadow-sm hover:scale-110"
       >
         <Heart size={16} className={`transition-colors ${isFavorite ? 'fill-space-danger text-space-danger' : 'text-space-muted hover:text-space-danger'}`} />
       </button>
@@ -252,7 +254,7 @@ function Home() {
 
       {/* Logo Bubble Overlay */}
       <div className="absolute top-40 left-6 z-10">
-        <div className="w-16 h-16 rounded-2xl bg-white p-1 shadow-xl border border-space-border/50 overflow-hidden transform group-hover:scale-110 transition-transform duration-500">
+        <div className="w-16 h-16 rounded-2xl bg-space-card p-1 shadow-xl border border-space-border/50 overflow-hidden transform group-hover:scale-110 transition-transform duration-500">
            <img 
               src={business.logo_url || business.banner_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(business.name)}&background=1a2e28&color=fff`} 
               className="w-full h-full object-cover rounded-xl"
@@ -305,7 +307,7 @@ function Home() {
            document.getElementById('directory')?.scrollIntoView({ behavior: 'smooth' });
         }
       }}
-      className={`relative flex-shrink-0 w-full sm:w-auto flex-1 min-w-[200px] rounded-3xl overflow-hidden p-6 flex flex-col items-start justify-between transition-all duration-300 hover:scale-[1.02] shadow-sm border-2 ${activeMood === mood.id ? 'border-space-primary ring-4 ring-space-primary/10' : 'border-space-border bg-white'}`}
+      className={`relative flex-shrink-0 w-full sm:w-auto flex-1 min-w-[200px] rounded-3xl overflow-hidden p-6 flex flex-col items-start justify-between transition-all duration-300 hover:scale-[1.02] shadow-sm border-2 ${activeMood === mood.id ? 'border-space-primary ring-4 ring-space-primary/10' : 'border-space-border bg-space-card'}`}
     >
       <div className="flex items-center justify-between w-full mb-4">
         <span className="text-3xl">{mood.emoji}</span>
@@ -341,7 +343,7 @@ function Home() {
       {/* Header Pill */}
       <nav className="fixed w-full z-50 top-4 px-4 sm:top-6">
         <div className="max-w-7xl mx-auto flex justify-center">
-          <div className="pill-nav flex justify-between items-center w-full max-w-[95%] sm:max-w-none px-4 sm:px-6 h-14 sm:h-16 rounded-full backdrop-blur-xl bg-white/80 border border-space-border shadow-lg shadow-space-primary/5">
+          <div className="pill-nav flex justify-between items-center w-full max-w-[95%] sm:max-w-none px-4 sm:px-6 h-14 sm:h-16 rounded-full backdrop-blur-xl bg-space-card/80 border border-space-border shadow-lg shadow-space-primary/5">
             {/* Logo */}
               <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-space-primary rounded-xl flex items-center justify-center text-white shadow-xl shadow-space-primary/10 hover:scale-105 transition-transform overflow-hidden relative">
@@ -361,9 +363,15 @@ function Home() {
               <Link to="/pricing" className="text-xs font-bold uppercase tracking-widest text-space-muted hover:text-space-primary transition">Precios</Link>
             </div>
 
-            {/* Auth Buttons */}
-            {/* Auth Buttons */}
+            {/* Auth Buttons & Theme Toggle */}
             <div className="flex items-center gap-2 sm:gap-3">
+              <button 
+                onClick={toggleTheme} 
+                className="p-2 rounded-full text-space-muted hover:text-space-primary hover:bg-space-card2 transition-colors mr-1"
+                aria-label="Toggle Theme"
+              >
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
               {user ? (
                 <div className="relative">
                   <button
@@ -375,7 +383,7 @@ function Home() {
                     </div>
                   </button>
                   {isAccountMenuOpen && (
-                    <div className="absolute right-0 mt-3 w-64 bg-white rounded-[2rem] shadow-card-xl border border-space-border overflow-hidden py-1 z-50 animate-fade-in">
+                    <div className="absolute right-0 mt-3 w-64 bg-space-card rounded-[2rem] shadow-card-xl border border-space-border overflow-hidden py-1 z-50 animate-fade-in">
                       <div className="px-5 py-5 border-b border-space-border bg-space-bg flex justify-between items-center">
                         <div>
                           <p className="text-[10px] text-space-muted font-black uppercase tracking-widest">Cuenta</p>
@@ -435,7 +443,7 @@ function Home() {
             <div className="mb-10 animate-fade-in">
               <Link
                 to="/how-it-works"
-                className="group flex items-center justify-between gap-4 bg-white border-2 border-space-primary/20 hover:border-space-primary rounded-[2rem] p-5 transition-all hover:shadow-xl w-full max-w-2xl"
+                className="group flex items-center justify-between gap-4 bg-space-card border-2 border-space-primary/20 hover:border-space-primary rounded-[2rem] p-5 transition-all hover:shadow-xl w-full max-w-2xl"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-space-primary rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
@@ -466,7 +474,7 @@ function Home() {
               </div>
               <button 
                 onClick={() => navigate(`/book/${(lastAppointment as any).business?.slug}`)}
-                className="w-full bg-white border-2 border-space-primary/30 p-6 rounded-[2rem] flex items-center justify-between hover:border-space-primary hover:shadow-xl transition-all group"
+                className="w-full bg-space-card border-2 border-space-primary/30 p-6 rounded-[2rem] flex items-center justify-between hover:border-space-primary hover:shadow-xl transition-all group"
               >
                 <div className="flex items-center gap-4 text-left">
                   <div className="w-16 h-16 bg-space-primary rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg group-hover:scale-110 transition-transform">
@@ -504,13 +512,13 @@ function Home() {
                            <div className="px-3 py-1 bg-space-primary rounded-lg text-[10px] font-black animate-pulse">LEVEL UP</div>
                         </div>
                      </div>
-                     <div className="h-px sm:h-12 w-full sm:w-px bg-white/10"></div>
+                     <div className="h-px sm:h-12 w-full sm:w-px bg-space-card/10"></div>
                      <div className="flex-1 w-full">
                         <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
                            <span>Progreso de Frescura</span>
                            <span>Proxima cita: pronto</span>
                         </div>
-                        <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+                        <div className="w-full h-3 bg-space-card/10 rounded-full overflow-hidden">
                            <div className="w-[85%] h-full bg-space-primary shadow-[0_0_15px_rgba(74,132,99,0.5)]"></div>
                         </div>
                      </div>
@@ -548,7 +556,7 @@ function Home() {
               <div className="bg-space-primary p-2.5 rounded-xl shadow-btn"><Calendar size={20} className="text-white" /></div>
               <h2 className="text-2xl font-black text-space-text tracking-tight uppercase">Mis Próximas Citas</h2>
             </div>
-            <div className="bg-white border text-space-text border-space-border rounded-[2.5rem] shadow-card p-6 md:p-8">
+            <div className="bg-space-card border text-space-text border-space-border rounded-[2.5rem] shadow-card p-6 md:p-8">
                 {loadingApts ? (
                   <div className="py-8 flex justify-center"><LoadingSpinner /></div>
                 ) : (
@@ -558,7 +566,7 @@ function Home() {
                         <div className="absolute -right-4 -top-4 w-20 h-20 bg-space-primary/5 rounded-full blur-[20px] pointer-events-none"></div>
                         <div className="mb-4">
                           <div className="flex items-center gap-2 mb-3">
-                            <span className="text-[10px] font-black text-space-text uppercase tracking-widest px-3 py-1 bg-white rounded-lg border border-space-border shadow-sm truncate max-w-[140px]">{apt.business?.name}</span>
+                            <span className="text-[10px] font-black text-space-text uppercase tracking-widest px-3 py-1 bg-space-card rounded-lg border border-space-border shadow-sm truncate max-w-[140px]">{apt.business?.name}</span>
                             {apt.statusBadge === 'today' && <span className="text-[10px] font-black text-white uppercase tracking-widest px-3 py-1 bg-space-danger rounded-lg shadow-sm">Hoy</span>}
                           </div>
                           <h4 className="font-bold text-lg mb-4 text-space-text leading-tight">{apt.service_name}</h4>
@@ -581,7 +589,7 @@ function Home() {
         {error && <div className="bg-space-danger/10 border border-space-danger/30 text-space-danger px-6 py-4 rounded-2xl mb-12 shadow-sm text-center font-bold text-sm tracking-wide">⚠️ {error}</div>}
 
         {loading ? (
-          <div className="bg-white rounded-[3rem] p-16 shadow-card border border-space-border flex flex-col items-center justify-center min-h-[400px]">
+          <div className="bg-space-card rounded-[3rem] p-16 shadow-card border border-space-border flex flex-col items-center justify-center min-h-[400px]">
             <LoadingSpinner />
             <p className="text-space-primary mt-6 uppercase tracking-widest text-[10px] font-black animate-pulse">Cargando profesionales...</p>
           </div>
@@ -621,7 +629,7 @@ function Home() {
                   {sortedBusinesses.map(b => <BusinessCard key={b.id} business={b} isFavorite={favoriteSlugs.includes(b.slug)} />)}
                 </div>
               ) : (
-                <div className="bg-white rounded-[3rem] p-16 text-center border border-space-border shadow-card">
+                <div className="bg-space-card rounded-[3rem] p-16 text-center border border-space-border shadow-card">
                   <div className="w-20 h-20 bg-space-bg rounded-full flex items-center justify-center mx-auto mb-6"><Scissors size={32} className="text-space-muted opacity-50" /></div>
                   <h3 className="text-xl font-black text-space-text mb-2 uppercase tracking-tight">Aún no hay barberías</h3>
                   <p className="text-space-muted font-medium max-w-sm mx-auto">Vuelve más tarde, estamos conectando a los mejores profesionales en tu área.</p>
@@ -633,7 +641,7 @@ function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="mt-32 border-t border-space-border pt-12 pb-8 bg-white relative z-10 w-full">
+      <footer className="mt-32 border-t border-space-border pt-12 pb-8 bg-space-card relative z-10 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="text-center md:text-left">
@@ -656,10 +664,10 @@ function Home() {
       {selectedBusinessDetails && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 animate-fade-in">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setSelectedBusinessDetails(null)}></div>
-          <div className="relative w-full max-w-2xl bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-space-border/20 animate-scale-in">
+          <div className="relative w-full max-w-2xl bg-space-card rounded-[2.5rem] overflow-hidden shadow-2xl border border-space-border/20 animate-scale-in">
              <button 
                 onClick={() => setSelectedBusinessDetails(null)}
-                className="absolute top-4 right-4 z-50 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full border border-space-border/50 flex items-center justify-center text-space-text hover:bg-white transition-all shadow-sm"
+                className="absolute top-4 right-4 z-50 w-10 h-10 bg-space-card/80 backdrop-blur-md rounded-full border border-space-border/50 flex items-center justify-center text-space-text hover:bg-space-card transition-all shadow-sm"
              >
                 <X size={20} />
              </button>
@@ -672,7 +680,7 @@ function Home() {
                 />
                 <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                 <div className="absolute bottom-6 left-8 flex items-end gap-6">
-                   <div className="w-24 h-24 rounded-[2rem] bg-white p-1 shadow-2xl border border-white/20 overflow-hidden">
+                   <div className="w-24 h-24 rounded-[2rem] bg-space-card p-1 shadow-2xl border border-white/20 overflow-hidden">
                       <img 
                          src={selectedBusinessDetails.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedBusinessDetails.name)}&background=1a2e28&color=fff`} 
                          className="w-full h-full object-cover rounded-[1.7rem]"

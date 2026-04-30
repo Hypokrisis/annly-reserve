@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, X, Zap, Star, Crown, ArrowRight, MessageCircle, Calendar, Users, BarChart3, ShieldCheck, Scissors } from 'lucide-react';
+import { Check, X, Zap, Star, Crown, ArrowRight, MessageCircle, Calendar, Users, BarChart3, ShieldCheck, Scissors, Moon, Sun } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const plans = [
     {
@@ -82,10 +83,11 @@ const faqs = [
 export default function PricingPage() {
     const [annual, setAnnual] = useState(false);
     const [openFaq, setOpenFaq] = useState<number | null>(null);
+    const { theme, toggleTheme } = useTheme();
 
     return (
         <div className="min-h-screen bg-space-bg text-space-text font-sans">
-            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-space-border">
+            <nav className="sticky top-0 z-50 bg-space-card/80 backdrop-blur-xl border-b border-space-border">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2.5">
                         <div className="w-8 h-8 bg-space-primary rounded-xl flex items-center justify-center">
@@ -94,6 +96,9 @@ export default function PricingPage() {
                         <span className="font-black text-space-text tracking-tight uppercase text-lg">Spacey</span>
                     </Link>
                     <div className="flex items-center gap-4">
+                        <button onClick={toggleTheme} className="p-2 rounded-full text-space-muted hover:text-space-primary hover:bg-space-card2 transition-colors mr-1">
+                            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                        </button>
                         <Link to="/how-it-works" className="text-sm font-semibold text-space-muted hover:text-space-primary transition">Cómo Funciona</Link>
                         <Link to="/login" className="text-sm font-semibold text-space-muted hover:text-space-text transition">Entrar</Link>
                         <Link to="/signup" className="btn-primary text-xs px-5 py-2.5 rounded-xl">Empezar Gratis →</Link>
@@ -114,7 +119,7 @@ export default function PricingPage() {
                 <div className="flex items-center justify-center gap-4 mt-10">
                     <span className={`text-sm font-bold ${!annual ? 'text-space-text' : 'text-space-muted'}`}>Mensual</span>
                     <button onClick={() => setAnnual(!annual)} className={`relative w-14 h-7 rounded-full transition-colors duration-300 ${annual ? 'bg-space-primary' : 'bg-space-border'}`}>
-                        <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300 ${annual ? 'translate-x-7' : 'translate-x-0'}`} />
+                        <span className={`absolute top-1 left-1 w-5 h-5 bg-space-card rounded-full shadow transition-transform duration-300 ${annual ? 'translate-x-7' : 'translate-x-0'}`} />
                     </button>
                     <span className={`text-sm font-bold ${annual ? 'text-space-text' : 'text-space-muted'}`}>
                         Anual <span className="text-space-primary text-xs font-black">–20%</span>
@@ -128,7 +133,7 @@ export default function PricingPage() {
                         const Icon = plan.icon;
                         const price = annual ? plan.price.annual : plan.price.monthly;
                         return (
-                            <div key={plan.id} className={`relative bg-white rounded-3xl border-2 p-8 flex flex-col transition-all duration-300 ${plan.border} ${plan.popular ? 'shadow-2xl md:-translate-y-4' : 'shadow-sm hover:shadow-lg'}`}>
+                            <div key={plan.id} className={`relative bg-space-card rounded-3xl border-2 p-8 flex flex-col transition-all duration-300 ${plan.border} ${plan.popular ? 'shadow-2xl md:-translate-y-4' : 'shadow-sm hover:shadow-lg'}`}>
                                 {plan.popular && (
                                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-space-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg whitespace-nowrap">
                                         ⚡ Más Popular
@@ -163,7 +168,7 @@ export default function PricingPage() {
                 </div>
             </section>
 
-            <section className="bg-white border-t border-b border-space-border py-20">
+            <section className="bg-space-card border-t border-b border-space-border py-20">
                 <div className="max-w-4xl mx-auto px-6">
                     <h2 className="text-3xl font-black text-center text-space-text uppercase tracking-tight mb-12">¿Por qué elegir <span className="text-space-primary">Spacey</span>?</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -192,7 +197,7 @@ export default function PricingPage() {
                 <h2 className="text-3xl font-black text-center text-space-text uppercase tracking-tight mb-12">Preguntas Frecuentes</h2>
                 <div className="space-y-3">
                     {faqs.map((faq, i) => (
-                        <div key={i} className="bg-white border border-space-border rounded-2xl overflow-hidden">
+                        <div key={i} className="bg-space-card border border-space-border rounded-2xl overflow-hidden">
                             <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full flex items-center justify-between px-6 py-5 text-left gap-4">
                                 <span className="font-black text-space-text text-sm">{faq.q}</span>
                                 <span className={`text-space-primary transition-transform duration-200 flex-shrink-0 ${openFaq === i ? 'rotate-90' : ''}`}><ArrowRight size={16} /></span>

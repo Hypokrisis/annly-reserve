@@ -22,7 +22,7 @@ export const Input: React.FC<InputProps> = ({
                 </label>
             )}
             <input
-                className={`w-full px-4 py-2 min-h-[44px] bg-white text-space-text outline-none border ${error ? 'border-space-danger' : 'border-space-border'
+                className={`w-full px-4 py-2 min-h-[44px] bg-space-card text-space-text outline-none border ${error ? 'border-space-danger' : 'border-space-border'
                     } rounded-xl focus:ring-2 focus:ring-space-primary focus:border-transparent transition ${className}`}
                 {...props}
             />

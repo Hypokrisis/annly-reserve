@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Scissors, ArrowRight, Calendar, MessageCircle, Users, Bell, Megaphone, ChevronRight, CheckCircle2, Globe, Smartphone, Star, Play, Check } from 'lucide-react';
+import { Scissors, ArrowRight, Calendar, MessageCircle, Users, Bell, Megaphone, ChevronRight, CheckCircle2, Globe, Smartphone, Star, Play, Check, Moon, Sun } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const steps = [
     {
@@ -10,7 +11,7 @@ const steps = [
         desc: 'Regístrate con tu email, pon el nombre de tu negocio, y ya tienes tu propio sistema de reservas funcionando en vivo.',
         icon: Globe,
         demo: (
-            <div className="bg-white rounded-2xl border-2 border-space-border p-6 shadow-sm">
+            <div className="bg-space-card rounded-2xl border-2 border-space-border p-6 shadow-sm">
                 <p className="text-[10px] font-black text-space-muted uppercase tracking-widest mb-4">Configuración Inicial</p>
                 <div className="space-y-3">
                     {[{ label: 'Nombre del Negocio', value: 'Barbería El Rey' }, { label: 'Ciudad', value: 'San Juan, PR' }, { label: 'Tu URL', value: 'spaceyreserve.app/barberiaelrey' }].map((f, i) => (
@@ -36,7 +37,7 @@ const steps = [
         desc: 'Crea tus servicios con precios y duración, añade a tus barberos o empleados, y configura los horarios de atención. Todo en minutos.',
         icon: Users,
         demo: (
-            <div className="bg-white rounded-2xl border-2 border-space-border p-6 shadow-sm">
+            <div className="bg-space-card rounded-2xl border-2 border-space-border p-6 shadow-sm">
                 <p className="text-[10px] font-black text-space-muted uppercase tracking-widest mb-4">Tus Servicios</p>
                 <div className="space-y-2">
                     {[{ name: 'Corte + Barba', duration: '45 min', price: '$20' }, { name: 'Solo Corte', duration: '30 min', price: '$15' }, { name: 'Diseño Líneas', duration: '20 min', price: '$12' }].map((s, i) => (
@@ -62,7 +63,7 @@ const steps = [
         desc: 'Comparte tu link personalizado en Instagram, WhatsApp o Google. Tus clientes eligen servicio, barbero, fecha y hora en segundos.',
         icon: Smartphone,
         demo: (
-            <div className="bg-white rounded-2xl border-2 border-space-border overflow-hidden shadow-sm">
+            <div className="bg-space-card rounded-2xl border-2 border-space-border overflow-hidden shadow-sm">
                 <div className="bg-space-text p-4 flex items-center gap-3">
                     <div className="w-8 h-8 bg-space-primary rounded-lg flex items-center justify-center">
                         <Scissors size={14} className="text-white" />
@@ -121,7 +122,7 @@ const steps = [
         desc: 'El sistema detecta clientes que no visitan hace tiempo y te permite enviarles una oferta personalizada por WhatsApp masivo.',
         icon: Megaphone,
         demo: (
-            <div className="bg-white rounded-2xl border-2 border-space-border p-6 shadow-sm">
+            <div className="bg-space-card rounded-2xl border-2 border-space-border p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                     <p className="text-[10px] font-black text-space-muted uppercase tracking-widest">Campaña: Lunes Flash</p>
                     <span className="text-[9px] font-black text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Pendiente</span>
@@ -151,10 +152,11 @@ const testimonials = [
 
 export default function HowItWorksPage() {
     const [activeStep, setActiveStep] = useState(0);
+    const { theme, toggleTheme } = useTheme();
 
     return (
         <div className="min-h-screen bg-space-bg text-space-text font-sans">
-            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-space-border">
+            <nav className="sticky top-0 z-50 bg-space-card/80 backdrop-blur-xl border-b border-space-border">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2.5">
                         <div className="w-8 h-8 bg-space-primary rounded-xl flex items-center justify-center">
@@ -163,6 +165,9 @@ export default function HowItWorksPage() {
                         <span className="font-black text-space-text tracking-tight uppercase text-lg">Spacey</span>
                     </Link>
                     <div className="flex items-center gap-4">
+                        <button onClick={toggleTheme} className="p-2 rounded-full text-space-muted hover:text-space-primary hover:bg-space-card2 transition-colors mr-1">
+                            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                        </button>
                         <Link to="/pricing" className="text-sm font-semibold text-space-muted hover:text-space-primary transition">Precios</Link>
                         <Link to="/login" className="text-sm font-semibold text-space-muted hover:text-space-text transition">Entrar</Link>
                         <Link to="/signup" className="btn-primary text-xs px-5 py-2.5 rounded-xl">Empezar Gratis →</Link>
@@ -184,7 +189,7 @@ export default function HowItWorksPage() {
                     <Link to="/signup" className="inline-flex items-center gap-2 bg-space-primary text-white font-black text-sm uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:bg-space-primary/90 transition-all active:scale-95 shadow-lg">
                         Empezar Ahora <ArrowRight size={16} />
                     </Link>
-                    <Link to="/pricing" className="inline-flex items-center gap-2 bg-white text-space-text border-2 border-space-border font-black text-sm uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:border-space-primary transition-all">
+                    <Link to="/pricing" className="inline-flex items-center gap-2 bg-space-card text-space-text border-2 border-space-border font-black text-sm uppercase tracking-widest px-6 py-3.5 rounded-2xl hover:border-space-primary transition-all">
                         Ver Precios
                     </Link>
                 </div>
@@ -197,7 +202,7 @@ export default function HowItWorksPage() {
                             const Icon = step.icon;
                             const isActive = activeStep === i;
                             return (
-                                <button key={i} onClick={() => setActiveStep(i)} className={`w-full flex items-start gap-4 p-5 rounded-2xl text-left transition-all duration-200 border-2 ${isActive ? 'bg-white border-space-primary shadow-md' : 'bg-white border-transparent hover:border-space-border hover:shadow-sm'}`}>
+                                <button key={i} onClick={() => setActiveStep(i)} className={`w-full flex items-start gap-4 p-5 rounded-2xl text-left transition-all duration-200 border-2 ${isActive ? 'bg-space-card border-space-primary shadow-md' : 'bg-space-card border-transparent hover:border-space-border hover:shadow-sm'}`}>
                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${isActive ? 'bg-space-primary' : 'bg-space-bg'}`}>
                                         <Icon size={18} className={isActive ? 'text-white' : 'text-space-muted'} />
                                     </div>
@@ -212,7 +217,7 @@ export default function HowItWorksPage() {
                         })}
                     </div>
 
-                    <div className="flex-1 bg-white rounded-3xl border-2 border-space-border p-8 shadow-sm">
+                    <div className="flex-1 bg-space-card rounded-3xl border-2 border-space-border p-8 shadow-sm">
                         <div className="mb-6">
                             <span className="text-[10px] font-black text-space-primary uppercase tracking-widest">{steps[activeStep].number} / 05</span>
                             <h2 className="text-2xl font-black text-space-text tracking-tight mt-1">{steps[activeStep].title}</h2>
@@ -237,7 +242,7 @@ export default function HowItWorksPage() {
                 </div>
             </section>
 
-            <section className="bg-white border-t border-b border-space-border py-12">
+            <section className="bg-space-card border-t border-b border-space-border py-12">
                 <div className="max-w-5xl mx-auto px-6">
                     <div className="flex flex-wrap gap-3 justify-center">
                         {['✅ Reservas 24/7', '📲 WhatsApp Automático', '📣 Marketing Masivo', '👥 Multi-Empleado', '📅 Calendario en Tiempo Real', '🔒 100% Seguro', '⚡ Setup en 5 Minutos', '💳 Cobros Online (Premium)', '📊 Estadísticas Completas', '🌐 Página Web Incluida'].map((pill, i) => (
@@ -251,7 +256,7 @@ export default function HowItWorksPage() {
                 <h2 className="text-3xl font-black text-center text-space-text uppercase tracking-tight mb-12">Lo que dicen nuestros negocios</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {testimonials.map((t, i) => (
-                        <div key={i} className="bg-white border-2 border-space-border rounded-3xl p-6 hover:shadow-md transition-all">
+                        <div key={i} className="bg-space-card border-2 border-space-border rounded-3xl p-6 hover:shadow-md transition-all">
                             <div className="flex gap-0.5 mb-4">
                                 {Array.from({ length: t.stars }).map((_, j) => <Star key={j} size={14} className="text-yellow-400 fill-yellow-400" />)}
                             </div>

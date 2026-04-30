@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from '@/contexts/AuthContext';
 import { BusinessProvider } from '@/contexts/BusinessContext';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { RequireOwner } from '@/components/auth/RequireOwner';
@@ -38,9 +39,10 @@ import SubscriptionPage from './pages/dashboard/SubscriptionPage';
 export default function App() {
   return (
     <ToastProvider>
-      <AuthProvider>
-        <BusinessProvider>
-          <Router>
+      <ThemeProvider>
+        <AuthProvider>
+          <BusinessProvider>
+            <Router>
             <div className="min-h-screen bg-space-bg text-space-text font-sans">
               <Routes>
                 {/* PUBLIC */}
@@ -205,9 +207,10 @@ export default function App() {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </div>
-          </Router>
-        </BusinessProvider>
-      </AuthProvider>
+            </Router>
+          </BusinessProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ToastProvider>
   );
 }

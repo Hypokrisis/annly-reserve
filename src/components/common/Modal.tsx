@@ -56,7 +56,7 @@ export const Modal: React.FC<ModalProps> = ({
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Luxury Header */}
-                    <div className="flex items-center justify-between p-5 sm:p-6 border-b border-space-border bg-white sticky top-0 z-50">
+                    <div className="flex items-center justify-between p-5 sm:p-6 border-b border-space-border bg-space-card sticky top-0 z-50">
                         <h2 className="text-xl sm:text-2xl font-bold text-space-text font-sans">{title}</h2>
                         <button
                             onClick={onClose}
@@ -67,7 +67,7 @@ export const Modal: React.FC<ModalProps> = ({
                     </div>
 
                     {/* Content with subtle texture */}
-                    <div className="p-5 sm:p-8 relative bg-white max-h-[calc(100vh-8rem)] overflow-y-auto">
+                    <div className="p-5 sm:p-8 relative bg-space-card max-h-[calc(100vh-8rem)] overflow-y-auto">
                         <div className="relative z-10 text-space-text">
                             {children}
                         </div>

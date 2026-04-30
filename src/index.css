@@ -8,73 +8,77 @@
   * {
     box-sizing: border-box;
   }
+
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
   body {
     @apply bg-space-bg text-space-text font-sans;
   }
 }
 
 @layer components {
+
   /* ── Buttons ───────────────────────────────────────────── */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 
-           bg-space-primary hover:bg-space-primary-dark 
-           text-white font-semibold text-sm rounded-xl 
-           shadow-btn transition-all duration-200
-           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-space-primary hover:bg-space-primary-dark text-white font-semibold text-sm rounded-xl shadow-btn transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
   }
+
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 
-           bg-white hover:bg-space-card2 
-           text-space-text font-semibold text-sm rounded-xl 
-           border border-space-border shadow-card transition-all duration-200
-           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white hover:bg-space-card2 text-space-text font-semibold text-sm rounded-xl border border-space-border shadow-card transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
   }
+
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 
-           bg-space-danger hover:opacity-90 
-           text-white font-semibold text-sm rounded-xl 
-           transition-all duration-200 active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-space-danger hover:opacity-90 text-white font-semibold text-sm rounded-xl transition-all duration-200 active:scale-95;
   }
+
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 
-           text-space-muted hover:text-space-primary hover:bg-space-card2 
-           font-medium text-sm rounded-xl transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-space-muted hover:text-space-primary hover:bg-space-card2 font-medium text-sm rounded-xl transition-all duration-200;
   }
 
   /* ── Cards ─────────────────────────────────────────────── */
   .card {
     @apply bg-space-card border border-space-border rounded-2xl shadow-card;
   }
+
   .card-hover {
     @apply card hover:shadow-card-lg hover:-translate-y-0.5 transition-all duration-200;
   }
 
   /* ── Form Inputs ────────────────────────────────────────── */
   .input-field {
-    @apply w-full px-4 py-3 bg-white border border-space-border rounded-xl 
-           text-space-text placeholder-space-muted/60
-           focus:ring-2 focus:ring-space-primary/30 focus:border-space-primary 
-           transition-all duration-200 outline-none text-sm;
+    @apply w-full px-4 py-3 bg-white border border-space-border rounded-xl text-space-text placeholder-space-muted/60 focus:ring-2 focus:ring-space-primary/30 focus:border-space-primary transition-all duration-200 outline-none text-sm;
   }
+
   .input-label {
     @apply block text-sm font-medium text-space-text mb-1.5;
   }
 
   /* ── Badges ─────────────────────────────────────────────── */
-  .badge-green  { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-space-primary-light text-space-primary; }
-  .badge-red    { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-space-danger; }
-  .badge-amber  { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700; }
-  .badge-gray   { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600; }
+  .badge-green {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-space-primary-light text-space-primary;
+  }
+
+  .badge-red {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-space-danger;
+  }
+
+  .badge-amber {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700;
+  }
+
+  .badge-gray {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600;
+  }
 
   /* ── Page Heading ────────────────────────────────────────── */
   .page-title {
     @apply text-2xl font-bold text-space-text tracking-tight;
   }
+
   .page-subtitle {
     @apply text-sm text-space-muted mt-0.5;
   }
@@ -83,6 +87,7 @@
   .section-header {
     @apply flex items-center gap-2 mb-5;
   }
+
   .section-header::before {
     content: '';
     @apply block w-1 h-5 bg-space-primary rounded-full;
@@ -95,18 +100,34 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
+
   .text-shadow {
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
   }
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 /* ── Gradient animation ────────────────────────────────────── */
 @keyframes gradient {
-  0%, 100% { background-position: 0% 50%; }
-  50%       { background-position: 100% 50%; }
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
+
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient 4s ease infinite;
@@ -114,9 +135,17 @@
 
 /* ── Toast slide-in animation ─────────────────────────────── */
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(100%); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
+
 .animate-slide-in-right {
   animation: slide-in-right 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

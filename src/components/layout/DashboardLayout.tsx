@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import {
     LayoutDashboard,
     Scissors,
@@ -13,7 +14,9 @@ import {
     Globe,
     Clock,
     CreditCard,
-    Zap
+    Zap,
+    Moon,
+    Sun
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -24,6 +27,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     const location = useLocation();
     const navigate = useNavigate();
     const { user, currentBusiness, logout, role } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
     const allNavigation = [
@@ -57,7 +61,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         <div className="min-h-screen bg-space-bg text-space-text flex">
 
             {/* ── Mobile Header (Pill Bar) ───────────────────── */}
-            <header className="lg:hidden fixed top-4 left-4 right-4 z-40 h-16 bg-white/95 backdrop-blur-md rounded-full border border-space-border shadow-lg flex items-center justify-between px-6">
+            <header className="lg:hidden fixed top-4 left-4 right-4 z-40 h-16 bg-space-card/95 backdrop-blur-md rounded-full border border-space-border shadow-lg flex items-center justify-between px-6">
                 <div className="flex items-center gap-2.5">
                     <div className="w-10 h-10 bg-space-primary rounded-xl flex items-center justify-center shadow-btn overflow-hidden">
                         <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
@@ -157,8 +161,15 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                             <p className="text-[10px] text-space-muted font-bold uppercase tracking-widest">{role}</p>
                         </div>
                         <button
+                            onClick={toggleTheme}
+                            className="p-3 bg-space-card text-space-muted hover:text-space-primary hover:bg-space-card rounded-xl transition flex-shrink-0 shadow-sm border border-space-border/50"
+                            title="Cambiar Tema"
+                        >
+                            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                        </button>
+                        <button
                             onClick={handleLogout}
-                            className="p-3 bg-white text-space-danger hover:text-white hover:bg-space-danger rounded-xl transition flex-shrink-0 shadow-sm border border-space-border/50"
+                            className="p-3 bg-space-card text-space-danger hover:text-white hover:bg-space-danger rounded-xl transition flex-shrink-0 shadow-sm border border-space-border/50"
                             title="Cerrar sesión"
                         >
                             <LogOut size={18} />
@@ -168,7 +179,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             </aside>
 
             {/* ── Mobile Bottom Navigation (Definitive Fix) ───────────────────── */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-space-border px-8 py-3 pb-safe flex items-center justify-between shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-space-card/95 backdrop-blur-xl border-t border-space-border px-8 py-3 pb-safe flex items-center justify-between shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
                 <Link to="/dashboard" className={`flex flex-col items-center gap-1 ${location.pathname === '/dashboard' ? 'text-space-primary' : 'text-space-muted'}`}>
                     <LayoutDashboard size={22} />
                     <span className="text-[10px] font-black uppercase tracking-tighter">Panel</span>
