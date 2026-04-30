@@ -357,7 +357,8 @@ function Home() {
             <div className="hidden md:flex items-center gap-8">
               <a href="#" className="text-xs font-bold uppercase tracking-widest text-space-text hover:text-space-primary transition">Inicio</a>
               <a href="#directory" className="text-xs font-bold uppercase tracking-widest text-space-muted hover:text-space-primary transition">Barberías</a>
-              <a href="#" className="text-xs font-bold uppercase tracking-widest text-space-muted hover:text-space-primary transition">Servicios</a>
+              <Link to="/how-it-works" className="text-xs font-bold uppercase tracking-widest text-space-muted hover:text-space-primary transition">Cómo Funciona</Link>
+              <Link to="/pricing" className="text-xs font-bold uppercase tracking-widest text-space-muted hover:text-space-primary transition">Precios</Link>
             </div>
 
             {/* Auth Buttons */}
@@ -428,6 +429,33 @@ function Home() {
             </h1>
             <p className="text-sm sm:text-lg text-space-muted font-bold uppercase tracking-widest max-w-xl">Sin fricción. Sin esperas. Solo los mejores profesionales en un solo lugar.</p>
           </div>
+
+          {/* ── Business Owner Hook Banner ────────────── */}
+          {!user && (
+            <div className="mb-10 animate-fade-in">
+              <Link
+                to="/how-it-works"
+                className="group flex items-center justify-between gap-4 bg-white border-2 border-space-primary/20 hover:border-space-primary rounded-[2rem] p-5 transition-all hover:shadow-xl w-full max-w-2xl"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-space-primary rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+                    <Scissors size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-space-primary uppercase tracking-[0.3em] mb-0.5">¿Tienes un negocio?</p>
+                    <p className="text-base font-black text-space-text uppercase tracking-tight leading-none">Digitaliza tu barbería en 5 minutos</p>
+                    <p className="text-[10px] text-space-muted font-bold mt-0.5">Reservas online + WhatsApp automático + Marketing masivo</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="hidden sm:block text-[10px] font-black text-space-primary uppercase tracking-widest">Ver cómo funciona</span>
+                  <div className="w-8 h-8 bg-space-primary/10 rounded-xl flex items-center justify-center group-hover:bg-space-primary group-hover:text-white text-space-primary transition-all">
+                    <ArrowRight size={14} />
+                  </div>
+                </div>
+              </Link>
+            </div>
+          )}
 
           {/* BRUTAL FEATURE: One-Tap Rebooking */}
           {user && lastAppointment && (
