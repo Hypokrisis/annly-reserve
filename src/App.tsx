@@ -14,6 +14,8 @@ import Home from './pages/Home';
 import Reserve from './pages/Reserve';
 import Appointments from './pages/Appointments';
 import BookingPage from './pages/public/BookingPage';
+import PricingPage from './pages/PricingPage';
+import HowItWorksPage from './pages/HowItWorksPage';
 
 // Auth pages
 import LoginPage from './pages/auth/LoginPage';
@@ -46,6 +48,8 @@ export default function App() {
               <Route path="/reserve" element={<Reserve />} />
               <Route path="/appointments" element={<Appointments />} />
               <Route path="/book/:slug" element={<BookingPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/how-it-works" element={<HowItWorksPage />} />
 
               {/* AUTH */}
               <Route path="/login" element={<LoginPage />} />
