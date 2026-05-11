@@ -19,7 +19,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 export const checkConnection = async () => {
     try {
-        const { data, error } = await supabase.from('businesses').select('count').limit(1).single();
+        const { error } = await supabase.from('businesses').select('count').limit(1).single();
         if (error) throw error;
         console.log('[SupabaseClient] Connection check passed');
         return true;

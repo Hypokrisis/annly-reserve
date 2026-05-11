@@ -12,8 +12,6 @@ import { RequireRole } from '@/components/auth/RequireRole';
 
 // Public pages
 import Home from './pages/Home';
-import Reserve from './pages/Reserve';
-import Appointments from './pages/Appointments';
 import BookingPage from './pages/public/BookingPage';
 import PricingPage from './pages/PricingPage';
 import HowItWorksPage from './pages/HowItWorksPage';
@@ -47,8 +45,6 @@ export default function App() {
               <Routes>
                 {/* PUBLIC */}
                 <Route path="/" element={<Home />} />
-                <Route path="/reserve" element={<Reserve />} />
-                <Route path="/appointments" element={<Appointments />} />
                 <Route path="/book/:slug" element={<BookingPage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/how-it-works" element={<HowItWorksPage />} />
@@ -64,11 +60,11 @@ export default function App() {
                   path="/dashboard"
                   element={
                     <AuthGuard>
-                      <RequireOwner>
-                        <RequireBusiness>
+                      <RequireBusiness>
+                        <RequireRole requiredRole={['owner', 'admin', 'staff']}>
                           <DashboardHome />
-                        </RequireBusiness>
-                      </RequireOwner>
+                        </RequireRole>
+                      </RequireBusiness>
                     </AuthGuard>
                   }
                 />
@@ -122,11 +118,11 @@ export default function App() {
                   path="/dashboard/appointments"
                   element={
                     <AuthGuard>
-                      <RequireOwner>
-                        <RequireBusiness>
+                      <RequireBusiness>
+                        <RequireRole requiredRole={['owner', 'admin', 'staff']}>
                           <AppointmentsPage />
-                        </RequireBusiness>
-                      </RequireOwner>
+                        </RequireRole>
+                      </RequireBusiness>
                     </AuthGuard>
                   }
                 />

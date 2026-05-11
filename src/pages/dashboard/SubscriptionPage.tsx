@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import {
     Check, Star, Zap, Crown, ArrowRight, ShieldCheck,
@@ -17,12 +17,7 @@ interface Subscription {
     stripe_customer_id: string | null;
 }
 
-interface Tier {
-    id: string;
-    name: string;
-    price_monthly: number;
-    stripe_price_id: string;
-}
+
 
 const PLANS = [
     {

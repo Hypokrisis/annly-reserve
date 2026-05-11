@@ -5,7 +5,7 @@ import { supabase } from '@/supabaseClient';
 import { Input } from '@/components/common/Input';
 import { ImageUploadWithCrop } from '@/components/common/ImageUploadWithCrop';
 import { useToast } from '@/contexts/ToastContext';
-import { Store, Check, Info, Save, MapPin, Sparkles, Map, Loader2, ChevronLeft, Eye, Tag, MessageSquare, Gift, Zap } from 'lucide-react';
+import { Store, Check, Info, Save, MapPin, Sparkles, Map, Loader2, ChevronLeft, Eye, Gift, Zap } from 'lucide-react';
 
 export default function BusinessSettingsPage() {
     const navigate = useNavigate();

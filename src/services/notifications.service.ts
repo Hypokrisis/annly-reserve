@@ -1,43 +1,38 @@
-import { supabase } from '../supabaseClient';
-import type { NotificationType, CreateNotificationData } from '@/types';
+import type { NotificationType } from '@/types';
 
 /**
  * Send notification (email)
- * This is a placeholder - in production, this would call a Netlify Function
- * that integrates with SendGrid, Resend, or similar email service
+ *
+ * STATUS: No-op — Email sending is intentionally disabled.
+ * The platform relies on WhatsApp (Twilio) via Supabase Edge Functions for all
+ * client notifications (confirmations, reminders, cancellations).
+ *
+ * TO ENABLE EMAIL: Uncomment the fetch block below, create a Supabase Edge
+ * Function 'send-email' using Resend or SendGrid, and set the required env vars.
  */
 export const sendNotification = async (
-    type: NotificationType,
+    _type: NotificationType,
     recipientEmail: string,
     data: Record<string, any>
 ): Promise<void> => {
-    try {
-        // Log notification to database
-        await supabase.from('notifications').insert({
-            type,
-            recipient_email: recipientEmail,
-            subject: getSubject(type),
-            body: getBody(type, data),
-            status: 'sent',
-            sent_at: new Date().toISOString(),
-        });
-
-        // TODO: In production, call Netlify Function to send actual email
-        // await fetch('/.netlify/functions/send-email', {
-        //   method: 'POST',
-        //   body: JSON.stringify({ type, recipientEmail, data }),
-        // });
-
-        console.log(`Notification sent: ${type} to ${recipientEmail}`);
-    } catch (error) {
-        console.error('Error sending notification:', error);
-        throw error;
+    // No-op: intentionally not sending or logging to DB to avoid false records.
+    // The platform uses WhatsApp (Twilio Edge Functions) for all notifications.
+    if (import.meta.env.DEV) {
+        console.log(`[notifications] Email skipped (WhatsApp-first mode): to=${recipientEmail}`, data);
     }
+
+    // TODO: Uncomment when a real email provider is configured:
+    // await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+    //   },
+    //   body: JSON.stringify({ type: _type, recipientEmail, data }),
+    // });
 };
 
-/**
- * Send appointment confirmation email
- */
+/** Send appointment confirmation email (no-op — WhatsApp handles this via Edge Function) */
 export const sendAppointmentConfirmation = async (appointmentData: {
     customerEmail: string;
     customerName: string;
@@ -47,12 +42,10 @@ export const sendAppointmentConfirmation = async (appointmentData: {
     time: string;
     businessName: string;
 }): Promise<void> => {
-    await sendNotification('appointment_confirmation', appointmentData.customerEmail, appointmentData);
+    await sendNotification('appointment_confirmation' as NotificationType, appointmentData.customerEmail, appointmentData);
 };
 
-/**
- * Send appointment cancellation email
- */
+/** Send appointment cancellation email (no-op — WhatsApp handles this via Edge Function) */
 export const sendAppointmentCancellation = async (appointmentData: {
     customerEmail: string;
     customerName: string;
@@ -61,12 +54,10 @@ export const sendAppointmentCancellation = async (appointmentData: {
     time: string;
     businessName: string;
 }): Promise<void> => {
-    await sendNotification('appointment_cancellation', appointmentData.customerEmail, appointmentData);
+    await sendNotification('appointment_cancellation' as NotificationType, appointmentData.customerEmail, appointmentData);
 };
 
-/**
- * Send appointment reminder email
- */
+/** Send appointment reminder email (no-op — WhatsApp handles this via Edge Function) */
 export const sendAppointmentReminder = async (appointmentData: {
     customerEmail: string;
     customerName: string;
@@ -76,38 +67,5 @@ export const sendAppointmentReminder = async (appointmentData: {
     time: string;
     businessName: string;
 }): Promise<void> => {
-    await sendNotification('appointment_reminder', appointmentData.customerEmail, appointmentData);
+    await sendNotification('appointment_reminder' as NotificationType, appointmentData.customerEmail, appointmentData);
 };
-
-/**
- * Get email subject based on notification type
- */
-function getSubject(type: NotificationType): string {
-    const subjects = {
-        appointment_confirmation: 'Confirmación de Cita',
-        appointment_cancellation: 'Cita Cancelada',
-        appointment_reminder: 'Recordatorio de Cita',
-        user_invitation: 'Invitación al Sistema',
-    };
-
-    return subjects[type] || 'Notificación';
-}
-
-/**
- * Get email body based on notification type and data
- */
-function getBody(type: NotificationType, data: Record<string, any>): string {
-    switch (type) {
-        case 'appointment_confirmation':
-            return `Hola ${data.customerName},\n\nTu cita ha sido confirmada:\n\nServicio: ${data.serviceName}\nBarbero: ${data.barberName}\nFecha: ${data.date}\nHora: ${data.time}\n\nGracias por elegir ${data.businessName}!`;
-
-        case 'appointment_cancellation':
-            return `Hola ${data.customerName},\n\nTu cita ha sido cancelada:\n\nServicio: ${data.serviceName}\nFecha: ${data.date}\nHora: ${data.time}\n\nSi tienes alguna pregunta, contáctanos.`;
-
-        case 'appointment_reminder':
-            return `Hola ${data.customerName},\n\nEste es un recordatorio de tu cita:\n\nServicio: ${data.serviceName}\nBarbero: ${data.barberName}\nFecha: ${data.date}\nHora: ${data.time}\n\nTe esperamos en ${data.businessName}!`;
-
-        default:
-            return 'Notificación del sistema';
-    }
-}

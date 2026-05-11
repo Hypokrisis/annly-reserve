@@ -27,6 +27,7 @@ export interface Business {
     whatsapp_bot_active: boolean;
     whatsapp_reminder_template?: string;
     whatsapp_booking_link?: string;
+    reminder_inactive_days?: number; // Days of inactivity before sending a re-engagement reminder
 
     // Metadata
     created_at: string;

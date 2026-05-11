@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Scissors, ArrowRight, Calendar, MessageCircle, Users, Bell, Megaphone, ChevronRight, CheckCircle2, Globe, Smartphone, Star, Play, Check, Moon, Sun } from 'lucide-react';
+import { Scissors, ArrowRight, MessageCircle, Users, Megaphone, ChevronRight, CheckCircle2, Globe, Smartphone, Star, Play, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const steps = [

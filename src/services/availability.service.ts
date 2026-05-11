@@ -1,6 +1,6 @@
 import { supabase } from '../supabaseClient';
-import { generateTimeSlots, parseTime, addMinutes, formatTime } from '@/utils';
-import type { Schedule, Appointment, Service, Barber } from '@/types';
+import { generateTimeSlots, parseTime, addMinutes } from '@/utils';
+import type { Service, Barber } from '@/types';
 
 export interface AvailableSlot {
     time: string;

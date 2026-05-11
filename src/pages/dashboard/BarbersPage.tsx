@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Users as UsersIcon, ShieldAlert, UserMinus, TrendingUp, Award, Calendar } from 'lucide-react';
+import { Plus, Edit2, Users as UsersIcon, ShieldAlert, UserMinus } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Modal } from '@/components/common/Modal';

@@ -27,7 +27,7 @@ type ReminderResult = {
 
 export default function ClientsPage() {
     const { business } = useBusiness();
-    const { user } = useAuth();
+    const { } = useAuth();
     const toast = useToast();
     const [clients, setClients] = useState<Client[]>([]);
     const [loading, setLoading] = useState(true);

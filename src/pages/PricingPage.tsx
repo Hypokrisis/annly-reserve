@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, X, Zap, Star, Crown, ArrowRight, MessageCircle, Calendar, Users, BarChart3, ShieldCheck, Scissors, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';

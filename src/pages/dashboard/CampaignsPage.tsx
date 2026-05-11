@@ -31,7 +31,7 @@ interface TierInfo {
 
 export default function CampaignsPage() {
     const { business } = useBusiness();
-    const { user } = useAuth();
+    const { } = useAuth();
     const toast = useToast();
     
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -77,7 +77,7 @@ export default function CampaignsPage() {
 
     const loadTierInfo = async () => {
         try {
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('business_subscriptions')
                 .select('tier_id, subscription_tiers(max_marketing_messages)')
                 .eq('business_id', business?.id)

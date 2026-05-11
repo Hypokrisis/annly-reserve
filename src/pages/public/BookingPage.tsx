@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Check, ChevronLeft, Home, Calendar as CalendarIcon, Clock, User as UserIcon, Scissors, Star, Instagram, Globe } from 'lucide-react';
-import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { MonthGridCalendar } from '@/components/calendar/MonthGridCalendar';
 import { useAvailability } from '@/hooks/useAvailability';
 import { formatCurrency, formatDate, parseDate, formatTimeDisplay, isValidEmail, isValidPhone } from '@/utils';
-import { createAppointment } from '@/lib/appointments';
 import { supabase } from '@/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Business, Service, Barber } from '@/types';
@@ -223,38 +221,53 @@ export default function PublicBookingPage() {
         setSubmitting(true);
 
         try {
-            // Check for existing active appointments
-            const { data: existingActive } = await supabase
-                .from('appointments')
-                .select('id')
-                .eq('business_id', business.id)
-                .eq('customer_email', customerInfo.email.toLowerCase().trim())
-                .in('status', ['confirmed', 'pending'])
-                .order('created_at', { ascending: false })
-                .limit(1);
+            // Check for existing active appointments (only if we have email)
+            if (customerInfo.email) {
+                const { data: existingActive } = await supabase
+                    .from('appointments')
+                    .select('id')
+                    .eq('business_id', business.id)
+                    .eq('customer_email', customerInfo.email.toLowerCase().trim())
+                    .in('status', ['confirmed', 'pending'])
+                    .order('created_at', { ascending: false })
+                    .limit(1);
 
-            if (existingActive && existingActive.length > 0) {
-                alert('Ya tienes una cita activa en esta barbería.');
-                setSubmitting(false);
-                return;
+                if (existingActive && existingActive.length > 0) {
+                    alert('Ya tienes una cita activa en esta barbería.');
+                    setSubmitting(false);
+                    return;
+                }
             }
 
-            // Use the new helper that enforces correct schema and auth
-            await createAppointment({
+            // Get current session if available (for logged-in users)
+            const { data: sessionData } = await supabase.auth.getSession();
+            const session = sessionData?.session;
+
+            // Build appointment payload — works for both guests and logged-in users
+            const appointmentPayload: Record<string, any> = {
                 business_id: business.id,
                 barber_id: selectedSlot.barber_id,
                 service_id: selectedService.id,
-
-                // Date and Time
                 appointment_date: selectedDate,
                 start_time: selectedSlot.time,
-
-                // Customer Info (Mapping 'name' to 'customer_name' strictly)
                 customer_name: customerInfo.name.trim(),
                 customer_email: customerInfo.email.toLowerCase().trim(),
                 customer_phone: customerInfo.phone.trim(),
-                customer_notes: customerInfo.notes.trim() || undefined,
-            });
+                customer_notes: customerInfo.notes.trim() || null,
+                status: 'confirmed',
+            };
+
+            // Only attach user IDs if authenticated
+            if (session?.user?.id) {
+                appointmentPayload.customer_user_id = session.user.id;
+                appointmentPayload.client_id = session.user.id;
+            }
+
+            const { error } = await supabase
+                .from('appointments')
+                .insert([appointmentPayload]);
+
+            if (error) throw error;
 
             localStorage.setItem('annly_customer_data', JSON.stringify({
                 name: customerInfo.name,
@@ -283,43 +296,8 @@ export default function PublicBookingPage() {
         </div>
     );
 
-    // Require login to book
-    if (!user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-space-bg p-4 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-space-primary/10 via-space-purple/10 to-transparent pointer-events-none"></div>
-                <div className="w-[500px] h-[500px] bg-space-primary/20 rounded-full absolute -top-40 -right-40 blur-[100px] animate-pulse-subtle"></div>
-
-                <div className="max-w-md w-full glass-effect rounded-[2.5rem] shadow-2xl p-10 text-center border border-space-border relative z-10">
-                    <div className="w-20 h-20 bg-gradient-to-br from-space-primary to-space-purple rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-space-primary/30 animate-float">
-                        <UserIcon size={40} className="text-white" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-space-text mb-3 tracking-tight">Accede para reservar</h2>
-                    <p className="text-space-muted mb-8 font-medium">
-                        Necesitas una cuenta para agendar en <span className="text-space-text font-bold">{business.name}</span>.
-                    </p>
-                    <div className="space-y-4">
-                        <Button
-                            onClick={() => navigate(`/login?returnTo=/book/${slug}`)}
-                            className="w-full rounded-full h-14 text-sm font-bold uppercase tracking-widest shadow-xl bg-gradient-to-r from-space-primary-light to-space-purple-light border-none hover:shadow-space-primary/20 hover:scale-[1.02] transition-all"
-                        >
-                            Iniciar Sesión
-                        </Button>
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigate('/signup')}
-                            className="w-full rounded-full h-14 text-sm font-bold uppercase tracking-widest bg-space-card2 text-space-text border-transparent hover:bg-space-card hover:border-space-primary/50"
-                        >
-                            Crear Cuenta Gratis
-                        </Button>
-                        <Link to="/" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-space-primary text-white font-bold rounded-full shadow-lg hover:scale-105 transition-all text-sm uppercase tracking-widest">
-                            Volver al inicio
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    // Soft login suggestion — no longer a hard block
+    const showLoginBanner = !user;
 
     if (confirmed) return (
         <div className="min-h-screen flex items-center justify-center bg-space-bg p-4 relative">
@@ -409,6 +387,26 @@ export default function PublicBookingPage() {
                         )}
                     </div>
                 </header>
+
+                {/* BRUTAL FEATURE: Guest Login Banner (soft suggestion, no hard block) */}
+                {showLoginBanner && (
+                    <div className="mb-8 animate-fade-in">
+                        <div className="bg-space-primary/5 border border-space-primary/20 rounded-2xl p-4 flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <UserIcon size={16} className="text-space-primary flex-shrink-0" />
+                                <p className="text-[11px] font-bold text-space-text">
+                                    ¿Tienes cuenta? <span className="text-space-muted font-normal">Inicia sesión para autocompletar tus datos.</span>
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => navigate(`/login?returnTo=/book/${slug}`)}
+                                className="flex-shrink-0 px-4 py-2 bg-space-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-space-primary-dark transition-all"
+                            >
+                                Entrar
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* BRUTAL FEATURE: Smart Queue Indicator */}
                 <div className="mb-12 animate-fade-in delay-75">

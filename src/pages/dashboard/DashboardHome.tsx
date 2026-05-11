@@ -2,14 +2,14 @@ import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Scissors, Users, Calendar, Settings, ArrowRight, Copy, Check, Clock, TrendingUp, Award, PieChart, Sparkles, MessageSquare, MapPin, Bell, ExternalLink } from 'lucide-react';
+import { Scissors, Users, Calendar, ArrowRight, Copy, Check, Clock, TrendingUp, Award, PieChart, Sparkles, MapPin } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/supabaseClient';
 import { formatCurrency, formatTimeDisplay } from '@/utils';
 
 export default function DashboardHome() {
-    const { business, barbers, services } = useBusiness();
-    const { user, role } = useAuth();
+    const { business, services } = useBusiness();
+    const { role } = useAuth();
     const [copied, setCopied] = useState(false);
     const [todayApts, setTodayApts] = useState<any[]>([]);
     const [statsData, setStatsData] = useState({
@@ -154,39 +154,13 @@ export default function DashboardHome() {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const stats = [
-        {
-            label: 'Servicios Activos',
-            value: services.length,
-            icon: Scissors,
-            iconBg: 'bg-space-primary-light',
-            iconColor: 'text-space-primary',
-            sub: `${services.length} configurados`,
-        },
-        {
-            label: 'Profesionales',
-            value: barbers.filter(b => b.is_active).length,
-            icon: Users,
-            iconBg: 'bg-emerald-100',
-            iconColor: 'text-emerald-600',
-            sub: `${barbers.length} en total`,
-        },
-        {
-            label: 'Negocio',
-            value: business?.name || '–',
-            icon: Settings,
-            iconBg: 'bg-amber-100',
-            iconColor: 'text-amber-600',
-            sub: business?.address || 'Sin dirección',
-            isText: true,
-        },
-    ];
+
 
     const quickActions = [
-        { to: '/dashboard/services',     icon: Scissors, label: 'Servicios',   desc: 'Precios y duración',   color: 'group-hover:text-space-primary',   ring: 'group-hover:ring-space-primary/40' },
-        { to: '/dashboard/barbers',      icon: Users,    label: 'Equipo',      desc: 'Añade barberos',        color: 'group-hover:text-emerald-600',     ring: 'group-hover:ring-emerald-400/40' },
-        { to: '/dashboard/schedules',    icon: Clock,    label: 'Horarios',    desc: 'Define disponibilidad', color: 'group-hover:text-violet-600',      ring: 'group-hover:ring-violet-400/40' },
-        { to: '/dashboard/appointments', icon: Calendar, label: 'Citas',       desc: 'Ver agenda del día',    color: 'group-hover:text-amber-600',       ring: 'group-hover:ring-amber-400/40' },
+        { to: '/dashboard/services',     icon: Scissors, label: 'Servicios',   desc: 'Precios y duración' },
+        { to: '/dashboard/barbers',      icon: Users,    label: 'Equipo',      desc: 'Añade barberos' },
+        { to: '/dashboard/schedules',    icon: Clock,    label: 'Horarios',    desc: 'Define disponibilidad' },
+        { to: '/dashboard/appointments', icon: Calendar, label: 'Citas',       desc: 'Ver agenda del día' },
     ];
 
     return (
@@ -449,7 +423,7 @@ export default function DashboardHome() {
                         Accesos Directos
                     </h2>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        {quickActions.map(({ to, icon: Icon, label, desc, color, ring }) => (
+                        {quickActions.map(({ to, icon: Icon, label, desc }) => (
                             <Link key={to} to={to} className="card p-6 group transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1">
                                 <div className={`w-12 h-12 bg-space-card2 rounded-2xl flex items-center justify-center mb-4 transition-all group-hover:bg-space-primary group-hover:text-white`}>
                                     <Icon size={24} className="transition-transform group-hover:scale-110" />
