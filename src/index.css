@@ -47,80 +47,185 @@
 
   body {
     @apply bg-space-bg text-space-text font-sans;
+    /* Fondo con un sutil degradado radial para mayor profundidad */
+    background-image: radial-gradient(circle at 50% 0%,
+        rgba(var(--space-primary-light), 0.15) 0%,
+        transparent 60%);
+    background-attachment: fixed;
   }
 }
 
 @layer components {
 
-  /* ── Buttons ───────────────────────────────────────────── */
+  /* ── Botones mejorados ──────────────────────────────────── */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-space-primary hover:bg-space-primary-dark text-white font-semibold text-sm rounded-xl shadow-btn transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 font-semibold text-sm rounded-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    background: linear-gradient(135deg,
+        rgb(var(--space-primary-light)) 0%,
+        rgb(var(--space-primary)) 100%);
+    color: white;
+    box-shadow:
+      0 4px 12px rgba(var(--space-primary), 0.35),
+      0 2px 4px rgba(var(--space-primary-dark), 0.2);
+    border: none;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg,
+        rgb(var(--space-primary)) 0%,
+        rgb(var(--space-primary-dark)) 100%);
+    box-shadow:
+      0 6px 18px rgba(var(--space-primary), 0.45),
+      0 3px 6px rgba(var(--space-primary-dark), 0.3);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0px) scale(0.98);
+    box-shadow:
+      0 2px 6px rgba(var(--space-primary), 0.3);
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white hover:bg-space-card2 text-space-text font-semibold text-sm rounded-xl border border-space-border shadow-card transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 font-semibold text-sm rounded-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    background: transparent;
+    color: rgb(var(--space-text));
+    border: 1.5px solid rgb(var(--space-border));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  }
+
+  .btn-secondary:hover {
+    background: rgb(var(--space-card2));
+    border-color: rgb(var(--space-primary-light));
+    box-shadow: 0 4px 10px rgba(var(--space-primary), 0.08);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary:active {
+    transform: translateY(0px) scale(0.98);
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-space-danger hover:opacity-90 text-white font-semibold text-sm rounded-xl transition-all duration-200 active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 font-semibold text-sm rounded-xl transition-all duration-200 active:scale-95;
+    background: rgb(var(--space-danger));
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+
+  .btn-danger:hover {
+    background: linear-gradient(135deg,
+        rgb(var(--space-danger)) 0%,
+        #b91c1c 100%);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-space-muted hover:text-space-primary hover:bg-space-card2 font-medium text-sm rounded-xl transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 font-medium text-sm rounded-xl transition-all duration-200;
+    color: rgb(var(--space-muted));
   }
 
-  /* ── Cards ─────────────────────────────────────────────── */
+  .btn-ghost:hover {
+    color: rgb(var(--space-primary));
+    background: rgb(var(--space-card2));
+    transform: translateX(2px);
+  }
+
+  /* ── Tarjetas más modernas ──────────────────────────────── */
   .card {
-    @apply bg-space-card border border-space-border rounded-2xl shadow-card;
+    @apply bg-space-card border border-space-border rounded-2xl;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.02),
+      0 10px 15px -3px rgba(34, 50, 28, 0.04),
+      0 0 0 1px rgba(var(--space-primary), 0.02);
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
   }
 
   .card-hover {
-    @apply card hover:shadow-card-lg hover:-translate-y-0.5 transition-all duration-200;
+    @apply card;
   }
 
-  /* ── Form Inputs ────────────────────────────────────────── */
+  .card-hover:hover {
+    box-shadow:
+      0 8px 16px -4px rgba(34, 50, 28, 0.08),
+      0 20px 25px -5px rgba(34, 50, 28, 0.06),
+      0 0 0 1px rgba(var(--space-primary), 0.1),
+      0 0 20px -5px rgba(var(--space-primary-light), 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* ── Inputs con acento sutil ───────────────────────────── */
   .input-field {
-    @apply w-full px-4 py-3 bg-white border border-space-border rounded-xl text-space-text placeholder-space-muted/60 focus:ring-2 focus:ring-space-primary/30 focus:border-space-primary transition-all duration-200 outline-none text-sm;
+    @apply w-full px-4 py-3 bg-white border border-space-border rounded-xl text-space-text placeholder-space-muted/60 transition-all duration-200 outline-none text-sm;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  }
+
+  .input-field:focus {
+    @apply border-space-primary;
+    box-shadow: 0 0 0 3px rgba(var(--space-primary), 0.15),
+      0 1px 2px rgba(0, 0, 0, 0.03);
   }
 
   .input-label {
     @apply block text-sm font-medium text-space-text mb-1.5;
   }
 
-  /* ── Badges ─────────────────────────────────────────────── */
+  /* ── Badges con un toque de profundidad ────────────────── */
   .badge-green {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-space-primary-light text-space-primary;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    background: rgba(var(--space-primary-light), 0.25);
+    color: rgb(var(--space-primary-dark));
+    border: 1px solid rgba(var(--space-primary), 0.15);
+    box-shadow: 0 1px 2px rgba(var(--space-primary), 0.1);
   }
 
   .badge-red {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-space-danger;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    background: rgba(239, 68, 68, 0.08);
+    color: rgb(220, 38, 38);
+    border: 1px solid rgba(239, 68, 68, 0.2);
   }
 
   .badge-amber {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    background: rgba(250, 204, 21, 0.15);
+    color: rgb(180, 150, 10);
+    border: 1px solid rgba(250, 204, 21, 0.25);
   }
 
   .badge-gray {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+    background: rgba(107, 114, 128, 0.08);
+    color: rgb(75, 85, 99);
+    border: 1px solid rgba(107, 114, 128, 0.15);
   }
 
-  /* ── Page Heading ────────────────────────────────────────── */
+  /* ── Encabezados de página con más presencia ───────────── */
   .page-title {
     @apply text-2xl font-bold text-space-text tracking-tight;
+    background: linear-gradient(to right,
+        rgb(var(--space-text)),
+        rgb(var(--space-primary-dark)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .page-subtitle {
     @apply text-sm text-space-muted mt-0.5;
   }
 
-  /* ── Section Divider ─────────────────────────────────────── */
+  /* ── Separador de sección con el color primario ────────── */
   .section-header {
     @apply flex items-center gap-2 mb-5;
   }
 
   .section-header::before {
     content: '';
-    @apply block w-1 h-5 bg-space-primary rounded-full;
+    @apply block w-1.5 h-5 rounded-full;
+    background: linear-gradient(to bottom,
+        rgb(var(--space-primary-light)),
+        rgb(var(--space-primary-dark)));
   }
 }
 
@@ -129,6 +234,7 @@
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(var(--space-border), 0.5);
   }
 
   .text-shadow {
@@ -145,7 +251,7 @@
   }
 }
 
-/* ── Gradient animation ────────────────────────────────────── */
+/* ── Animaciones existentes, mantenidas ──────────────────── */
 @keyframes gradient {
 
   0%,
@@ -163,7 +269,6 @@
   animation: gradient 4s ease infinite;
 }
 
-/* ── Toast slide-in animation ─────────────────────────────── */
 @keyframes slide-in-right {
   from {
     opacity: 0;
