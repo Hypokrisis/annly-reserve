@@ -5,19 +5,34 @@
 @tailwind utilities;
 
 @layer base {
-  :root, .dark {
-    --space-bg: 8 8 10;
-    --space-card: 18 18 20;
-    --space-card2: 28 28 32;
-    --space-text: 250 250 250;
-    --space-muted: 150 150 160;
-    --space-border: 40 40 45;
-    --space-primary: 0 230 118;
-    --space-primary-dark: 0 170 85;
-    --space-primary-light: 100 255 160;
-    --space-danger: 255 60 80;
-    --space-success: 0 230 118;
-    --space-yellow: 255 200 0;
+  :root {
+    --space-bg: 245 247 242;
+    --space-card: 255 255 255;
+    --space-card2: 236 244 204;
+    --space-text: 34 50 28;
+    --space-muted: 123 160 108;
+    --space-border: 198 233 188;
+    --space-primary: 123 160 108;
+    --space-primary-dark: 94 125 80;
+    --space-primary-light: 165 204 144;
+    --space-danger: 224 82 82;
+    --space-success: 61 153 112;
+    --space-yellow: 212 172 13;
+  }
+
+  .dark {
+    --space-bg: 11 17 14;
+    --space-card: 19 28 23;
+    --space-card2: 29 42 35;
+    --space-text: 240 244 238;
+    --space-muted: 140 166 128;
+    --space-border: 42 61 49;
+    --space-primary: 165 204 144;
+    --space-primary-dark: 123 160 108;
+    --space-primary-light: 198 233 188;
+    --space-danger: 239 68 68;
+    --space-success: 52 211 153;
+    --space-yellow: 250 204 21;
   }
 
   * {
@@ -32,10 +47,10 @@
 
   body {
     @apply bg-space-bg text-space-text font-sans;
-    background-image: 
-      radial-gradient(circle at 15% 50%, rgba(var(--space-primary), 0.05), transparent 25%),
-      radial-gradient(circle at 85% 30%, rgba(var(--space-primary-dark), 0.08), transparent 25%);
-    background-color: rgb(var(--space-bg));
+    background-image:
+      radial-gradient(circle at 50% 0%, rgba(var(--space-card2), 0.5) 0%, transparent 70%),
+      radial-gradient(circle at 85% 20%, rgba(var(--space-primary-light), 0.12) 0%, transparent 50%),
+      radial-gradient(circle at 15% 80%, rgba(var(--space-primary), 0.06) 0%, transparent 50%);
     background-attachment: fixed;
   }
 }
@@ -46,24 +61,22 @@
      BOTONES - Más acolchados y premium
      ═══════════════════════════════════════════════ */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-8 py-4 font-extrabold text-xs uppercase tracking-widest rounded-2xl transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed select-none relative overflow-hidden;
-    background: rgb(var(--space-primary));
+    @apply inline-flex items-center justify-center gap-2 px-8 py-4 font-extrabold text-xs uppercase tracking-widest rounded-2xl transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed select-none;
+    background: linear-gradient(135deg, rgb(var(--space-primary-light)) 0%, rgb(var(--space-primary)) 100%);
     color: rgb(var(--space-bg));
-    box-shadow: 0 0 20px rgba(var(--space-primary), 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    box-shadow:
+      0 4px 16px rgba(var(--space-primary), 0.3),
+      0 2px 6px rgba(var(--space-primary-dark), 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
     border: none;
   }
 
-  .btn-primary::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(0,0,0,0.2) 100%);
-    pointer-events: none;
-  }
-
   .btn-primary:hover {
-    background: rgb(var(--space-primary-light));
-    box-shadow: 0 0 30px rgba(var(--space-primary), 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    background: linear-gradient(135deg, rgb(var(--space-primary)) 0%, rgb(var(--space-primary-dark)) 100%);
+    box-shadow:
+      0 8px 24px rgba(var(--space-primary), 0.4),
+      0 4px 10px rgba(var(--space-primary-dark), 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
     transform: translateY(-2px);
   }
 
@@ -119,11 +132,12 @@
      TARJETAS - Radio máximo, sombras suaves
      ═══════════════════════════════════════════════ */
   .card {
-    @apply bg-space-card/80 border border-white/5 backdrop-blur-xl;
+    @apply bg-space-card border border-space-border;
     border-radius: 2.5rem;
     box-shadow:
-      0 8px 32px 0 rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+      0 4px 16px -2px rgba(var(--space-text), 0.04),
+      0 12px 24px -6px rgba(var(--space-text), 0.03),
+      0 2px 4px -1px rgba(var(--space-text), 0.02);
     transition: box-shadow 0.4s ease, transform 0.3s ease, border-color 0.3s ease;
   }
 
@@ -196,14 +210,16 @@
      TÍTULOS - Hero con impacto máximo
      ═══════════════════════════════════════════════ */
   .hero-title {
-    @apply text-5xl md:text-7xl font-black tracking-tighter leading-[0.95] text-transparent bg-clip-text;
-    background-image: linear-gradient(to right, rgb(255,255,255), rgb(150,150,150));
-    letter-spacing: -0.04em;
+    @apply text-5xl md:text-7xl font-extrabold tracking-tighter leading-[0.95] text-space-text;
+    letter-spacing: -0.03em;
   }
 
   .page-title {
-    @apply text-3xl font-black text-transparent bg-clip-text tracking-tight;
-    background-image: linear-gradient(to right, rgb(255,255,255), rgb(150,150,150));
+    @apply text-3xl font-extrabold text-space-text tracking-tight;
+    background: linear-gradient(135deg, rgb(var(--space-text)) 0%, rgb(var(--space-primary-dark)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .page-subtitle {
