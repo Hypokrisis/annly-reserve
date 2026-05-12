@@ -306,8 +306,8 @@ function Home() {
         }
       }}
       className={`relative flex-shrink-0 w-full sm:w-auto flex-1 min-w-[200px] rounded-[2.5rem] overflow-hidden p-7 flex flex-col items-start justify-between transition-all duration-500 hover:scale-[1.03] border-2 ${activeMood === mood.id
-          ? 'border-space-primary shadow-2xl shadow-space-primary/15 bg-gradient-to-br from-space-card2 to-white ring-4 ring-space-primary/10'
-          : 'border-space-border/60 bg-white shadow-sm hover:shadow-xl hover:border-space-primary/20'
+        ? 'border-space-primary shadow-2xl shadow-space-primary/15 bg-gradient-to-br from-space-card2 to-space-card ring-4 ring-space-primary/10'
+        : 'border-space-border/60 bg-space-card shadow-sm hover:shadow-xl hover:border-space-primary/20'
         }`}
     >
       <div className="flex items-center justify-between w-full mb-5">
@@ -344,7 +344,7 @@ function Home() {
       {/* Header Pill */}
       <nav className="fixed w-full z-50 top-4 px-4 sm:top-6">
         <div className="max-w-7xl mx-auto flex justify-center">
-          <div className="pill-nav flex justify-between items-center w-full max-w-[95%] sm:max-w-none px-5 sm:px-6 h-16 sm:h-[4.5rem] rounded-full backdrop-blur-2xl bg-white/80 border-2 border-space-border/40 shadow-xl shadow-space-primary/5 hover:shadow-2xl hover:border-space-primary/20 transition-all duration-500">
+          <div className="pill-nav flex justify-between items-center w-full max-w-[95%] sm:max-w-none px-5 sm:px-6 h-16 sm:h-[4.5rem] rounded-full backdrop-blur-2xl bg-space-card/80 border-2 border-space-border/40 shadow-xl shadow-space-primary/5 hover:shadow-2xl hover:border-space-primary/20 transition-all duration-500">
             {/* Logo */}
             <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <div className="w-11 h-11 sm:w-[3.2rem] sm:h-[3.2rem] bg-gradient-to-br from-space-primary-light to-space-primary rounded-2xl flex items-center justify-center text-white shadow-xl shadow-space-primary/20 group-hover:scale-110 group-hover:shadow-2xl group-hover:shadow-space-primary/30 transition-all duration-500 overflow-hidden relative">
@@ -379,12 +379,12 @@ function Home() {
                     onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
                     className="flex items-center gap-2 p-1 rounded-full hover:bg-space-bg transition border-2 border-transparent hover:border-space-border"
                   >
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-space-primary-light to-space-primary text-white rounded-2xl flex items-center justify-center font-extrabold text-sm border-2 border-space-primary/20 shadow-lg shadow-space-primary/20">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-space-primary-light to-space-primary text-space-bg rounded-2xl flex items-center justify-center font-extrabold text-sm border-2 border-space-primary/20 shadow-lg shadow-space-primary/20">
                       {user.email?.[0].toUpperCase()}
                     </div>
                   </button>
                   {isAccountMenuOpen && (
-                    <div className="absolute right-0 mt-3 w-72 bg-white rounded-[2.5rem] shadow-2xl border-2 border-space-border/30 overflow-hidden py-1 z-50 animate-scale-in backdrop-blur-xl">
+                    <div className="absolute right-0 mt-3 w-72 bg-space-card rounded-[2.5rem] shadow-2xl border-2 border-space-border/30 overflow-hidden py-1 z-50 animate-scale-in backdrop-blur-xl">
                       <div className="px-6 py-6 border-b-2 border-space-border/30 bg-space-bg flex justify-between items-center">
                         <div>
                           <p className="text-[10px] text-space-muted font-extrabold uppercase tracking-widest">Cuenta</p>
@@ -407,7 +407,7 @@ function Home() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <Link to="/login" className="text-[10px] sm:text-xs font-extrabold text-space-text hover:text-white hover:bg-space-text transition-all duration-300 px-6 py-3 rounded-full border-2 border-space-text uppercase tracking-widest hover:shadow-xl active:scale-95">
+                  <Link to="/login" className="text-[10px] sm:text-xs font-extrabold text-space-text hover:text-space-bg hover:bg-space-text transition-all duration-300 px-6 py-3 rounded-full border-2 border-space-text uppercase tracking-widest hover:shadow-xl active:scale-95">
                     Acceder
                   </Link>
                   <Link to="/signup" className="btn-primary py-3 px-6 text-[10px] sm:text-xs uppercase tracking-widest shadow-xl shadow-space-primary/25 hidden xs:flex">
@@ -428,19 +428,19 @@ function Home() {
             <button
               onClick={handleGeoLocation}
               className={`inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl text-[10px] font-extrabold uppercase tracking-widest mb-8 transition-all duration-500 ${sortByDistance
-                  ? 'bg-gradient-to-r from-space-primary to-space-primary-dark text-white shadow-xl shadow-space-primary/30'
-                  : 'bg-space-primary/8 text-space-primary hover:bg-space-primary/15 hover:shadow-lg'
+                ? 'bg-gradient-to-r from-space-primary to-space-primary-dark text-white shadow-xl shadow-space-primary/30'
+                : 'bg-space-primary/8 text-space-primary hover:bg-space-primary/15 hover:shadow-lg'
                 }`}
             >
               <MapPin size={13} className={isLocating ? 'animate-bounce' : ''} />
               <span>{isLocating ? 'Ubicando...' : sortByDistance ? 'Cerca de ti: ACTIVADO' : '¿Usar mi ubicación?'}</span>
             </button>
-            <h1 className="hero-title text-6xl sm:text-7xl md:text-8xl lg:text-9xl mb-8 tracking-tight leading-[0.9]">
-              RESERVA TU <br />
-              <span className="bg-gradient-to-r from-space-primary-light to-space-primary bg-clip-text text-transparent">PRÓXIMO NIVEL</span>
+            <h1 className="hero-title text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-6 tracking-tight leading-[1.05]">
+              ENCUENTRA Y RESERVA <br />
+              <span className="bg-gradient-to-r from-space-primary-light to-space-primary bg-clip-text text-transparent">LOS MEJORES SALONES</span>
             </h1>
-            <p className="text-sm sm:text-lg text-space-muted font-bold uppercase tracking-[0.2em] max-w-2xl bg-space-card2/30 px-6 py-3 rounded-full">
-              Sin fricción. Sin esperas. Solo estilo.
+            <p className="text-sm sm:text-lg text-space-muted font-bold max-w-2xl bg-space-card2/30 px-6 py-4 rounded-3xl leading-relaxed">
+              Spacey es la plataforma premium que conecta a profesionales de la belleza con clientes que valoran su tiempo. Descubre barberías y salones top, reserva al instante y gestiona tus citas sin fricción.
             </p>
           </div>
 
@@ -449,16 +449,16 @@ function Home() {
             <div className="mb-12 animate-fade-in">
               <Link
                 to="/how-it-works"
-                className="group flex items-center justify-between gap-6 bg-white border-2 border-space-primary/15 hover:border-space-primary rounded-[2.5rem] p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-space-primary/10 w-full max-w-3xl"
+                className="group flex items-center justify-between gap-6 bg-space-card border-2 border-space-primary/15 hover:border-space-primary rounded-[2.5rem] p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-space-primary/10 w-full max-w-3xl"
               >
                 <div className="flex items-center gap-5">
                   <div className="w-14 h-14 bg-gradient-to-br from-space-primary-light to-space-primary rounded-2xl flex items-center justify-center flex-shrink-0 shadow-xl group-hover:scale-110 group-hover:shadow-2xl transition-all duration-500">
-                    <Scissors size={22} className="text-white" />
+                    <Scissors size={22} className="text-space-bg" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-extrabold text-space-primary uppercase tracking-[0.3em] mb-1">¿Tienes un negocio?</p>
-                    <p className="text-base font-extrabold text-space-text leading-tight">Digitaliza tu barbería en 5 minutos</p>
-                    <p className="text-[11px] text-space-muted font-semibold mt-1">Reservas online + WhatsApp automático</p>
+                    <p className="text-[10px] font-extrabold text-space-primary uppercase tracking-[0.3em] mb-1">Únete como Profesional</p>
+                    <p className="text-base font-extrabold text-space-text leading-tight">Digitaliza tu agenda en minutos</p>
+                    <p className="text-[11px] text-space-muted font-semibold mt-1">Gestión automática y notificaciones por WhatsApp</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
@@ -480,10 +480,10 @@ function Home() {
               </div>
               <button
                 onClick={() => navigate(`/book/${(lastAppointment as any).business?.slug}`)}
-                className="w-full bg-white border-2 border-space-primary/20 p-7 rounded-[2.5rem] flex items-center justify-between hover:border-space-primary hover:shadow-2xl hover:shadow-space-primary/15 transition-all duration-500 group"
+                className="w-full bg-space-card border-2 border-space-primary/20 p-7 rounded-[2.5rem] flex items-center justify-between hover:border-space-primary hover:shadow-2xl hover:shadow-space-primary/15 transition-all duration-500 group"
               >
                 <div className="flex items-center gap-5 text-left">
-                  <div className="w-[4.5rem] h-[4.5rem] bg-gradient-to-br from-space-primary-light to-space-primary rounded-2xl flex items-center justify-center text-white font-extrabold text-3xl shadow-2xl group-hover:scale-110 transition-all duration-500">
+                  <div className="w-[4.5rem] h-[4.5rem] bg-gradient-to-br from-space-primary-light to-space-primary rounded-2xl flex items-center justify-center text-space-bg font-extrabold text-3xl shadow-2xl group-hover:scale-110 transition-all duration-500">
                     {(lastAppointment as any).business?.name?.[0].toUpperCase() || 'B'}
                   </div>
                   <div>
@@ -562,7 +562,7 @@ function Home() {
               <div className="bg-gradient-to-br from-space-primary-light to-space-primary p-3 rounded-2xl shadow-xl shadow-space-primary/25"><Calendar size={22} className="text-white" /></div>
               <h2 className="text-3xl font-extrabold text-space-text tracking-tight">Mis Próximas Citas</h2>
             </div>
-            <div className="bg-white border-2 border-space-border/40 rounded-[2.5rem] shadow-2xl p-8 md:p-10">
+            <div className="bg-space-card border-2 border-space-border/40 rounded-[2.5rem] shadow-2xl p-8 md:p-10">
               {loadingApts ? (
                 <div className="py-12 flex justify-center"><LoadingSpinner /></div>
               ) : (
@@ -572,8 +572,8 @@ function Home() {
                       <div className="absolute -right-6 -top-6 w-28 h-28 bg-space-primary/5 rounded-full blur-[25px] pointer-events-none group-hover:bg-space-primary/10 transition-colors duration-500"></div>
                       <div className="mb-5">
                         <div className="flex items-center gap-2.5 mb-4">
-                          <span className="text-[10px] font-extrabold text-space-text uppercase tracking-widest px-4 py-1.5 bg-white rounded-xl border-2 border-space-border/40 shadow-sm truncate max-w-[150px]">{apt.business?.name}</span>
-                          {apt.statusBadge === 'today' && <span className="text-[10px] font-extrabold text-white uppercase tracking-widest px-4 py-1.5 bg-space-danger rounded-xl shadow-lg">Hoy</span>}
+                          <span className="text-[10px] font-extrabold text-space-text uppercase tracking-widest px-4 py-1.5 bg-space-card rounded-xl border-2 border-space-border/40 shadow-sm truncate max-w-[150px]">{apt.business?.name}</span>
+                          {apt.statusBadge === 'today' && <span className="text-[10px] font-extrabold text-space-bg uppercase tracking-widest px-4 py-1.5 bg-space-danger rounded-xl shadow-lg">Hoy</span>}
                         </div>
                         <h4 className="font-extrabold text-lg mb-5 text-space-text leading-tight">{apt.service_name}</h4>
                         <div className="flex flex-col gap-2.5">
@@ -595,7 +595,7 @@ function Home() {
         {error && <div className="bg-space-danger/5 border-2 border-space-danger/20 text-space-danger px-8 py-5 rounded-[2rem] mb-14 shadow-sm text-center font-bold text-sm tracking-wide">⚠️ {error}</div>}
 
         {loading ? (
-          <div className="bg-white rounded-[3rem] p-20 shadow-2xl border-2 border-space-border/30 flex flex-col items-center justify-center min-h-[400px]">
+          <div className="bg-space-card rounded-[3rem] p-20 shadow-2xl border-2 border-space-border/30 flex flex-col items-center justify-center min-h-[400px]">
             <LoadingSpinner />
             <p className="text-space-primary mt-8 uppercase tracking-widest text-xs font-extrabold animate-pulse">Cargando profesionales...</p>
           </div>
@@ -647,12 +647,12 @@ function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="mt-40 border-t-2 border-space-border/30 pt-16 pb-10 bg-white relative z-10 w-full">
+      <footer className="mt-40 border-t-2 border-space-border/30 pt-16 pb-10 bg-space-card relative z-10 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="text-center md:text-left">
               <div className="flex items-center gap-4 justify-center md:justify-start">
-                <div className="w-14 h-14 bg-gradient-to-br from-space-text to-space-primary-dark rounded-2xl flex items-center justify-center text-white shadow-2xl overflow-hidden relative">
+                <div className="w-14 h-14 bg-gradient-to-br from-space-text to-space-primary-dark rounded-2xl flex items-center justify-center text-space-bg shadow-2xl overflow-hidden relative">
                   <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                 </div>
                 <span className="text-4xl font-extrabold tracking-tight text-space-text">Spacey</span>
@@ -671,10 +671,10 @@ function Home() {
       {selectedBusinessDetails && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 animate-fade-in">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-xl" onClick={() => setSelectedBusinessDetails(null)}></div>
-          <div className="relative w-full max-w-3xl bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border-2 border-space-border/20 animate-scale-in">
+          <div className="relative w-full max-w-3xl bg-space-card rounded-[2.5rem] overflow-hidden shadow-2xl border-2 border-space-border/20 animate-scale-in">
             <button
               onClick={() => setSelectedBusinessDetails(null)}
-              className="absolute top-5 right-5 z-50 w-11 h-11 bg-white/90 backdrop-blur-xl rounded-2xl border-2 border-space-border/40 flex items-center justify-center text-space-text hover:bg-white hover:shadow-xl transition-all duration-300"
+              className="absolute top-5 right-5 z-50 w-11 h-11 bg-space-card/90 backdrop-blur-xl rounded-2xl border-2 border-space-border/40 flex items-center justify-center text-space-text hover:bg-space-card hover:shadow-xl transition-all duration-300"
             >
               <X size={22} />
             </button>
@@ -687,7 +687,7 @@ function Home() {
               />
               <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
               <div className="absolute bottom-8 left-10 flex items-end gap-7">
-                <div className="w-28 h-28 rounded-[2rem] bg-white p-1.5 shadow-2xl border-2 border-white/30 overflow-hidden">
+                <div className="w-28 h-28 rounded-[2rem] bg-space-card p-1.5 shadow-2xl border-2 border-space-border/30 overflow-hidden">
                   <img
                     src={selectedBusinessDetails.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedBusinessDetails.name)}&background=1a2e28&color=fff`}
                     className="w-full h-full object-cover rounded-[1.7rem]"
