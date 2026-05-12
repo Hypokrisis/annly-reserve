@@ -63,11 +63,11 @@
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-8 py-4 font-extrabold text-xs uppercase tracking-widest rounded-2xl transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed select-none;
     background: linear-gradient(135deg, rgb(var(--space-primary-light)) 0%, rgb(var(--space-primary)) 100%);
-    color: rgb(var(--space-bg));
+    color: white;
     box-shadow:
       0 4px 16px rgba(var(--space-primary), 0.3),
       0 2px 6px rgba(var(--space-primary-dark), 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
     border: none;
   }
 
@@ -76,7 +76,7 @@
     box-shadow:
       0 8px 24px rgba(var(--space-primary), 0.4),
       0 4px 10px rgba(var(--space-primary-dark), 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
   }
 
@@ -107,13 +107,13 @@
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 px-8 py-4 font-extrabold text-xs uppercase tracking-widest rounded-2xl transition-all duration-300 active:scale-95 select-none;
     background: rgb(var(--space-danger));
-    color: rgb(var(--space-bg));
-    box-shadow: 0 4px 16px rgba(var(--space-danger), 0.3);
+    color: white;
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
   }
 
   .btn-danger:hover {
-    background: linear-gradient(135deg, rgb(var(--space-danger)) 0%, #b91c1c 100%);
-    box-shadow: 0 8px 24px rgba(var(--space-danger), 0.4);
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
     transform: translateY(-2px);
   }
 
@@ -135,9 +135,9 @@
     @apply bg-space-card border border-space-border;
     border-radius: 2.5rem;
     box-shadow:
-      0 4px 16px -2px rgba(var(--space-text), 0.04),
-      0 12px 24px -6px rgba(var(--space-text), 0.03),
-      0 2px 4px -1px rgba(var(--space-text), 0.02);
+      0 4px 16px -2px rgba(34, 50, 28, 0.04),
+      0 12px 24px -6px rgba(34, 50, 28, 0.03),
+      0 2px 4px -1px rgba(34, 50, 28, 0.02);
     transition: box-shadow 0.4s ease, transform 0.3s ease, border-color 0.3s ease;
   }
 
@@ -148,8 +148,8 @@
   .card-hover:hover {
     border-color: rgba(var(--space-primary), 0.3);
     box-shadow:
-      0 8px 30px -4px rgba(var(--space-text), 0.08),
-      0 20px 40px -8px rgba(var(--space-text), 0.06),
+      0 8px 30px -4px rgba(34, 50, 28, 0.08),
+      0 20px 40px -8px rgba(34, 50, 28, 0.06),
       0 0 0 1px rgba(var(--space-primary), 0.08),
       0 0 40px -10px rgba(var(--space-primary-light), 0.25);
     transform: translateY(-3px);
@@ -159,15 +159,15 @@
      INPUTS - Enfocados con glow verde
      ═══════════════════════════════════════════════ */
   .input-field {
-    @apply w-full px-5 py-3.5 bg-space-card border border-space-border rounded-2xl text-space-text placeholder-space-muted/50 transition-all duration-300 outline-none text-sm font-medium;
-    box-shadow: 0 1px 3px rgba(var(--space-text), 0.02);
+    @apply w-full px-5 py-3.5 bg-white border border-space-border rounded-2xl text-space-text placeholder-space-muted/50 transition-all duration-300 outline-none text-sm font-medium;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   }
 
   .input-field:focus {
     @apply border-space-primary;
     box-shadow:
       0 0 0 4px rgba(var(--space-primary), 0.1),
-      0 1px 3px rgba(var(--space-text), 0.03);
+      0 1px 3px rgba(0, 0, 0, 0.03);
   }
 
   .input-label {
@@ -242,7 +242,7 @@
 
 @layer utilities {
   .glass-effect {
-    background: rgba(var(--space-card), 0.75);
+    background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(var(--space-border), 0.5);
