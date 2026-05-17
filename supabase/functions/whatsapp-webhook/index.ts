@@ -58,6 +58,13 @@ function minutesToTime(minutes: number): string {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 }
 
+function extractTimeFromResponse(text: string): string | null {
+    const match = text.match(/\b([0-1]?[0-9]|2[0-3]):[0-5][0-9]\b/);
+    if (!match) return null;
+    const [h, m] = match[0].split(':');
+    return `${h.padStart(2, '0')}:${m}`;
+}
+
 // ── Helper to calculate available 30-minute time slots for the next 3 days ──
 async function calculateFreeSlots(supabase: any, businessId: string): Promise<string> {
     try {
@@ -115,6 +122,7 @@ async function calculateFreeSlots(supabase: any, businessId: string): Promise<st
         const standardEnd = "18:00";
 
         let agendaText = "";
+        const allAvailableSlots: string[] = [];
 
         // Calculate current local Puerto Rico AST (UTC-4) time to filter past slots for today
         const nowUtc = new Date();
@@ -174,6 +182,8 @@ async function calculateFreeSlots(supabase: any, businessId: string): Promise<st
 
                 if (isOccupied) continue;
 
+                allAvailableSlots.push(slotTimeStr);
+
                 // Group slots into shifts
                 if (min >= 8 * 60 && min < 12 * 60) {
                     slotsManana.push(slotTimeStr);
@@ -190,10 +200,10 @@ async function calculateFreeSlots(supabase: any, businessId: string): Promise<st
             agendaText += `  🌙 Noche (6pm - 9pm): ${slotsNoche.length > 0 ? slotsNoche.join(', ') : 'Sin disponibilidad'}\n`;
         }
 
-        return agendaText;
+        return { agendaText, allAvailableSlots };
     } catch (err) {
         console.error("Error in calculateFreeSlots:", err.message);
-        return 'Consulte nuestro enlace de reservas para ver los horarios en tiempo real.';
+        return { agendaText: 'Consulte nuestro enlace de reservas para ver los horarios en tiempo real.', allAvailableSlots: [] };
     }
 }
 
@@ -335,7 +345,7 @@ serve(async (req) => {
             : '• Corte de Cabello Masculino: $20\n• Afeitado y Delineado Clásico: $15\n• Lavado y Styling Premium: $25';
 
         // Load Agenda availability for next 3 days
-        const availability = await calculateFreeSlots(supabase, biz.id);
+        const { agendaText, allAvailableSlots } = await calculateFreeSlots(supabase, biz.id);
 
         // 8. Compile System instructions and inject dynamic context
         const userPrompt = biz.whatsapp_bot_prompt || `Eres un asistente automatizado servicial para la barbería ${biz.name}. Tu objetivo es convencer al cliente de reservar y enviarle su link.`;
@@ -354,7 +364,7 @@ A continuación tienes la información real del negocio de la base de datos para
 ${serviceTextList}
 
 DISPONIBILIDAD REAL DE HOY Y PRÓXIMOS 3 DÍAS:
-${availability}
+${agendaText}
 
 REGLAS DE RESPUESTA PARA HORARIOS:
 1. Si el cliente pregunta por horarios, muéstrale máximo 5 opciones del turno que pidió (mañana/tarde/noche) de los espacios inyectados arriba.
@@ -413,6 +423,14 @@ Solo toma 30 segundos ✅"
                 aiResponse = `¡Hola! Te escribe el asistente de ${biz.name} 💈. Para darte la mejor atención de inmediato, te invito a consultar precios y reservar tu cita directamente en este enlace: ${bookingLink}`;
                 if (offer) aiResponse += `\n\n¡Aprovecha nuestra promo activa: ${offer}!`;
             }
+        }
+
+        // 9.5 Safe Guardrail: Verify if GPT hallucinated a time slot that is not actually available
+        const horaEnRespuesta = extractTimeFromResponse(aiResponse);
+        const uniqueAvailableSlots = Array.from(new Set(allAvailableSlots));
+        if (horaEnRespuesta && !uniqueAvailableSlots.includes(horaEnRespuesta)) {
+            console.warn(`[Guardrail] AI hallucinated slot ${horaEnRespuesta}. Reverting to standard safe options.`);
+            aiResponse = `Lo siento, ese horario no está disponible por el momento. Los horarios libres más cercanos son: ${uniqueAvailableSlots.slice(0, 5).join(', ')}. Puedes reservar directamente en nuestro portal de reservas en segundos 👇\n${bookingLink}`;
         }
 
         // 10. Send message using the Gateway API
