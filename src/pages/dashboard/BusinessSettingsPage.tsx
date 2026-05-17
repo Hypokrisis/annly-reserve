@@ -706,6 +706,59 @@ export default function BusinessSettingsPage() {
                             </div>
                         </div>
 
+                        {/* ── GUÍA DE ACTIVACIÓN DEL BOT ── */}
+                        <div className="mt-14 pt-10 border-t border-white/5">
+                            <h3 className="text-xs font-black text-space-primary uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                <Sparkles size={14} className="text-space-primary" />
+                                Guía Rápida: ¿Cómo funciona tu Bot en Producción?
+                            </h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Step 1 */}
+                                <div className="p-5 bg-white/5 rounded-2xl border border-white/5 relative overflow-hidden group/step">
+                                    <div className="absolute -right-4 -bottom-4 text-4xl opacity-10 font-black font-mono group-hover/step:scale-110 transition-all duration-300">01</div>
+                                    <div className="w-8 h-8 rounded-xl bg-space-primary/20 text-space-primary flex items-center justify-center font-black text-xs mb-3">
+                                        🤖
+                                    </div>
+                                    <h4 className="text-[10px] font-black text-white uppercase tracking-wider mb-2">1. Configura el Tono</h4>
+                                    <p className="text-[9px] text-white/50 font-semibold uppercase leading-relaxed">
+                                        Selecciona la personalidad que prefieras arriba. El simulador del iPhone a la derecha se actualizará al instante para mostrarte cómo hablará el bot a tus clientes.
+                                    </p>
+                                </div>
+
+                                {/* Step 2 */}
+                                <div className="p-5 bg-white/5 rounded-2xl border border-white/5 relative overflow-hidden group/step">
+                                    <div className="absolute -right-4 -bottom-4 text-4xl opacity-10 font-black font-mono group-hover/step:scale-110 transition-all duration-300">02</div>
+                                    <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center font-black text-xs mb-3">
+                                        📱
+                                    </div>
+                                    <h4 className="text-[10px] font-black text-white uppercase tracking-wider mb-2">2. Escanea el Código QR</h4>
+                                    <p className="text-[9px] text-white/50 font-semibold uppercase leading-relaxed">
+                                        En tu servidor en vivo, haz clic en "Vincular Celular". Escanea el código QR desde tu WhatsApp móvil (Dispositivos Vinculados) igual que inicias sesión en WhatsApp Web.
+                                    </p>
+                                </div>
+
+                                {/* Step 3 */}
+                                <div className="p-5 bg-white/5 rounded-2xl border border-white/5 relative overflow-hidden group/step">
+                                    <div className="absolute -right-4 -bottom-4 text-4xl opacity-10 font-black font-mono group-hover/step:scale-110 transition-all duration-300">03</div>
+                                    <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-500 flex items-center justify-center font-black text-xs mb-3">
+                                        🚀
+                                    </div>
+                                    <h4 className="text-[10px] font-black text-white uppercase tracking-wider mb-2">3. Piloto Automático 24/7</h4>
+                                    <p className="text-[9px] text-white/50 font-semibold uppercase leading-relaxed">
+                                        ¡Listo! El bot responderá dudas de precios, ubicación y enviará el link de reserva de forma 100% autónoma. ¡Tú solo te encargas de recortar el cabello!
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="mt-6 p-4 bg-space-primary/10 rounded-xl border border-space-primary/20 flex items-center gap-3">
+                                <span className="text-base">💡</span>
+                                <p className="text-[9px] text-space-primary font-black uppercase tracking-wider leading-relaxed">
+                                    Tip Profesional: Desde la sección de <strong className="text-white">Clientes</strong> ya puedes usar los recordatorios manuales pre-rellenados hoy mismo de forma 100% gratuita y sin configuraciones complejas.
+                                </p>
+                            </div>
+                        </div>
+
                     </div>
                 </section>
             </div>
