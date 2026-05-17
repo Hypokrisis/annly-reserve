@@ -47,42 +47,152 @@ async function verifyHMAC(bodyText: string, signature: string | null, secret: st
     }
 }
 
-// ── Helper to retrieve available time slots for the next 3 days ──
-async function getAvailableSlots(supabase: any, businessId: string): Promise<string> {
+function timeToMinutes(timeStr: string): number {
+    const parts = timeStr.split(':');
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1] || '0', 10);
+}
+
+function minutesToTime(minutes: number): string {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
+
+// ── Helper to calculate available 30-minute time slots for the next 3 days ──
+async function calculateFreeSlots(supabase: any, businessId: string): Promise<string> {
     try {
-        // Fetch appointments for the next 3 days
-        const today = new Date().toISOString().split('T')[0];
-        const threeDaysLater = new Date();
-        threeDaysLater.setDate(threeDaysLater.getDate() + 3);
-        const limitDate = threeDaysLater.toISOString().split('T')[0];
+        // 1. Fetch appointments for the next 3 days
+        const today = new Date();
+        const limitDate = new Date();
+        limitDate.setDate(today.getDate() + 3);
+
+        // Puerto Rico timezone offset is AST (UTC-4)
+        const astOffset = -4 * 60 * 60 * 1000;
+        
+        const todayStr = new Date(today.getTime() + astOffset).toISOString().split('T')[0];
+        const limitStr = new Date(limitDate.getTime() + astOffset).toISOString().split('T')[0];
 
         const { data: appointments } = await supabase
             .from('appointments')
-            .select('appointment_date, start_time, status')
+            .select('appointment_date, start_time, end_time, status')
             .eq('business_id', businessId)
-            .gte('appointment_date', today)
-            .lte('appointment_date', limitDate)
+            .gte('appointment_date', todayStr)
+            .lte('appointment_date', limitStr)
             .in('status', ['confirmed', 'pending']);
 
-        // Default barber shift hours (9:00 AM to 6:00 PM)
-        const standardSlots = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-        
-        let agenda = '';
-        for (let i = 0; i < 3; i++) {
-            const current = new Date();
-            current.setDate(current.getDate() + i);
-            const dateStr = current.toISOString().split('T')[0];
+        // 2. Fetch business working hours from business_hours or schedules (safeguarded fallback)
+        let activeSchedules: any[] = [];
+        try {
+            const { data: hoursData, error: hoursErr } = await supabase
+                .from('business_hours')
+                .select('day_of_week, start_time, end_time')
+                .eq('business_id', businessId);
+            if (!hoursErr && hoursData && hoursData.length > 0) {
+                activeSchedules = hoursData;
+            } else {
+                throw new Error("business_hours empty");
+            }
+        } catch {
+            try {
+                const { data: barbers } = await supabase.from('barbers').select('id').eq('business_id', businessId);
+                const barberIds = barbers?.map((b: any) => b.id) || [];
+                if (barberIds.length > 0) {
+                    const { data: scheds } = await supabase.from('schedules')
+                        .select('day_of_week, start_time, end_time')
+                        .in('barber_id', barberIds)
+                        .eq('is_active', true);
+                    if (scheds && scheds.length > 0) {
+                        activeSchedules = scheds;
+                    }
+                }
+            } catch (e) {
+                console.warn("Failed schedules lookup fallback:", e.message);
+            }
+        }
+
+        // Standard default operating hours if no database config is found (Mon-Sat 9am to 6pm)
+        const standardStart = "09:00";
+        const standardEnd = "18:00";
+
+        let agendaText = "";
+
+        // Calculate current local Puerto Rico AST (UTC-4) time to filter past slots for today
+        const nowUtc = new Date();
+        const prTime = new Date(nowUtc.getTime() + astOffset);
+        const curHour = prTime.getUTCHours();
+        const curMin = prTime.getUTCMinutes();
+        const curMinutes = curHour * 60 + curMin;
+
+        for (let i = 0; i < 4; i++) {
+            const currentDay = new Date(today.getTime() + (i * 24 * 60 * 60 * 1000));
+            const currentDayAST = new Date(currentDay.getTime() + astOffset);
+            const dateStr = currentDayAST.toISOString().split('T')[0];
+            const dayOfWeek = currentDayAST.getUTCDay(); // 0 = Sunday, 1 = Monday, etc.
+            
             const displayDate = i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : dateStr;
 
-            const occupied = appointments
-                ?.filter((a: any) => a.appointment_date === dateStr)
-                .map((a: any) => a.start_time.substring(0, 5)) || [];
+            // Find matching schedule for this day of week
+            let daySched = activeSchedules.find(s => s.day_of_week === dayOfWeek);
+            
+            // If DB config exists but this day has no active schedule, the shop is CLOSED.
+            if (activeSchedules.length > 0 && !daySched) {
+                agendaText += `📅 ${displayDate} (${dateStr}):\n  CERRADO (No laborable)\n`;
+                continue;
+            }
 
-            const freeSlots = standardSlots.filter(slot => !occupied.includes(slot));
-            agenda += `📅 ${displayDate} (${dateStr}):\n  Libres: ${freeSlots.length > 0 ? freeSlots.join(', ') : 'Agenda Completa'}\n`;
+            const startVal = daySched ? daySched.start_time : standardStart;
+            const endVal = daySched ? daySched.end_time : standardEnd;
+
+            // If using default fallback and it is Sunday, it is closed
+            if (activeSchedules.length === 0 && dayOfWeek === 0) {
+                agendaText += `📅 ${displayDate} (${dateStr}):\n  CERRADO (No laborable)\n`;
+                continue;
+            }
+
+            const startMin = timeToMinutes(startVal);
+            const endMin = timeToMinutes(endVal);
+
+            const slotsManana: string[] = [];
+            const slotsTarde: string[] = [];
+            const slotsNoche: string[] = [];
+
+            for (let min = startMin; min < endMin; min += 30) {
+                // If today, filter out past times
+                if (i === 0 && min <= curMinutes) {
+                    continue;
+                }
+
+                const slotTimeStr = minutesToTime(min);
+
+                // Check if this slot overlaps with any confirmed appointment
+                const isOccupied = appointments?.some((app: any) => {
+                    if (app.appointment_date !== dateStr) return false;
+                    const appStart = timeToMinutes(app.start_time);
+                    const appEnd = timeToMinutes(app.end_time);
+                    return min >= appStart && min < appEnd;
+                });
+
+                if (isOccupied) continue;
+
+                // Group slots into shifts
+                if (min >= 8 * 60 && min < 12 * 60) {
+                    slotsManana.push(slotTimeStr);
+                } else if (min >= 12 * 60 && min < 18 * 60) {
+                    slotsTarde.push(slotTimeStr);
+                } else if (min >= 18 * 60 && min < 21 * 60) {
+                    slotsNoche.push(slotTimeStr);
+                }
+            }
+
+            agendaText += `📅 ${displayDate} (${dateStr}):\n`;
+            agendaText += `  🌅 Mañana (8am - 12pm): ${slotsManana.length > 0 ? slotsManana.join(', ') : 'Sin disponibilidad'}\n`;
+            agendaText += `  ☀️ Tarde (12pm - 6pm): ${slotsTarde.length > 0 ? slotsTarde.join(', ') : 'Sin disponibilidad'}\n`;
+            agendaText += `  🌙 Noche (6pm - 9pm): ${slotsNoche.length > 0 ? slotsNoche.join(', ') : 'Sin disponibilidad'}\n`;
         }
-        return agenda;
-    } catch (e) {
+
+        return agendaText;
+    } catch (err) {
+        console.error("Error in calculateFreeSlots:", err.message);
         return 'Consulte nuestro enlace de reservas para ver los horarios en tiempo real.';
     }
 }
@@ -225,7 +335,7 @@ serve(async (req) => {
             : '• Corte de Cabello Masculino: $20\n• Afeitado y Delineado Clásico: $15\n• Lavado y Styling Premium: $25';
 
         // Load Agenda availability for next 3 days
-        const availability = await getAvailableSlots(supabase, biz.id);
+        const availability = await calculateFreeSlots(supabase, biz.id);
 
         // 8. Compile System instructions and inject dynamic context
         const userPrompt = biz.whatsapp_bot_prompt || `Eres un asistente automatizado servicial para la barbería ${biz.name}. Tu objetivo es convencer al cliente de reservar y enviarle su link.`;
@@ -243,14 +353,20 @@ A continuación tienes la información real del negocio de la base de datos para
 ✂️ CATÁLOGO DE SERVICIOS Y PRECIOS REALES:
 ${serviceTextList}
 
-📅 HORARIOS Y ESPACIOS LIBRES EN LA AGENDA (PRÓXIMOS 3 DÍAS):
+DISPONIBILIDAD REAL DE HOY Y PRÓXIMOS 3 DÍAS:
 ${availability}
 
-REGLAS CRÍTICAS:
-1. Sé conciso, amigable y muy claro. Escribe en formato WhatsApp (usa emojis de forma moderada, pon negritas si es útil).
-2. Convence al cliente de reservar.
-3. Coloca el enlace de reservas de forma elegante.
-4. Si te preguntan disponibilidad de horario, bríndales las opciones de la agenda arriba inyectadas de manera organizada.
+REGLAS DE RESPUESTA PARA HORARIOS:
+1. Si el cliente pregunta por horarios, muéstrale máximo 5 opciones del turno que pidió (mañana/tarde/noche) de los espacios inyectados arriba.
+2. Pregúntale cuál le queda bien.
+3. Cuando el cliente confirme o exprese interés en un horario específico (ej: "las 10:00", "las 3:30 pm", "mañana a la tarde"), respóndele EXACTAMENTE con esta estructura, rellenando los corchetes con los valores de la cita elegida:
+"Perfecto, te apartamos las [HORA] del [FECHA]. Confirma tu cita aquí antes de que se libere el espacio 👇
+${bookingLink}?date=[YYYY-MM-DD]&time=[HH:MM]
+Solo toma 30 segundos ✅"
+4. Nunca inventes horarios que no estén en la lista de disponibilidad real arriba.
+5. Si no hay horarios disponibles en el turno que pidió, díselo claramente y ofrécele el turno más cercano con disponibilidad real.
+6. NO intentes simular o construir una reserva directa en WhatsApp. El enlace dinámico de arriba hace todo el trabajo. La cita solo se consolida en Spacey.
+7. Sé conciso, amigable y muy claro. Escribe en formato WhatsApp (usa emojis de forma moderada, pon negritas si es útil).
 `;
 
         // 9. OpenAI GPT-4o-mini request with robust timeout fallback
