@@ -93,29 +93,32 @@ export default function ClientsPage() {
             return;
         }
         try {
-            // Find the most recent appointment for this client
-            const { data: apt, error } = await supabase
-                .from('appointments')
-                .select('id, business_id')
-                .eq('business_id', business.id)
-                .eq('customer_phone', client.phone)
-                .order('appointment_date', { ascending: false })
-                .limit(1)
-                .single();
+            // Generate templated message based on active business configurations
+            const messageTemplate = (business as any).whatsapp_reminder_template || 
+                "¡Hola {{customer_name}}! Te escribimos de {{business_name}} 💈. Ya llevas un tiempo sin visitarnos. Reserva tu próxima cita aquí: {{booking_link}}";
+            
+            const bookingLink = (business as any).whatsapp_booking_link || `${window.location.origin}/book/${business.slug}`;
+            const offer = (business as any).whatsapp_offer || "";
 
-            if (error || !apt) {
-                toast.error('No se encontró una cita asociada a este cliente para enviar el recordatorio.');
-                return;
+            const formattedMessage = messageTemplate
+                .replace(/{{customer_name}}/g, client.name)
+                .replace(/{{business_name}}/g, business.name)
+                .replace(/{{booking_link}}/g, bookingLink)
+                .replace(/{{offer}}/g, offer);
+
+            // Clean phone number (leave only digits, ensuring country code)
+            let cleanPhone = client.phone.replace(/[^0-9]/g, '');
+            if (cleanPhone.length === 10) {
+                // If it is a 10-digit number (common in Puerto Rico / USA), default to prefix +1
+                cleanPhone = '1' + cleanPhone;
             }
 
-            const { error: rpcError } = await supabase.rpc('force_send_reminder', {
-                p_appointment_id: apt.id
-            });
-
-            if (rpcError) throw rpcError;
-            toast.success(`¡Recordatorio enviado a ${client.name}! Llegará en unos instantes.`);
+            // Open WhatsApp Web or App pre-filled chat
+            const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(formattedMessage)}`;
+            window.open(waUrl, '_blank');
+            toast.success(`Redireccionando a WhatsApp para enviar recordatorio a ${client.name}...`);
         } catch (e: any) {
-            toast.error('Error al enviar recordatorio: ' + e.message);
+            toast.error('Error al generar recordatorio: ' + e.message);
         }
     };
 

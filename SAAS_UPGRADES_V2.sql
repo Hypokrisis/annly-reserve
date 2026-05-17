@@ -14,6 +14,10 @@ ADD COLUMN IF NOT EXISTS has_advanced_reports BOOLEAN DEFAULT false;
 ALTER TABLE public.business_subscriptions 
 ADD COLUMN IF NOT EXISTS whatsapp_messages_sent INTEGER DEFAULT 0;
 
+-- ── 2.5. AGREGAR COLUMNAS A LA TABLA DE NEGOCIOS ──────────────────────────────
+ALTER TABLE public.businesses
+ADD COLUMN IF NOT EXISTS whatsapp_bot_personality TEXT DEFAULT 'quick';
+
 -- ── 3. ACTUALIZAR DETALLES DE LOS PLANES SEGÚN NUEVAS ESPECIFICACIONES ───────────
 -- Starter ($19, 3 Barberos, 150 citas, 0 WA, Stripe deposits)
 -- Essential ($39, 6 Barberos, 500 citas, 400 WA, Stripe deposits, stats)
