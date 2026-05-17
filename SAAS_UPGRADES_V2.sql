@@ -173,3 +173,62 @@ WHERE NOT EXISTS (
     WHERE bs.business_id = b.id
 )
 ON CONFLICT (business_id) DO NOTHING;
+
+
+-- ── 8. SOPORTE DE VINCULACIÓN QR REAL, DEDUPLICACIÓN Y LOGS DE MENSAJES (ASISTENTE IA) ──
+
+-- Estado de vinculación de WhatsApp
+DO $$ BEGIN
+    CREATE TYPE public.whatsapp_status_type AS ENUM ('connected', 'pending_qr', 'disconnected', 'error');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- Columnas robustas para el Asistente IA en la tabla de Negocios (businesses)
+ALTER TABLE public.businesses
+ADD COLUMN IF NOT EXISTS whatsapp_status public.whatsapp_status_type DEFAULT 'disconnected',
+ADD COLUMN IF NOT EXISTS whatsapp_bot_prompt TEXT,
+ADD COLUMN IF NOT EXISTS whatsapp_instance_id TEXT,
+ADD COLUMN IF NOT EXISTS whatsapp_instance_token TEXT,
+ADD COLUMN IF NOT EXISTS whatsapp_gateway_url TEXT,
+ADD COLUMN IF NOT EXISTS whatsapp_webhook_secret TEXT,
+ADD COLUMN IF NOT EXISTS daily_msg_count INTEGER DEFAULT 0;
+
+-- Tabla para evitar respuestas duplicadas (Deduplicación)
+CREATE TABLE IF NOT EXISTS public.processed_messages (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    message_id TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.processed_messages ENABLE ROW LEVEL SECURITY;
+
+-- Solo accesible por el sistema (Service Role)
+DROP POLICY IF EXISTS "Deny all public access to processed messages" ON public.processed_messages;
+CREATE POLICY "Deny all public access to processed messages"
+    ON public.processed_messages USING (false) WITH CHECK (false);
+
+-- Tabla para bitácora y logs de chats del Asistente IA
+CREATE TABLE IF NOT EXISTS public.bot_message_logs (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    business_id UUID REFERENCES public.businesses(id) ON DELETE CASCADE,
+    from_number TEXT NOT NULL,
+    user_message TEXT NOT NULL,
+    bot_response TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.bot_message_logs ENABLE ROW LEVEL SECURITY;
+
+-- Solo el dueño de la barbería puede ver sus logs
+DROP POLICY IF EXISTS "Owners can view their own bot logs" ON public.bot_message_logs;
+CREATE POLICY "Owners can view their own bot logs"
+    ON public.bot_message_logs
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.businesses b
+            WHERE b.id = bot_message_logs.business_id
+            AND b.owner_id = auth.uid()
+        )
+    );
+

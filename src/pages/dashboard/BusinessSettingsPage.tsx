@@ -40,6 +40,7 @@ export default function BusinessSettingsPage() {
         whatsapp_bot_end_hour: '18:00',
         whatsapp_bot_anti_collision: true,
         whatsapp_device_connected: false,
+        whatsapp_bot_prompt: '',
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -87,12 +88,15 @@ export default function BusinessSettingsPage() {
 
             // Personality prefix helper
             const getPersonalityGreeting = () => {
+                const prefix = formData.whatsapp_bot_prompt 
+                    ? `[🧠 Simulación de IA leyendo tu prompt personalizado...]\n\n`
+                    : '';
                 if (formData.whatsapp_bot_personality === 'cool') {
-                    return `¡Qué lo qué mi hermano! 💈 Activo en ${businessName}. ¿Listo para el flow? 😎`;
+                    return `${prefix}¡Qué lo qué mi hermano! 💈 Activo en ${businessName}. ¿Listo para el flow? 😎`;
                 } else if (formData.whatsapp_bot_personality === 'executive') {
-                    return `Estimado cliente, bienvenido al portal oficial de ${businessName}. Es un honor asistirle el día de hoy.`;
+                    return `${prefix}Estimado cliente, bienvenido al portal oficial de ${businessName}. Es un honor asistirle el día de hoy.`;
                 } else {
-                    return `¡Hola! Bienvenido a ${businessName}. ¿En qué te puedo ayudar hoy?`;
+                    return `${prefix}¡Hola! Bienvenido a ${businessName}. ¿En qué te puedo ayudar hoy?`;
                 }
             };
 
@@ -118,6 +122,10 @@ export default function BusinessSettingsPage() {
             };
 
             // Intent mapping
+            const aiPrefix = formData.whatsapp_bot_prompt 
+                ? `[🧠 IA usando tu prompt: "${formData.whatsapp_bot_prompt.substring(0, 30)}..."]\n\n`
+                : '';
+
             if (lower.includes('hola') || lower.includes('buenos') || lower.includes('buenas')) {
                 botText = `${getPersonalityGreeting()}\n\nEscribe "precios", "ubicación", "ofertas" o "reservar" para asistirte.`;
             } else if (lower.includes('precio') || lower.includes('servicio') || lower.includes('cuesta')) {
@@ -125,15 +133,15 @@ export default function BusinessSettingsPage() {
                     ? services.slice(0, 4).map(s => `• ${s.name}: $${s.price}`).join('\n')
                     : '• Corte de Cabello: $20\n• Afeitado Clásico: $15\n• Combo Flow Completo: $30';
                 
-                botText = `Claro, estos son algunos de nuestros servicios principales:\n\n${serviceList}\n\n${getPersonalityBooking()}`;
+                botText = `${aiPrefix}Claro, estos son algunos de nuestros servicios principales:\n\n${serviceList}\n\n${getPersonalityBooking()}`;
             } else if (lower.includes('donde') || lower.includes('ubicacion') || lower.includes('direccion') || lower.includes('como llego')) {
-                botText = `Nos encontramos ubicados en: 📍 ${address}${city ? ', ' + city : ''}.\n\n¡Te esperamos! Recuerda reservar antes para asegurar tu espacio.`;
+                botText = `${aiPrefix}Nos encontramos ubicados en: 📍 ${address}${city ? ', ' + city : ''}.\n\n¡Te esperamos! Recuerda reservar antes para asegurar tu espacio.`;
             } else if (lower.includes('oferta') || lower.includes('promo') || lower.includes('descuento')) {
-                botText = `${getPersonalityOffer()}\n\n${getPersonalityBooking()}`;
+                botText = `${aiPrefix}${getPersonalityOffer()}\n\n${getPersonalityBooking()}`;
             } else if (lower.includes('reserva') || lower.includes('cita') || lower.includes('agendar')) {
-                botText = getPersonalityBooking();
+                botText = `${aiPrefix}${getPersonalityBooking()}`;
             } else {
-                botText = `Entendido. Para cualquier consulta adicional o para agendar de inmediato, puedes usar nuestro portal de reservas en segundos: \n\n🔗 ${bookingLink}\n\n¡Esperamos verte pronto! 💈`;
+                botText = `${aiPrefix}Entendido. Para cualquier consulta adicional o para agendar de inmediato, puedes usar nuestro portal de reservas en segundos: \n\n🔗 ${bookingLink}\n\n¡Esperamos verte pronto! 💈`;
             }
 
             setSimulatorMessages(prev => [...prev, { sender: 'bot', text: botText, time: currentTime }]);
@@ -168,6 +176,7 @@ export default function BusinessSettingsPage() {
                 whatsapp_bot_end_hour: (currentBusiness as any).whatsapp_bot_end_hour || '18:00',
                 whatsapp_bot_anti_collision: (currentBusiness as any).whatsapp_bot_anti_collision ?? true,
                 whatsapp_device_connected: (currentBusiness as any).whatsapp_device_connected ?? false,
+                whatsapp_bot_prompt: (currentBusiness as any).whatsapp_bot_prompt || '',
             });
             if ((currentBusiness as any).whatsapp_device_connected) {
                 setQrSimulatedScan(true);
@@ -257,6 +266,7 @@ export default function BusinessSettingsPage() {
                     whatsapp_bot_end_hour: formData.whatsapp_bot_end_hour,
                     whatsapp_bot_anti_collision: formData.whatsapp_bot_anti_collision,
                     whatsapp_device_connected: formData.whatsapp_device_connected,
+                    whatsapp_bot_prompt: formData.whatsapp_bot_prompt.trim(),
                 })
                 .eq('id', currentBusiness.id);
 
@@ -719,30 +729,79 @@ export default function BusinessSettingsPage() {
                                     </div>
                                 </div>
 
-                                {/* PERSONALITY SELECTOR */}
-                                <div className="space-y-3">
-                                    <label className="text-[9px] font-black text-white/50 uppercase tracking-[0.2em] ml-2 block">Personalidad / Tono del Bot</label>
-                                    <div className="grid grid-cols-3 gap-3">
-                                        {[
-                                            { id: 'quick', name: 'Asistente Rápido', desc: 'Directo y servicial', emoji: '🤖', color: 'border-space-primary/40 bg-space-primary/10 text-space-primary' },
-                                            { id: 'cool', name: 'Barbero Colega', desc: 'Flow y jerga amigable', emoji: '💈', color: 'border-amber-500/40 bg-amber-500/10 text-amber-500' },
-                                            { id: 'executive', name: 'Salón Ejecutivo', desc: 'Elegante y respetuoso', emoji: '👑', color: 'border-purple-500/40 bg-purple-500/10 text-purple-500' },
-                                        ].map(p => (
-                                            <button
-                                                key={p.id}
-                                                type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, whatsapp_bot_personality: p.id }))}
-                                                className={`p-4 rounded-xl border text-left transition-all relative overflow-hidden ${
-                                                    formData.whatsapp_bot_personality === p.id 
-                                                        ? `${p.color} border-2 scale-[1.02] shadow-lg` 
-                                                        : 'border-white/10 hover:border-white/20 bg-white/5 text-white/70'
-                                                }`}
-                                            >
-                                                <span className="text-xl block mb-2">{p.emoji}</span>
-                                                <h4 className="text-[10px] font-black uppercase tracking-wider">{p.name}</h4>
-                                                <p className="text-[8px] opacity-60 font-medium leading-tight mt-1">{p.desc}</p>
-                                            </button>
-                                        ))}
+                                {/* PERSONALITY SELECTOR & AI SYSTEM PROMPT */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between ml-2 mr-1">
+                                        <label className="text-[9px] font-black text-white/50 uppercase tracking-[0.2em] block">
+                                            🧠 Instrucciones de Inteligencia Artificial (Prompt)
+                                        </label>
+                                        <span className="text-[8px] bg-space-primary/10 text-space-primary px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
+                                            GPT-4o-Mini Activo
+                                        </span>
+                                    </div>
+                                    
+                                    <textarea
+                                        name="whatsapp_bot_prompt"
+                                        value={formData.whatsapp_bot_prompt}
+                                        onChange={handleChange}
+                                        rows={4}
+                                        className="w-full px-5 py-3.5 bg-white/5 border-2 border-white/10 rounded-xl text-xs font-medium text-white focus:bg-white/10 focus:border-space-primary transition-all outline-none placeholder:text-white/20 resize-none min-h-[120px]"
+                                        placeholder="Ej: Eres un barbero urbano de Puerto Rico. Hablas con jerga local y flow, convence al cliente de reservar y dile que tenemos café gratis..."
+                                    />
+
+                                    {/* Presets Grid */}
+                                    <div className="space-y-2">
+                                        <p className="text-[8px] font-black text-white/40 uppercase tracking-widest ml-2">¿Prefieres un tono predeterminado? Elige una plantilla:</p>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            {[
+                                                { 
+                                                    id: 'cool', 
+                                                    name: 'Barbero Colega', 
+                                                    desc: 'Con flow y estilo local', 
+                                                    emoji: '💈', 
+                                                    color: 'border-amber-500/40 bg-amber-500/10 text-amber-500',
+                                                    prompt: 'Eres un barbero de total confianza y muy carismático. Hablas con jerga local, flow y estilo amigable (colega, activo, duro). Convence al cliente de agendar un degradado con diseño, recomiéndale nuestros servicios y sé muy entusiasta.'
+                                                },
+                                                { 
+                                                    id: 'executive', 
+                                                    name: 'Salón Premium', 
+                                                    desc: 'Elegante y muy formal', 
+                                                    emoji: '👑', 
+                                                    color: 'border-purple-500/40 bg-purple-500/10 text-purple-500',
+                                                    prompt: 'Eres una recepcionista elegante de un salón ejecutivo y spa de alta gama. Hablas de forma muy formal, respetuosa y pulcra. Ofrece café premium y toallas calientes de cortesía, y detalla precios y horarios disponibles de manera muy organizada.'
+                                                },
+                                                { 
+                                                    id: 'quick', 
+                                                    name: 'Asistente Rápido', 
+                                                    desc: 'Al grano y estructurado', 
+                                                    emoji: '🤖', 
+                                                    color: 'border-space-primary/40 bg-space-primary/10 text-space-primary',
+                                                    prompt: 'Eres un asistente automatizado rápido, directo y sumamente al grano. Responde con la información de precios, dirección y espacios libres de la forma más corta y estructurada posible sin rodeos.'
+                                                },
+                                            ].map(p => (
+                                                <button
+                                                    key={p.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setFormData(prev => ({ 
+                                                            ...prev, 
+                                                            whatsapp_bot_personality: p.id,
+                                                            whatsapp_bot_prompt: p.prompt
+                                                        }));
+                                                        toast.success(`Plantilla "${p.name}" aplicada.`);
+                                                    }}
+                                                    className={`p-3 rounded-xl border text-left transition-all relative overflow-hidden ${
+                                                        formData.whatsapp_bot_personality === p.id 
+                                                            ? `${p.color} border-2 scale-[1.02] shadow-lg` 
+                                                            : 'border-white/10 hover:border-white/20 bg-white/5 text-white/70'
+                                                    }`}
+                                                >
+                                                    <span className="text-lg block mb-1">{p.emoji}</span>
+                                                    <h4 className="text-[9px] font-black uppercase tracking-wider">{p.name}</h4>
+                                                    <p className="text-[7px] opacity-60 font-medium leading-tight mt-1">{p.desc}</p>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
 
