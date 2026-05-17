@@ -16,7 +16,12 @@ ADD COLUMN IF NOT EXISTS whatsapp_messages_sent INTEGER DEFAULT 0;
 
 -- ── 2.5. AGREGAR COLUMNAS A LA TABLA DE NEGOCIOS ──────────────────────────────
 ALTER TABLE public.businesses
-ADD COLUMN IF NOT EXISTS whatsapp_bot_personality TEXT DEFAULT 'quick';
+ADD COLUMN IF NOT EXISTS whatsapp_bot_personality TEXT DEFAULT 'quick',
+ADD COLUMN IF NOT EXISTS whatsapp_bot_auto_schedule BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS whatsapp_bot_start_hour TEXT DEFAULT '09:00',
+ADD COLUMN IF NOT EXISTS whatsapp_bot_end_hour TEXT DEFAULT '18:00',
+ADD COLUMN IF NOT EXISTS whatsapp_bot_anti_collision BOOLEAN DEFAULT true,
+ADD COLUMN IF NOT EXISTS whatsapp_device_connected BOOLEAN DEFAULT false;
 
 -- ── 3. ACTUALIZAR DETALLES DE LOS PLANES SEGÚN NUEVAS ESPECIFICACIONES ───────────
 -- Starter ($19, 3 Barberos, 150 citas, 0 WA, Stripe deposits)

@@ -34,9 +34,20 @@ export default function BusinessSettingsPage() {
         whatsapp_offer: '',
         whatsapp_marketing_active: true,
         whatsapp_bot_personality: 'quick',
+        // New features:
+        whatsapp_bot_auto_schedule: false,
+        whatsapp_bot_start_hour: '09:00',
+        whatsapp_bot_end_hour: '18:00',
+        whatsapp_bot_anti_collision: true,
+        whatsapp_device_connected: false,
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+    // QR connection states
+    const [qrModalOpen, setQrModalOpen] = useState(false);
+    const [isGeneratingQr, setIsGeneratingQr] = useState(false);
+    const [qrSimulatedScan, setQrSimulatedScan] = useState(false);
 
     // ── WhatsApp Simulator State ──
     const [simulatorMessages, setSimulatorMessages] = useState<Array<{ sender: 'bot' | 'user'; text: string; time: string }>>([
@@ -65,6 +76,14 @@ export default function BusinessSettingsPage() {
             const address = formData.address || 'nuestra dirección';
             const city = formData.city || '';
             const offer = formData.whatsapp_offer || '';
+
+            // Anti-collision alert simulator
+            if (formData.whatsapp_bot_anti_collision && (lower.includes('barbero') || lower.includes('humano') || lower.includes('atencion'))) {
+                botText = `[🔇 Bot en silencio temporal]\n\nHe detectado que deseas hablar con un barbero real. El bot se ha silenciado automáticamente para evitar interrumpir tu conversación con el staff. ¡En unos instantes te atenderemos de forma manual!`;
+                setSimulatorMessages(prev => [...prev, { sender: 'bot', text: botText, time: currentTime }]);
+                setIsBotTyping(false);
+                return;
+            }
 
             // Personality prefix helper
             const getPersonalityGreeting = () => {
@@ -144,7 +163,15 @@ export default function BusinessSettingsPage() {
                 whatsapp_offer: (currentBusiness as any).whatsapp_offer || '',
                 whatsapp_marketing_active: (currentBusiness as any).whatsapp_marketing_active ?? true,
                 whatsapp_bot_personality: (currentBusiness as any).whatsapp_bot_personality || 'quick',
+                whatsapp_bot_auto_schedule: (currentBusiness as any).whatsapp_bot_auto_schedule ?? false,
+                whatsapp_bot_start_hour: (currentBusiness as any).whatsapp_bot_start_hour || '09:00',
+                whatsapp_bot_end_hour: (currentBusiness as any).whatsapp_bot_end_hour || '18:00',
+                whatsapp_bot_anti_collision: (currentBusiness as any).whatsapp_bot_anti_collision ?? true,
+                whatsapp_device_connected: (currentBusiness as any).whatsapp_device_connected ?? false,
             });
+            if ((currentBusiness as any).whatsapp_device_connected) {
+                setQrSimulatedScan(true);
+            }
         }
     }, [currentBusiness]);
 
@@ -225,6 +252,11 @@ export default function BusinessSettingsPage() {
                     whatsapp_offer: formData.whatsapp_offer.trim(),
                     whatsapp_marketing_active: formData.whatsapp_marketing_active,
                     whatsapp_bot_personality: formData.whatsapp_bot_personality,
+                    whatsapp_bot_auto_schedule: formData.whatsapp_bot_auto_schedule,
+                    whatsapp_bot_start_hour: formData.whatsapp_bot_start_hour,
+                    whatsapp_bot_end_hour: formData.whatsapp_bot_end_hour,
+                    whatsapp_bot_anti_collision: formData.whatsapp_bot_anti_collision,
+                    whatsapp_device_connected: formData.whatsapp_device_connected,
                 })
                 .eq('id', currentBusiness.id);
 
@@ -525,6 +557,68 @@ export default function BusinessSettingsPage() {
                                     </div>
                                 </div>
 
+                                {/* DEVICE CONNECTION CARD */}
+                                <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h3 className="text-xs font-black text-white uppercase tracking-tight flex items-center gap-1.5">
+                                                🔌 Vinculación de WhatsApp
+                                            </h3>
+                                            <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest mt-0.5">Conecta tu número personal al bot</p>
+                                        </div>
+                                        <span className={`px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-1 ${
+                                            qrSimulatedScan 
+                                                ? 'bg-space-primary/10 text-space-primary border border-space-primary/20' 
+                                                : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                                        }`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${qrSimulatedScan ? 'bg-space-primary animate-pulse' : 'bg-rose-500'}`} />
+                                            {qrSimulatedScan ? 'Conectado' : 'Desconectado'}
+                                        </span>
+                                    </div>
+
+                                    {qrSimulatedScan ? (
+                                        <div className="p-4 bg-space-primary/5 rounded-xl border border-space-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-black text-white uppercase tracking-wide">✓ Celular Vinculado en Vivo</p>
+                                                <p className="text-[8px] text-white/60 font-semibold uppercase tracking-wider">
+                                                    Dispositivo: <strong className="text-white">Samsung Galaxy S24 (WhatsApp Web)</strong>
+                                                </p>
+                                                <p className="text-[8px] text-white/60 font-semibold uppercase tracking-wider flex items-center gap-1">
+                                                    Batería: <span className="text-space-primary">94% ⚡</span> | Señal: <span className="text-space-primary">Excelente 📶</span>
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setQrSimulatedScan(false);
+                                                    setFormData(p => ({ ...p, whatsapp_device_connected: false }));
+                                                    toast.success('Dispositivo desvinculado con éxito.');
+                                                }}
+                                                className="px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg text-[8px] font-black uppercase tracking-widest border border-rose-500/20 transition-all self-start sm:self-center"
+                                            >
+                                                Desvincular
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 bg-white/5 rounded-xl border border-white/5 text-center space-y-3">
+                                            <p className="text-[9px] text-white/50 font-semibold uppercase leading-relaxed max-w-md mx-auto">
+                                                Vincular tu cuenta te permite automatizar respuestas en vivo desde tu propio número móvil. ¡Escanéalo en segundos!
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setQrModalOpen(true);
+                                                    setIsGeneratingQr(true);
+                                                    setTimeout(() => setIsGeneratingQr(false), 800);
+                                                }}
+                                                className="px-5 py-2.5 bg-space-primary hover:bg-space-primary-dark text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-md shadow-space-primary/10 flex items-center gap-2 mx-auto"
+                                            >
+                                                <span>📱</span> Vincular Celular con QR
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Custom Inputs */}
                                 <div className="space-y-4">
                                     <div className="space-y-2">
@@ -552,6 +646,76 @@ export default function BusinessSettingsPage() {
                                             placeholder="Ej: 20% de descuento en tu próximo corte hoy"
                                             className="w-full h-12 bg-white/5 border-2 border-white/10 rounded-xl px-4 text-xs font-medium text-white focus:bg-white/10 focus:border-amber-400/50 outline-none transition-all placeholder:text-white/20"
                                         />
+                                    </div>
+                                </div>
+
+                                {/* BOT ACTIVE HOURS & ANTI-COLLISION SETTINGS */}
+                                <div className="p-5 bg-white/5 rounded-2xl border border-white/10 space-y-5">
+                                    <h3 className="text-xs font-black text-white uppercase tracking-tight flex items-center gap-1.5">
+                                        ⚙️ Ajustes Avanzados del Bot
+                                    </h3>
+
+                                    {/* Anti-collision Toggle */}
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="space-y-1">
+                                            <h4 className="text-[10px] font-black text-white uppercase tracking-wider flex items-center gap-1">
+                                                Evitar Doble Respuesta (Anti-Colisión)
+                                            </h4>
+                                            <p className="text-[8px] text-white/40 font-semibold uppercase leading-relaxed max-w-sm">
+                                                Si tú o tu staff responden a un chat de WhatsApp, el bot se silencia automáticamente por 15 minutos para que chatees de forma manual sin interrupciones.
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(p => ({ ...p, whatsapp_bot_anti_collision: !p.whatsapp_bot_anti_collision }))}
+                                            className={`w-10 h-6 rounded-full relative transition-all duration-300 flex-shrink-0 ${formData.whatsapp_bot_anti_collision ? 'bg-space-primary' : 'bg-white/10'}`}
+                                        >
+                                            <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 ${formData.whatsapp_bot_anti_collision ? 'left-4.5' : 'left-0.5'}`} />
+                                        </button>
+                                    </div>
+
+                                    {/* Auto Schedule Toggle */}
+                                    <div className="border-t border-white/5 pt-4 space-y-4">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="space-y-1">
+                                                <h4 className="text-[10px] font-black text-white uppercase tracking-wider">
+                                                    Horario de Actividad Automatizado
+                                                </h4>
+                                                <p className="text-[8px] text-white/40 font-semibold uppercase leading-relaxed max-w-sm">
+                                                    Limita el funcionamiento del bot a ciertas horas del día (ej. solo cuando cierras la tienda para capturar clientes nocturnos).
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(p => ({ ...p, whatsapp_bot_auto_schedule: !p.whatsapp_bot_auto_schedule }))}
+                                                className={`w-10 h-6 rounded-full relative transition-all duration-300 flex-shrink-0 ${formData.whatsapp_bot_auto_schedule ? 'bg-space-primary' : 'bg-white/10'}`}
+                                            >
+                                                <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 ${formData.whatsapp_bot_auto_schedule ? 'left-4.5' : 'left-0.5'}`} />
+                                            </button>
+                                        </div>
+
+                                        {formData.whatsapp_bot_auto_schedule && (
+                                            <div className="grid grid-cols-2 gap-4 p-4 bg-white/5 rounded-xl border border-white/5 animate-fade-in">
+                                                <div className="space-y-1">
+                                                    <label className="text-[8px] font-black text-white/50 uppercase tracking-widest block">Hora de Encendido</label>
+                                                    <input 
+                                                        type="time" 
+                                                        value={formData.whatsapp_bot_start_hour}
+                                                        onChange={(e) => setFormData(p => ({ ...p, whatsapp_bot_start_hour: e.target.value }))}
+                                                        className="w-full h-10 bg-white/5 border border-white/10 rounded-lg px-3 text-xs font-semibold text-white focus:border-space-primary outline-none transition-all animate-none [color-scheme:dark]"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[8px] font-black text-white/50 uppercase tracking-widest block">Hora de Apagado</label>
+                                                    <input 
+                                                        type="time" 
+                                                        value={formData.whatsapp_bot_end_hour}
+                                                        onChange={(e) => setFormData(p => ({ ...p, whatsapp_bot_end_hour: e.target.value }))}
+                                                        className="w-full h-10 bg-white/5 border border-white/10 rounded-lg px-3 text-xs font-semibold text-white focus:border-space-primary outline-none transition-all animate-none [color-scheme:dark]"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -761,6 +925,69 @@ export default function BusinessSettingsPage() {
 
                     </div>
                 </section>
+
+                {/* ── MODAL DE VINCULACIÓN QR (SITUADO AL FINAL) ── */}
+                {qrModalOpen && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+                        <div className="bg-[#1a1a24] border border-white/10 rounded-[2rem] p-6 max-w-sm w-full text-center space-y-6 shadow-2xl relative">
+                            <button
+                                type="button"
+                                onClick={() => setQrModalOpen(false)}
+                                className="absolute top-4 right-4 text-white/40 hover:text-white text-base font-black p-1 hover:bg-white/5 rounded-full w-8 h-8 flex items-center justify-center transition-all outline-none"
+                            >
+                                ✕
+                            </button>
+
+                            <div className="space-y-2">
+                                <h3 className="text-sm font-black text-white uppercase tracking-tight">Vincular cuenta de WhatsApp</h3>
+                                <p className="text-[9px] text-white/50 font-bold uppercase tracking-widest">Escanea el código para activar tu asistente</p>
+                            </div>
+
+                            {isGeneratingQr ? (
+                                <div className="w-48 h-48 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center justify-center gap-3 mx-auto">
+                                    <Loader2 className="w-6 h-6 text-space-primary animate-spin" />
+                                    <span className="text-[8px] text-white/40 font-black uppercase tracking-widest">Generando código QR...</span>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {/* Simulated QR Image Mockup */}
+                                    <div className="w-48 h-48 bg-white p-3 rounded-2xl border-4 border-space-primary flex items-center justify-center mx-auto shadow-inner relative overflow-hidden">
+                                        <img 
+                                            src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://spaceyreserve.netlify.app&color=075e54" 
+                                            alt="WhatsApp QR Code Mockup" 
+                                            className="w-full h-full object-contain rounded-lg"
+                                        />
+                                        {/* Glowing scanning laser line overlay */}
+                                        <div className="absolute inset-x-0 h-0.5 bg-space-primary/80 top-0 animate-bounce" style={{ animationDuration: '3s' }} />
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setQrSimulatedScan(true);
+                                            setFormData(p => ({ ...p, whatsapp_device_connected: true }));
+                                            setQrModalOpen(false);
+                                            toast.success('¡WhatsApp Vinculado con Éxito! Tu asistente ya está activo.');
+                                        }}
+                                        className="w-full py-3 bg-[#128c7e] hover:bg-[#075e54] text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-md shadow-[#128c7e]/20 flex items-center justify-center gap-2"
+                                    >
+                                        <span>📸</span> Simular escaneo de QR (Prueba)
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="text-left bg-white/5 p-4 rounded-xl border border-white/5 space-y-2">
+                                <h4 className="text-[9px] font-black text-white uppercase tracking-wider">Instrucciones simples:</h4>
+                                <ol className="text-[8px] text-white/60 font-semibold uppercase list-decimal list-inside space-y-1.5 leading-relaxed">
+                                    <li>Abre WhatsApp en tu teléfono celular.</li>
+                                    <li>Ve a <strong className="text-white">Configuración</strong> o <strong className="text-white">Menú</strong>.</li>
+                                    <li>Selecciona <strong className="text-white">Dispositivos Vinculados</strong> y toca <strong className="text-white">Vincular un dispositivo</strong>.</li>
+                                    <li>Apunta la cámara de tu celular a este código QR para escanearlo.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
