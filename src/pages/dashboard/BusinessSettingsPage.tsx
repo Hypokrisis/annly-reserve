@@ -184,6 +184,32 @@ export default function BusinessSettingsPage() {
         }
     }, [currentBusiness]);
 
+    const handleToggleBotActive = async () => {
+        const newVal = !formData.whatsapp_bot_active;
+        setFormData(p => ({ ...p, whatsapp_bot_active: newVal }));
+        
+        if (!currentBusiness) return;
+        try {
+            const { error } = await supabase
+                .from('businesses')
+                .update({ whatsapp_bot_active: newVal })
+                .eq('id', currentBusiness.id);
+            
+            if (error) throw error;
+            
+            if (newVal) {
+                toast.success('🤖 Asistente de IA Activo en vivo');
+            } else {
+                toast.success('🔇 Asistente de IA Pausado al instante');
+            }
+        } catch (err) {
+            console.error('Error toggling bot active:', err);
+            // Fallback: revert local state on failure
+            setFormData(p => ({ ...p, whatsapp_bot_active: !newVal }));
+            toast.error('No se pudo cambiar el estado del bot. Intente de nuevo.');
+        }
+    };
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -545,7 +571,7 @@ export default function BusinessSettingsPage() {
                                         </div>
                                         <button
                                             type="button"
-                                            onClick={() => setFormData(p => ({ ...p, whatsapp_bot_active: !p.whatsapp_bot_active }))}
+                                            onClick={handleToggleBotActive}
                                             className={`w-12 h-7 rounded-full relative transition-all duration-300 ${formData.whatsapp_bot_active ? 'bg-space-primary' : 'bg-white/10'}`}
                                         >
                                             <div className={`absolute top-0.5 w-6 h-6 bg-white rounded-full transition-all duration-300 ${formData.whatsapp_bot_active ? 'left-5.5' : 'left-0.5'}`} />
