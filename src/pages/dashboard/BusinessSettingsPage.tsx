@@ -5,11 +5,13 @@ import { supabase } from '@/supabaseClient';
 import { Input } from '@/components/common/Input';
 import { ImageUploadWithCrop } from '@/components/common/ImageUploadWithCrop';
 import { useToast } from '@/contexts/ToastContext';
-import { Store, Check, Info, Save, MapPin, Sparkles, Map, Loader2, ChevronLeft, Eye, Gift, Zap } from 'lucide-react';
+import { useBusiness } from '@/contexts/BusinessContext';
+import { Store, Check, Info, Save, MapPin, Sparkles, Map, Loader2, ChevronLeft, Eye, Gift, Zap, Crown } from 'lucide-react';
 
 export default function BusinessSettingsPage() {
     const navigate = useNavigate();
     const { currentBusiness } = useAuth();
+    const { business, subscription } = useBusiness();
     const toast = useToast();
     const [previewOpen, setPreviewOpen] = useState(false);
     const [formData, setFormData] = useState({
@@ -366,7 +368,29 @@ export default function BusinessSettingsPage() {
                 <section className="bg-space-text rounded-[2.5rem] p-6 sm:p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-space-primary/10 rounded-full blur-[80px] -mr-32 -mt-32 group-hover:bg-space-primary/20 transition-all duration-700" />
                     
-                    <div className="relative z-10">
+                    {/* Glassmorphic Gating Overlay */}
+                    {!subscription?.subscription_tiers?.has_whatsapp_bot && (
+                        <div className="absolute inset-0 bg-[#0d1117]/85 backdrop-blur-md z-20 flex flex-col items-center justify-center p-6 text-center space-y-6">
+                            <div className="w-14 h-14 bg-white/10 text-space-primary border border-white/10 rounded-full flex items-center justify-center shadow-lg">
+                                <Zap size={28} />
+                            </div>
+                            <div className="space-y-2 max-w-sm">
+                                <h3 className="text-xl font-black text-white uppercase tracking-tight">Recordatorios por WhatsApp</h3>
+                                <p className="text-white/60 text-xs font-semibold leading-relaxed uppercase">
+                                    Esta sección está bloqueada para tu plan actual. Sube a un plan superior para habilitar el bot de recordatorios automáticos de citas por WhatsApp.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/dashboard/billing')}
+                                className="px-8 py-3 bg-space-primary hover:bg-space-primary-dark text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-space-primary/25"
+                            >
+                                Habilitar WhatsApp
+                            </button>
+                        </div>
+                    )}
+
+                    <div className={`relative z-10 ${!subscription?.subscription_tiers?.has_whatsapp_bot ? 'blur-sm pointer-events-none' : ''}`}>
                         <div className="flex items-center gap-3 mb-10">
                             <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-space-primary border border-white/10">
                                 <Sparkles size={24} />

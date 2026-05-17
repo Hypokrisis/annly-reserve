@@ -4,16 +4,47 @@ import type { Business, Barber, Service } from '@/types';
 import * as businessService from '@/services/business.service';
 import { supabase } from '../supabaseClient';
 
+export interface SubscriptionTier {
+    id: string;
+    name: string;
+    price_monthly: number;
+    stripe_price_id: string | null;
+    max_barbers: number;
+    max_monthly_appointments: number;
+    max_whatsapp_messages: number;
+    has_whatsapp_bot: boolean;
+    has_stripe_deposits: boolean;
+    has_inventory: boolean;
+    has_advanced_reports: boolean;
+}
+
+export interface Subscription {
+    id: string;
+    business_id: string;
+    tier_id: string;
+    stripe_customer_id: string | null;
+    stripe_subscription_id: string | null;
+    status: string;
+    current_period_end: string | null;
+    cancel_at_period_end: boolean;
+    whatsapp_messages_sent: number;
+    subscription_tiers?: SubscriptionTier;
+}
+
 interface BusinessContextType {
     business: Business | null;
     barbers: Barber[];
     services: Service[];
     loading: boolean;
+    subscription: Subscription | null;
+    monthlyAppointmentsCount: number;
+    loadingSubscription: boolean;
 
     refreshBusiness: () => Promise<void>;
     updateBusiness: (updates: Partial<Business>) => Promise<void>;
     refreshBarbers: () => Promise<void>;
     refreshServices: () => Promise<void>;
+    refreshSubscription: () => Promise<void>;
 }
 
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
@@ -24,6 +55,10 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const [barbers, setBarbers] = useState<Barber[]>([]);
     const [services, setServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(false);
+    
+    const [subscription, setSubscription] = useState<Subscription | null>(null);
+    const [monthlyAppointmentsCount, setMonthlyAppointmentsCount] = useState(0);
+    const [loadingSubscription, setLoadingSubscription] = useState(false);
 
     // Load business data when currentBusiness changes
     useEffect(() => {
@@ -34,6 +69,8 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             setBusiness(null);
             setBarbers([]);
             setServices([]);
+            setSubscription(null);
+            setMonthlyAppointmentsCount(0);
         }
     }, [currentBusiness]);
 
@@ -43,12 +80,47 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             await Promise.all([
                 loadBarbers(businessId),
                 loadServices(businessId),
+                loadSubscriptionAndStats(businessId),
             ]);
         } catch (error) {
             console.error('Error loading business data:', error);
-            // Don't throw here, just log so UI can decide what to do
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadSubscriptionAndStats = async (businessId: string) => {
+        setLoadingSubscription(true);
+        try {
+            // 1. Fetch Subscription Joined with Tiers
+            const { data: subData, error: subErr } = await supabase
+                .from('business_subscriptions')
+                .select('*, subscription_tiers(*)')
+                .eq('business_id', businessId)
+                .maybeSingle();
+
+            if (subErr) throw subErr;
+            setSubscription(subData as unknown as Subscription || null);
+
+            // 2. Fetch Completed & Confirmed Appointments Count for Current Month
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            const startOfMonthStr = startOfMonth.toISOString().split('T')[0];
+
+            const { count, error: countErr } = await supabase
+                .from('appointments')
+                .select('*', { count: 'exact', head: true })
+                .eq('business_id', businessId)
+                .gte('appointment_date', startOfMonthStr)
+                .in('status', ['confirmed', 'completed']);
+
+            if (countErr) throw countErr;
+            setMonthlyAppointmentsCount(count || 0);
+
+        } catch (error) {
+            console.error('Error loading subscription or usage stats:', error);
+        } finally {
+            setLoadingSubscription(false);
         }
     };
 
@@ -118,15 +190,24 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         await loadServices(business.id);
     };
 
+    const refreshSubscription = async () => {
+        if (!business) return;
+        await loadSubscriptionAndStats(business.id);
+    };
+
     const value: BusinessContextType = {
         business,
         barbers,
         services,
         loading,
+        subscription,
+        monthlyAppointmentsCount,
+        loadingSubscription,
         refreshBusiness,
         updateBusiness,
         refreshBarbers,
         refreshServices,
+        refreshSubscription,
     };
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
@@ -139,3 +220,4 @@ export const useBusiness = () => {
     }
     return context;
 };
+

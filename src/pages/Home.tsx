@@ -306,8 +306,8 @@ function Home() {
         }
       }}
       className={`relative flex-shrink-0 w-full sm:w-auto flex-1 min-w-[200px] rounded-[2.5rem] overflow-hidden p-7 flex flex-col items-start justify-between transition-all duration-500 hover:scale-[1.03] border-2 ${activeMood === mood.id
-          ? 'border-space-primary shadow-2xl shadow-space-primary/15 bg-gradient-to-br from-space-card2 to-white ring-4 ring-space-primary/10'
-          : 'border-space-border/60 bg-white shadow-sm hover:shadow-xl hover:border-space-primary/20'
+        ? 'border-space-primary shadow-2xl shadow-space-primary/15 bg-gradient-to-br from-space-card2 to-white ring-4 ring-space-primary/10'
+        : 'border-space-border/60 bg-white shadow-sm hover:shadow-xl hover:border-space-primary/20'
         }`}
     >
       <div className="flex items-center justify-between w-full mb-5">
@@ -428,8 +428,8 @@ function Home() {
             <button
               onClick={handleGeoLocation}
               className={`inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl text-[10px] font-extrabold uppercase tracking-widest mb-8 transition-all duration-500 ${sortByDistance
-                  ? 'bg-gradient-to-r from-space-primary to-space-primary-dark text-white shadow-xl shadow-space-primary/30'
-                  : 'bg-space-primary/8 text-space-primary hover:bg-space-primary/15 hover:shadow-lg'
+                ? 'bg-gradient-to-r from-space-primary to-space-primary-dark text-white shadow-xl shadow-space-primary/30'
+                : 'bg-space-primary/8 text-space-primary hover:bg-space-primary/15 hover:shadow-lg'
                 }`}
             >
               <MapPin size={13} className={isLocating ? 'animate-bounce' : ''} />

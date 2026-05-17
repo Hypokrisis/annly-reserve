@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Users as UsersIcon, ShieldAlert, UserMinus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Edit2, Users as UsersIcon, ShieldAlert, UserMinus, Crown } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Modal } from '@/components/common/Modal';
@@ -13,11 +14,14 @@ import { useToast } from '@/contexts/ToastContext';
 import type { Barber } from '@/types';
 
 export default function BarbersPage() {
+    const navigate = useNavigate();
     const { barbers, loading, createBarber, updateBarber, deleteBarber, hardDeleteBarber, getBarberServices } = useBarbers();
     const { services } = useServices();
     const { canManageBarbers } = usePermissions();
-    const { business } = useBusiness();
+    const { business, subscription } = useBusiness();
     const toast = useToast();
+
+    const [showLimitModal, setShowLimitModal] = useState(false);
 
     // ── Analytics per barber ──
     type BarberStats = { total: number; thisMonth: number; thisWeek: number };
@@ -67,6 +71,14 @@ export default function BarbersPage() {
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
     const handleOpenModal = async (barber?: Barber) => {
+        if (!barber) {
+            const maxBarbers = subscription?.subscription_tiers?.max_barbers || 3;
+            const activeBarbersCount = barbers.filter(b => b.is_active).length;
+            if (activeBarbersCount >= maxBarbers) {
+                setShowLimitModal(true);
+                return;
+            }
+        }
         if (barber) {
             setEditingBarber(barber);
             setFormData({
@@ -361,6 +373,39 @@ export default function BarbersPage() {
                             </button>
                         </div>
                     </form>
+                </Modal>
+
+                {/* Limit Gating Modal */}
+                <Modal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)}
+                    title="👑 Plan Superior Requerido" size="md">
+                    <div className="p-6 text-center space-y-6">
+                        <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                            <ShieldAlert size={32} />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-space-text">Límite de Barberos Alcanzado</h3>
+                            <p className="text-space-muted text-sm leading-relaxed">
+                                Tu plan actual <strong>{subscription?.subscription_tiers?.name || 'Spacey Starter'}</strong> te permite tener hasta <strong>{subscription?.subscription_tiers?.max_barbers || 3} barberos</strong> activos.
+                            </p>
+                            <p className="text-space-muted text-xs leading-relaxed font-semibold">
+                                Sube a un plan superior para expandir tu equipo, habilitar más cuentas de acceso y seguir creciendo de forma ordenada.
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-3 pt-4">
+                            <button
+                                onClick={() => navigate('/dashboard/billing')}
+                                className="btn-primary w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-lg shadow-space-primary/20"
+                            >
+                                Ver Planes y Precios <Plus size={16} />
+                            </button>
+                            <button
+                                onClick={() => setShowLimitModal(false)}
+                                className="btn-secondary w-full h-12 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                            >
+                                Volver
+                            </button>
+                        </div>
+                    </div>
                 </Modal>
             </div>
         </DashboardLayout>

@@ -24,10 +24,20 @@ const PLANS = [
         id: 'starter',
         name: 'Starter',
         price: '$19',
-        description: 'Para barberos individuales que están comenzando.',
+        description: 'Ideal para profesionales independientes o equipos pequeños que están arrancando.',
         icon: Star,
-        features: ['1 Barbero', 'Reservas Ilimitadas', 'Página Web Personalizada', 'Panel Básico', 'Soporte por Email'],
-        missingFeatures: ['Recordatorios WhatsApp Auto', 'Pasarela de Pagos Stripe', 'Múltiples Barberos'],
+        features: [
+            'Hasta 3 Barberos / Especialistas',
+            'Hasta 150 Citas Completadas al mes',
+            'Recordatorios ilimitados por Email y Push',
+            'Cobros y Depósitos vía Stripe (0% Com.)',
+            'Página Web de Reservas profesional'
+        ],
+        missingFeatures: [
+            'Recordatorios automáticos por WhatsApp',
+            'Estadísticas y Reportes Financieros',
+            'Control de Inventario y Herramientas Pro'
+        ],
         color: 'text-gray-400',
         bg: 'bg-gray-400/10',
         border: 'border-space-border/40',
@@ -39,10 +49,20 @@ const PLANS = [
         id: 'essential',
         name: 'Essential',
         price: '$39',
-        description: 'Para barberías pequeñas que quieren automatizar su flujo.',
+        description: 'Perfecto para barberías y salones establecidos con flujo constante.',
         icon: Zap,
-        features: ['Todo lo de Starter', 'Hasta 3 Barberos', 'Recordatorios WhatsApp Auto', 'Confirmaciones Instantáneas', 'Estadísticas Básicas'],
-        missingFeatures: ['Cobro Automático (Deposits)', 'Depósitos via Stripe'],
+        features: [
+            'Hasta 6 Barberos / Especialistas',
+            'Hasta 500 Citas Completadas al mes',
+            'Todo lo de Starter incluido',
+            'Automatización de WhatsApp (400 sms/mes)',
+            'Reportes de ganancias y retención básica'
+        ],
+        missingFeatures: [
+            'Citas mensuales ilimitadas',
+            'Gestión de Inventario de Productos',
+            'Reportes avanzados y exportación de datos'
+        ],
         color: 'text-space-primary',
         bg: 'bg-space-primary/10',
         border: 'border-space-primary',
@@ -54,9 +74,16 @@ const PLANS = [
         id: 'premium',
         name: 'Premium',
         price: '$79',
-        description: 'Control absoluto y cobro online. Para negocios consolidados.',
+        description: 'Control absoluto, automatización masiva y reportes avanzados sin límites.',
         icon: Crown,
-        features: ['Todo lo de Essential', 'Barberos Ilimitados', 'Pasarela de Pagos', 'Depósitos & No-Show Protection', 'Estadísticas Financieras', 'Soporte VIP 24/7'],
+        features: [
+            'Hasta 20 Barberos / Especialistas',
+            'Citas Mensuales ILIMITADAS',
+            'Todo lo de Essential incluido',
+            'Automatización de WhatsApp (1200 sms/mes)',
+            'Control de Inventario de Productos',
+            'Reportes avanzados y exportación de datos'
+        ],
         missingFeatures: [],
         color: 'text-yellow-400',
         bg: 'bg-yellow-400/10',

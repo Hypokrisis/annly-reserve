@@ -8,7 +8,7 @@ import { supabase } from '@/supabaseClient';
 import { formatCurrency, formatTimeDisplay } from '@/utils';
 
 export default function DashboardHome() {
-    const { business, services } = useBusiness();
+    const { business, services, barbers, subscription, monthlyAppointmentsCount } = useBusiness();
     const { role } = useAuth();
     const [copied, setCopied] = useState(false);
     const [todayApts, setTodayApts] = useState<any[]>([]);
@@ -336,6 +336,87 @@ export default function DashboardHome() {
 
                     {/* Right Column: Pulse & Insights (4 cols) */}
                     <div className="xl:col-span-4 space-y-8">
+                        
+                        {/* ── Plan Usage / Limits ── */}
+                        {role === 'owner' && (
+                            <section className="card p-6 bg-white border border-space-border/20 shadow-sm space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.3em] flex items-center gap-1.5">
+                                        <Award size={14} className="text-space-primary" />
+                                        Uso de tu Plan
+                                    </h3>
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${
+                                        subscription?.tier_id === 'premium' ? 'bg-yellow-100 text-yellow-700' :
+                                        subscription?.tier_id === 'essential' ? 'bg-space-primary/10 text-space-primary' : 'bg-gray-100 text-gray-700'
+                                    }`}>
+                                        {subscription?.subscription_tiers?.name || 'Spacey Starter'}
+                                    </span>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {/* Barbers / Specialists Seat Usage */}
+                                    <div>
+                                        <div className="flex justify-between text-[10px] font-black uppercase mb-1">
+                                            <span className="text-space-text">Barberos Activos</span>
+                                            <span className="text-space-muted font-mono">
+                                                {barbers.filter(b => b.is_active).length} / {subscription?.subscription_tiers?.max_barbers || 3}
+                                            </span>
+                                        </div>
+                                        <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
+                                            <div 
+                                                className={`h-full rounded-full transition-all duration-500 ${
+                                                    barbers.filter(b => b.is_active).length >= (subscription?.subscription_tiers?.max_barbers || 3) ? 'bg-space-danger' : 'bg-space-primary'
+                                                }`}
+                                                style={{ width: `${Math.min(100, (barbers.filter(b => b.is_active).length / (subscription?.subscription_tiers?.max_barbers || 3)) * 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Completed Appointments Usage */}
+                                    <div>
+                                        <div className="flex justify-between text-[10px] font-black uppercase mb-1">
+                                            <span className="text-space-text">Citas de este Mes</span>
+                                            <span className="text-space-muted font-mono">
+                                                {monthlyAppointmentsCount} / {subscription?.subscription_tiers?.max_monthly_appointments === 999999 ? '∞' : (subscription?.subscription_tiers?.max_monthly_appointments || 150)}
+                                            </span>
+                                        </div>
+                                        <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
+                                            <div 
+                                                className={`h-full rounded-full transition-all duration-500 ${
+                                                    subscription?.subscription_tiers?.max_monthly_appointments !== 999999 && monthlyAppointmentsCount >= (subscription?.subscription_tiers?.max_monthly_appointments || 150) ? 'bg-space-danger' : 
+                                                    subscription?.subscription_tiers?.max_monthly_appointments !== 999999 && monthlyAppointmentsCount >= (subscription?.subscription_tiers?.max_monthly_appointments || 150) * 0.8 ? 'bg-amber-500' : 'bg-space-primary'
+                                                }`}
+                                                style={{ width: `${subscription?.subscription_tiers?.max_monthly_appointments === 999999 ? 0 : Math.min(100, (monthlyAppointmentsCount / (subscription?.subscription_tiers?.max_monthly_appointments || 150)) * 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Banner & Upgrade Action */}
+                                {subscription?.tier_id !== 'premium' && (
+                                    <div className="pt-2">
+                                        {((subscription?.subscription_tiers?.max_monthly_appointments !== 999999 && monthlyAppointmentsCount >= (subscription?.subscription_tiers?.max_monthly_appointments || 150)) ||
+                                         (barbers.filter(b => b.is_active).length >= (subscription?.subscription_tiers?.max_barbers || 3))) ? (
+                                            <div className="p-3 bg-red-50 border border-red-200 rounded-xl mb-4 text-[9px] font-black uppercase tracking-wider text-space-danger leading-relaxed">
+                                                ⚠️ Has alcanzado el límite de tu plan. Ciertas funciones o nuevas citas se encuentran bloqueadas.
+                                            </div>
+                                         ) : (subscription?.subscription_tiers?.max_monthly_appointments !== 999999 && monthlyAppointmentsCount >= (subscription?.subscription_tiers?.max_monthly_appointments || 150) * 0.8) ? (
+                                            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-[9px] font-black uppercase tracking-wider text-amber-700 leading-relaxed">
+                                                ⚠️ Estás cerca del límite de citas de tu plan Starter. ¡Sube de plan para evitar bloquear reservas!
+                                            </div>
+                                         ) : null}
+
+                                        <Link 
+                                            to="/dashboard/billing"
+                                            className="w-full py-3 bg-space-bg border border-space-border/60 hover:bg-space-primary hover:text-white transition-all rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5"
+                                        >
+                                            <Sparkles size={11} className="text-space-primary" />
+                                            Gestionar / Subir de Plan
+                                        </Link>
+                                    </div>
+                                )}
+                            </section>
+                        )}
                         
                         {/* ── Retention Pulse ── */}
                         <section className="card p-8 bg-space-text text-white border-none shadow-xl relative overflow-hidden min-h-[300px] flex flex-col justify-between">

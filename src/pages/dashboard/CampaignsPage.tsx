@@ -30,7 +30,7 @@ interface TierInfo {
 }
 
 export default function CampaignsPage() {
-    const { business } = useBusiness();
+    const { business, subscription } = useBusiness();
     const { } = useAuth();
     const toast = useToast();
     
@@ -191,6 +191,74 @@ export default function CampaignsPage() {
             setFiringId(null);
         }
     };
+
+    const hasWhatsApp = subscription?.subscription_tiers?.has_whatsapp_bot || false;
+
+    if (!hasWhatsApp) {
+        return (
+            <DashboardLayout>
+                <div className="max-w-4xl mx-auto py-12 space-y-8 animate-in fade-in duration-700">
+                    <div className="text-center space-y-4">
+                        <div className="w-12 h-12 bg-space-primary/10 rounded-full flex items-center justify-center mx-auto text-space-primary">
+                            <Zap size={24} />
+                        </div>
+                        <h1 className="text-4xl font-black text-space-text tracking-tight uppercase italic leading-none">
+                            Campañas de <span className="text-space-primary">WhatsApp</span>
+                        </h1>
+                        <p className="text-space-muted text-sm font-bold uppercase tracking-widest max-w-xl mx-auto mt-2 leading-relaxed">
+                            Automatiza el envío de recordatorios y promociones masivas directo al celular de tus clientes por WhatsApp.
+                        </p>
+                    </div>
+
+                    <div className="relative p-8 md:p-12 rounded-[2.5rem] bg-space-card border-2 border-space-primary/20 shadow-2xl overflow-hidden text-center space-y-8">
+                        <div className="absolute top-0 right-0 w-80 h-80 bg-space-primary/5 rounded-full blur-[80px] -mr-40 -mt-40 pointer-events-none" />
+                        
+                        {/* Premium Badges */}
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-space-primary/10 border border-space-primary/20 text-space-primary text-[10px] font-black uppercase tracking-widest">
+                            <Crown size={12} /> Exclusivo Plan Essential & Premium
+                        </div>
+
+                        <div className="max-w-md mx-auto space-y-4">
+                            <h2 className="text-2xl font-black text-space-text uppercase tracking-tight leading-tight">
+                                Duplica tus reservas y recupera clientes inactivos
+                            </h2>
+                            <p className="text-space-muted text-xs font-semibold leading-relaxed uppercase">
+                                Los mensajes de WhatsApp tienen una tasa de apertura del <strong>98%</strong>. Envía recordatorios para evitar inasistencias y ofertas de agenda llena de forma 100% automatizada.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto text-left">
+                            <div className="p-5 bg-white border border-space-border/40 rounded-2xl">
+                                <p className="text-2xl mb-2">💬</p>
+                                <h3 className="text-xs font-black text-space-text uppercase tracking-wider mb-1">WhatsApp Masivo</h3>
+                                <p className="text-[10px] text-space-muted leading-relaxed font-semibold uppercase">Envía ofertas a todos tus clientes con un solo clic.</p>
+                            </div>
+                            <div className="p-5 bg-white border border-space-border/40 rounded-2xl">
+                                <p className="text-2xl mb-2">⏰</p>
+                                <h3 className="text-xs font-black text-space-text uppercase tracking-wider mb-1">Automatizado</h3>
+                                <p className="text-[10px] text-space-muted leading-relaxed font-semibold uppercase">El sistema detecta clientes inactivos y los reactiva solo.</p>
+                            </div>
+                            <div className="p-5 bg-white border border-space-border/40 rounded-2xl">
+                                <p className="text-2xl mb-2">📊</p>
+                                <h3 className="text-xs font-black text-space-text uppercase tracking-wider mb-1">Costo Protegido</h3>
+                                <p className="text-[10px] text-space-muted leading-relaxed font-semibold uppercase">Hasta 400 o 1,200 mensajes incluidos según tu plan.</p>
+                            </div>
+                        </div>
+
+                        <div className="max-w-xs mx-auto pt-4 space-y-3">
+                            <button
+                                onClick={() => window.location.href = '/dashboard/billing'}
+                                className="w-full h-14 bg-space-primary hover:bg-space-primary-dark text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all shadow-lg shadow-space-primary/20"
+                            >
+                                Subir de Plan Ahora <ArrowRight size={16} />
+                            </button>
+                            <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Habilita recordatorios automáticos subiendo tu plan</p>
+                        </div>
+                    </div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout>
