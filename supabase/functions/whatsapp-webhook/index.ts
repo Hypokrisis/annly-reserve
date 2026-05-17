@@ -426,11 +426,14 @@ Solo toma 30 segundos ✅"
         }
 
         // 9.5 Safe Guardrail: Verify if GPT hallucinated a time slot that is not actually available
-        const horaEnRespuesta = extractTimeFromResponse(aiResponse);
-        const uniqueAvailableSlots = Array.from(new Set(allAvailableSlots));
-        if (horaEnRespuesta && !uniqueAvailableSlots.includes(horaEnRespuesta)) {
-            console.warn(`[Guardrail] AI hallucinated slot ${horaEnRespuesta}. Reverting to standard safe options.`);
-            aiResponse = `Lo siento, ese horario no está disponible por el momento. Los horarios libres más cercanos son: ${uniqueAvailableSlots.slice(0, 5).join(', ')}. Puedes reservar directamente en nuestro portal de reservas en segundos 👇\n${bookingLink}`;
+        const isConfirmingTime = aiResponse.toLowerCase().includes('confirma') || aiResponse.includes('?date=');
+        if (isConfirmingTime) {
+            const horaEnRespuesta = extractTimeFromResponse(aiResponse);
+            const uniqueAvailableSlots = Array.from(new Set(allAvailableSlots));
+            if (horaEnRespuesta && !uniqueAvailableSlots.includes(horaEnRespuesta)) {
+                console.warn(`[Guardrail] AI hallucinated slot ${horaEnRespuesta}. Reverting to standard safe options.`);
+                aiResponse = `Lo siento, ese horario no está disponible por el momento. Los horarios libres más cercanos son: ${uniqueAvailableSlots.slice(0, 5).join(', ')}. Puedes reservar directamente en nuestro portal de reservas en segundos 👇\n${bookingLink}`;
+            }
         }
 
         // 10. Send message using the Gateway API
