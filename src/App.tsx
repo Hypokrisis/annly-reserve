@@ -31,6 +31,7 @@ import AppointmentsPage from './pages/dashboard/AppointmentsPage';
 import ClientsPage from './pages/dashboard/ClientsPage';
 import CampaignsPage from './pages/dashboard/CampaignsPage';
 import BusinessSettingsPage from './pages/dashboard/BusinessSettingsPage';
+import AIAssistantPage from './pages/dashboard/AIAssistantPage';
 import CreateBusinessPage from './pages/dashboard/CreateBusinessPage';
 import SubscriptionPage from './pages/dashboard/SubscriptionPage';
 
@@ -180,6 +181,21 @@ export default function App() {
                         <RequireBusiness>
                           <RequireRole requiredRole={['owner', 'admin']}>
                             <BusinessSettingsPage />
+                          </RequireRole>
+                        </RequireBusiness>
+                      </RequireOwner>
+                    </AuthGuard>
+                  }
+                />
+
+                <Route
+                  path="/dashboard/ai-assistant"
+                  element={
+                    <AuthGuard>
+                      <RequireOwner>
+                        <RequireBusiness>
+                          <RequireRole requiredRole={['owner', 'admin']}>
+                            <AIAssistantPage />
                           </RequireRole>
                         </RequireBusiness>
                       </RequireOwner>

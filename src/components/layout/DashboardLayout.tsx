@@ -16,7 +16,8 @@ import {
     CreditCard,
     Zap,
     Moon,
-    Sun
+    Sun,
+    Sparkles
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -35,6 +36,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         { name: 'Servicios',      href: '/dashboard/services',     icon: Scissors,        roles: ['owner', 'admin'] },
         { name: 'Equipo',         href: '/dashboard/barbers',      icon: Users,           roles: ['owner', 'admin'] },
         { name: 'Horarios',       href: '/dashboard/schedules',    icon: Clock,           roles: ['owner', 'admin'] },
+        { name: 'Asistente IA',   href: '/dashboard/ai-assistant', icon: Sparkles,        roles: ['owner', 'admin'] },
         { name: 'Citas',          href: '/dashboard/appointments', icon: Calendar,        roles: ['owner', 'admin', 'staff'] },
         { name: 'Clientes',       href: '/dashboard/clients',      icon: Users,           roles: ['owner', 'admin'] },
         { name: 'Marketing',      href: '/dashboard/campaigns',    icon: Zap,             roles: ['owner', 'admin'] },
