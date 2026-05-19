@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useBarbers } from '@/hooks/useBarbers';
@@ -91,7 +91,7 @@ export default function SchedulesPage() {
         const sourceDay = weekSchedule.find(d => d.dayOfWeek === dayOfWeek);
         if (!sourceDay) return;
 
-        if (!confirm(`¿Copiar el horario de ${getDayName(dayOfWeek)} a todos los días?`)) {
+        if (!confirm(`Â¿Copiar el horario de ${getDayName(dayOfWeek)} a todos los dÃ­as?`)) {
             return;
         }
 
@@ -213,7 +213,7 @@ export default function SchedulesPage() {
                         </div>
                     )
                 ) : (
-                    <div className="bg-white rounded-2xl p-12 text-center border-2 border-dashed border-space-border">
+                    <div className="bg-space-card rounded-2xl p-12 text-center border-2 border-dashed border-space-border">
                         <div className="w-14 h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Calendar size={28} className="text-space-muted" />
                         </div>
@@ -226,3 +226,4 @@ export default function SchedulesPage() {
         </DashboardLayout>
     );
 }
+

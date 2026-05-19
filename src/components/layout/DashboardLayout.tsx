@@ -90,7 +90,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             {/* ── Sidebar ───────────────────────────────────────── */}
             <aside className={`
                 fixed lg:sticky top-0 inset-y-0 left-0 w-64 
-                bg-white border-r border-space-border z-50 
+                bg-space-card border-r border-space-border z-50 
                 flex flex-col h-screen
                 transform transition-transform duration-300 ease-in-out
                 lg:translate-x-0 overflow-y-auto
@@ -188,7 +188,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 </Link>
                 
                 <div className="relative">
-                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-16 h-16 bg-space-primary rounded-full flex items-center justify-center text-white shadow-xl border-4 border-white active:scale-90 transition-transform overflow-hidden">
+                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-16 h-16 bg-space-primary rounded-full flex items-center justify-center text-white shadow-xl border-4 border-space-card active:scale-90 transition-transform overflow-hidden">
                         <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                     </div>
                 </div>

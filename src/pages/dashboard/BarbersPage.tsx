@@ -220,7 +220,7 @@ export default function BarbersPage() {
                 {loading && barbers.length === 0 ? (
                     <div className="flex justify-center py-20"><LoadingSpinner /></div>
                 ) : barbers.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-16 text-center border-2 border-dashed border-space-border animate-fade-up">
+                    <div className="bg-space-card rounded-2xl p-16 text-center border-2 border-dashed border-space-border animate-fade-up">
                         <div className="w-14 h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
                             <UsersIcon size={28} className="text-space-muted" />
                         </div>
@@ -279,7 +279,7 @@ export default function BarbersPage() {
                                             </div>
                                             <div className="text-center">
                                                 <p className="text-[9px] font-black text-space-muted uppercase tracking-widest">Esta Semana</p>
-                                                <p className="text-lg font-black text-emerald-600">{barberStats[barber.id].thisWeek}</p>
+                                            <p className="text-lg font-black text-space-success">{barberStats[barber.id].thisWeek}</p>
                                             </div>
                                         </div>
                                     )}
@@ -287,24 +287,24 @@ export default function BarbersPage() {
                                     <div className="flex items-center justify-between pt-4 border-t border-space-border/20">
                                         <div className="flex items-center gap-1.5">
                                             <button onClick={() => handleOpenModal(barber)}
-                                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-neutral-50 text-space-muted hover:text-white hover:bg-space-primary transition-all border border-transparent shadow-sm" title="Editar">
+                                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-space-card2 text-space-muted hover:text-white hover:bg-space-primary transition-all border border-space-border shadow-sm" title="Editar">
                                                 <Edit2 size={14} />
                                             </button>
                                             {barber.is_active ? (
                                                 <button onClick={() => handleDelete(barber)}
-                                                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-neutral-50 text-space-muted hover:text-white hover:bg-space-danger transition-all border border-transparent shadow-sm"
+                                                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-space-card2 text-space-muted hover:text-white hover:bg-space-danger transition-all border border-space-border shadow-sm"
                                                     title="Desactivar">
                                                     <UserMinus size={14} />
                                                 </button>
                                             ) : (
                                                 <button onClick={() => updateBarber(barber.id, { is_active: true })}
-                                                    className="px-3 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-space-success bg-white border border-space-success/20 hover:bg-space-success hover:text-white transition-all shadow-sm">
+                                                    className="px-3 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-space-success bg-space-card2 border border-space-success/20 hover:bg-space-success hover:text-white transition-all shadow-sm">
                                                     Activar
                                                 </button>
                                             )}
                                         </div>
                                         <button onClick={() => handleHardDelete(barber)}
-                                            className="w-9 h-9 flex items-center justify-center rounded-xl bg-red-50 text-space-danger hover:bg-space-danger hover:text-white transition-all border border-red-100 shadow-sm"
+                                            className="w-9 h-9 flex items-center justify-center rounded-xl bg-space-danger/10 text-space-danger hover:bg-space-danger hover:text-white transition-all border border-space-danger/20 shadow-sm"
                                             title="Eliminar permanentemente">
                                             <ShieldAlert size={14} />
                                         </button>
@@ -341,7 +341,7 @@ export default function BarbersPage() {
                                 <label className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2 mb-1.5 block">Biografía</label>
                                 <textarea value={formData.bio}
                                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                    className="w-full px-5 py-3 bg-neutral-50 border border-space-border/20 rounded-2xl text-sm font-medium text-space-text focus:bg-white focus:ring-4 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-neutral-300 resize-none min-h-[80px]" placeholder="Información sobre el barbero" />
+                                    className="w-full px-5 py-3 bg-space-card2 border border-space-border/40 rounded-2xl text-sm font-medium text-space-text focus:bg-space-card focus:ring-4 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-space-muted/40 resize-none min-h-[80px]" placeholder="Información sobre el barbero" />
                             </div>
 
                             <div>
@@ -349,10 +349,10 @@ export default function BarbersPage() {
                                 {services.length === 0 ? (
                                     <p className="text-sm text-space-muted italic p-4 bg-neutral-50 rounded-xl border border-dashed border-space-border">No hay servicios creados aún. Ve a la página de Servicios primero.</p>
                                 ) : (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-space-border/30 rounded-2xl p-3 bg-neutral-50/50">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-space-border/30 rounded-2xl p-3 bg-space-card2/50">
                                         {services.map((service) => (
                                             <label key={service.id}
-                                                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${selectedServices.includes(service.id) ? 'bg-white border-space-primary shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}>
+                                                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${selectedServices.includes(service.id) ? 'bg-space-card border-space-primary shadow-sm' : 'bg-transparent border-transparent hover:bg-space-card/50'}`}>
                                                 <input type="checkbox"
                                                     checked={selectedServices.includes(service.id)}
                                                     onChange={() => toggleService(service.id)}
@@ -366,7 +366,7 @@ export default function BarbersPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-neutral-100 sticky bottom-0 bg-white z-10 pb-2">
+                        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-space-border sticky bottom-0 bg-space-card z-10 pb-2">
                             <button type="button" onClick={handleCloseModal} className="btn-secondary w-full sm:w-auto h-12 rounded-2xl font-bold uppercase tracking-widest text-[10px]">Cancelar</button>
                             <button type="submit" disabled={loading} className="btn-primary w-full sm:w-auto h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-space-primary/15">
                                 {loading ? 'Guardando...' : editingBarber ? 'Actualizar' : 'Crear'}
@@ -379,7 +379,7 @@ export default function BarbersPage() {
                 <Modal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)}
                     title="👑 Plan Superior Requerido" size="md">
                     <div className="p-6 text-center space-y-6">
-                        <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                        <div className="w-16 h-16 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto shadow-sm">
                             <ShieldAlert size={32} />
                         </div>
                         <div className="space-y-2">

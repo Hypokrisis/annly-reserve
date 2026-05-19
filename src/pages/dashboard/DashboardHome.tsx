@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,7 +42,7 @@ export default function DashboardHome() {
 
             const confirmed = appointments.filter(a => a.status === 'confirmed' || a.status === 'completed');
             
-            // ── TREND CALCULATIONS (This Week vs Last Week) ──
+            // â”€â”€ TREND CALCULATIONS (This Week vs Last Week) â”€â”€
             const now = new Date();
             const currWeekStart = new Date(new Date().setDate(now.getDate() - now.getDay()));
             const lastWeekStart = new Date(new Date().setDate(currWeekStart.getDate() - 7));
@@ -58,7 +58,7 @@ export default function DashboardHome() {
             const revTrend = lastWeekRev > 0 ? ((thisWeekRev - lastWeekRev) / lastWeekRev) * 100 : 0;
             const aptTrend = lastWeekApts.length > 0 ? ((thisWeekApts.length - lastWeekApts.length) / lastWeekApts.length) * 100 : 0;
 
-            // ── GENERAL STATS ──
+            // â”€â”€ GENERAL STATS â”€â”€
             const revenue = confirmed.reduce((acc, curr) => acc + ((curr.services as any)?.price || 0), 0);
             
             const customerCounts = appointments.reduce((acc, curr) => {
@@ -157,17 +157,17 @@ export default function DashboardHome() {
 
 
     const quickActions = [
-        { to: '/dashboard/services',     icon: Scissors, label: 'Servicios',   desc: 'Precios y duración' },
-        { to: '/dashboard/barbers',      icon: Users,    label: 'Equipo',      desc: 'Añade barberos' },
+        { to: '/dashboard/services',     icon: Scissors, label: 'Servicios',   desc: 'Precios y duraciÃ³n' },
+        { to: '/dashboard/barbers',      icon: Users,    label: 'Equipo',      desc: 'AÃ±ade barberos' },
         { to: '/dashboard/schedules',    icon: Clock,    label: 'Horarios',    desc: 'Define disponibilidad' },
-        { to: '/dashboard/appointments', icon: Calendar, label: 'Citas',       desc: 'Ver agenda del día' },
+        { to: '/dashboard/appointments', icon: Calendar, label: 'Citas',       desc: 'Ver agenda del dÃ­a' },
     ];
 
     return (
         <DashboardLayout>
             <div className="animate-fade-up pb-10">
 
-                {/* ── 5-SECOND PULSE HEADER ──────────────────────────── */}
+                {/* â”€â”€ 5-SECOND PULSE HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
                     <div className="flex items-center gap-5">
                         <div className="w-16 h-16 rounded-[1.5rem] bg-space-text border-2 border-space-border/20 overflow-hidden shadow-lg flex items-center justify-center shrink-0">
@@ -179,18 +179,18 @@ export default function DashboardHome() {
                         </div>
                         <div>
                             <h1 className="text-2xl font-black text-space-text tracking-tighter uppercase italic leading-none mb-1">
-                                {business?.name || 'Mi Barbería'}
+                                {business?.name || 'Mi BarberÃ­a'}
                             </h1>
                             <p className="text-[10px] font-black text-space-muted uppercase tracking-[0.3em] flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-space-success animate-pulse" />
-                                Sistema en línea • {role === 'owner' ? 'Panel de Control' : 'Vista de Staff'}
+                                Sistema en lÃ­nea â€¢ {role === 'owner' ? 'Panel de Control' : 'Vista de Staff'}
                             </p>
                         </div>
                     </div>
 
                     {/* Quick Stats Banner */}
                     <div className="flex flex-wrap items-center gap-4">
-                        <div className="px-5 py-3 bg-white rounded-2xl border border-space-border/40 shadow-sm flex items-center gap-4">
+                        <div className="px-5 py-3 bg-space-card rounded-2xl border border-space-border/40 shadow-sm flex items-center gap-4">
                             <div>
                                 <p className="text-[9px] font-black text-space-muted uppercase tracking-widest mb-0.5">Ingresos Totales</p>
                                 <p className="text-lg font-black text-space-text">{formatCurrency(statsData.totalRevenue)}</p>
@@ -201,7 +201,7 @@ export default function DashboardHome() {
                                 </div>
                             )}
                         </div>
-                        <div className="px-5 py-3 bg-white rounded-2xl border border-space-border/40 shadow-sm flex items-center gap-4">
+                        <div className="px-5 py-3 bg-space-card rounded-2xl border border-space-border/40 shadow-sm flex items-center gap-4">
                             <div>
                                 <p className="text-[9px] font-black text-space-muted uppercase tracking-widest mb-0.5">Total Citas</p>
                                 <p className="text-lg font-black text-space-text">{statsData.totalAppointments}</p>
@@ -215,13 +215,13 @@ export default function DashboardHome() {
                     </div>
                 </div>
 
-                {/* ── MAIN GRID ───────────────────────────────────── */}
+                {/* â”€â”€ MAIN GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                     
                     {/* Left Column: Activity & Link (8 cols) */}
                     <div className="xl:col-span-8 space-y-8">
                         
-                        {/* ── Today's Pulse ── */}
+                        {/* â”€â”€ Today's Pulse â”€â”€ */}
                         <section>
                             <div className="flex items-center justify-between mb-5">
                                 <h2 className="text-sm font-black text-space-text uppercase tracking-[0.2em] flex items-center gap-2">
@@ -237,7 +237,7 @@ export default function DashboardHome() {
                                 <div className="card p-10 text-center border-2 border-dashed border-space-border/60 bg-neutral-50/50">
                                     <Calendar size={32} className="text-space-muted mx-auto mb-3 opacity-20" />
                                     <p className="text-[11px] font-black text-space-muted uppercase tracking-widest">Sin citas confirmadas para hoy</p>
-                                    <p className="text-[9px] text-space-muted/60 mt-2 font-bold uppercase">Tus clientes verán los huecos libres en tu página</p>
+                                    <p className="text-[9px] text-space-muted/60 mt-2 font-bold uppercase">Tus clientes verÃ¡n los huecos libres en tu pÃ¡gina</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -254,7 +254,7 @@ export default function DashboardHome() {
                                                 </div>
                                             </div>
                                             <div className="text-right flex flex-col items-end gap-1">
-                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-100 rounded-lg text-[8px] font-black uppercase text-space-muted tracking-widest">
+                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-space-border/40 rounded-lg text-[8px] font-black uppercase text-space-muted tracking-widest">
                                                     <Users size={10} className="text-space-primary" />
                                                     {(apt.barbers as any)?.name || 'Auto'}
                                                 </div>
@@ -265,7 +265,7 @@ export default function DashboardHome() {
                             )}
                         </section>
 
-                        {/* ── Link & Growth ── */}
+                        {/* â”€â”€ Link & Growth â”€â”€ */}
                         <section className="bg-space-text rounded-[2.5rem] p-8 sm:p-10 relative overflow-hidden shadow-2xl border border-white/5 group">
                             <div className="absolute top-0 right-0 w-80 h-80 bg-space-primary/10 rounded-full blur-[100px] -mr-40 -mt-40 group-hover:bg-space-primary/20 transition-all duration-700" />
                             <div className="relative z-10">
@@ -291,7 +291,7 @@ export default function DashboardHome() {
                             </div>
                         </section>
 
-                        {/* ── Top Performance ── */}
+                        {/* â”€â”€ Top Performance â”€â”€ */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Top Services */}
                             <div className="card p-6 bg-white">
@@ -306,7 +306,7 @@ export default function DashboardHome() {
                                                 <span className="text-space-text">{idx + 1}. {s.name}</span>
                                                 <span className="text-space-muted">{s.count}</span>
                                             </div>
-                                            <div className="w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                                            <div className="w-full h-1.5 bg-space-border/40 rounded-full overflow-hidden">
                                                 <div className="h-full bg-space-primary" style={{ width: `${(s.count / (statsData.topServices[0]?.count || 1)) * 100}%` }} />
                                             </div>
                                         </div>
@@ -316,12 +316,12 @@ export default function DashboardHome() {
                             {/* Top Team */}
                             <div className="card p-6 bg-white">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em]">Líderes de Equipo</h3>
+                                    <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em]">LÃ­deres de Equipo</h3>
                                     <Award size={14} className="text-indigo-600" />
                                 </div>
                                 <div className="space-y-3">
                                     {statsData.topBarbers.map((b, idx) => (
-                                        <div key={b.name} className="flex items-center justify-between p-3 bg-neutral-50 rounded-xl border border-neutral-100">
+                                        <div key={b.name} className="flex items-center justify-between p-3 bg-space-card2 rounded-xl border border-space-border">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-black text-[10px]">{idx + 1}</div>
                                                 <span className="text-[11px] font-black text-space-text uppercase tracking-tight truncate max-w-[80px]">{b.name}</span>
@@ -337,9 +337,9 @@ export default function DashboardHome() {
                     {/* Right Column: Pulse & Insights (4 cols) */}
                     <div className="xl:col-span-4 space-y-8">
                         
-                        {/* ── Plan Usage / Limits ── */}
+                        {/* â”€â”€ Plan Usage / Limits â”€â”€ */}
                         {role === 'owner' && (
-                            <section className="card p-6 bg-white border border-space-border/20 shadow-sm space-y-6">
+                            <section className="card p-6 bg-space-card border border-space-border/20 shadow-sm space-y-6">
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.3em] flex items-center gap-1.5">
                                         <Award size={14} className="text-space-primary" />
@@ -347,7 +347,7 @@ export default function DashboardHome() {
                                     </h3>
                                     <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${
                                         subscription?.tier_id === 'premium' ? 'bg-yellow-100 text-yellow-700' :
-                                        subscription?.tier_id === 'essential' ? 'bg-space-primary/10 text-space-primary' : 'bg-gray-100 text-gray-700'
+                                        subscription?.tier_id === 'essential' ? 'bg-space-primary/10 text-space-primary' : 'bg-space-card2 text-space-muted'
                                     }`}>
                                         {subscription?.subscription_tiers?.name || 'Spacey Starter'}
                                     </span>
@@ -362,7 +362,7 @@ export default function DashboardHome() {
                                                 {barbers.filter(b => b.is_active).length} / {subscription?.subscription_tiers?.max_barbers || 3}
                                             </span>
                                         </div>
-                                        <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
+                                        <div className="w-full h-2 bg-space-border/40 rounded-full overflow-hidden">
                                             <div 
                                                 className={`h-full rounded-full transition-all duration-500 ${
                                                     barbers.filter(b => b.is_active).length >= (subscription?.subscription_tiers?.max_barbers || 3) ? 'bg-space-danger' : 'bg-space-primary'
@@ -377,10 +377,10 @@ export default function DashboardHome() {
                                         <div className="flex justify-between text-[10px] font-black uppercase mb-1">
                                             <span className="text-space-text">Citas de este Mes</span>
                                             <span className="text-space-muted font-mono">
-                                                {monthlyAppointmentsCount} / {subscription?.subscription_tiers?.max_monthly_appointments === 999999 ? '∞' : (subscription?.subscription_tiers?.max_monthly_appointments || 150)}
+                                                {monthlyAppointmentsCount} / {subscription?.subscription_tiers?.max_monthly_appointments === 999999 ? 'âˆž' : (subscription?.subscription_tiers?.max_monthly_appointments || 150)}
                                             </span>
                                         </div>
-                                        <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
+                                        <div className="w-full h-2 bg-space-border/40 rounded-full overflow-hidden">
                                             <div 
                                                 className={`h-full rounded-full transition-all duration-500 ${
                                                     subscription?.subscription_tiers?.max_monthly_appointments !== 999999 && monthlyAppointmentsCount >= (subscription?.subscription_tiers?.max_monthly_appointments || 150) ? 'bg-space-danger' : 
@@ -397,12 +397,12 @@ export default function DashboardHome() {
                                     <div className="pt-2">
                                         {((subscription?.subscription_tiers?.max_monthly_appointments !== 999999 && monthlyAppointmentsCount >= (subscription?.subscription_tiers?.max_monthly_appointments || 150)) ||
                                          (barbers.filter(b => b.is_active).length >= (subscription?.subscription_tiers?.max_barbers || 3))) ? (
-                                            <div className="p-3 bg-red-50 border border-red-200 rounded-xl mb-4 text-[9px] font-black uppercase tracking-wider text-space-danger leading-relaxed">
-                                                ⚠️ Has alcanzado el límite de tu plan. Ciertas funciones o nuevas citas se encuentran bloqueadas.
+                                            <div className="p-3 bg-space-danger/10 border border-space-danger/30 rounded-xl mb-4 text-[9px] font-black uppercase tracking-wider text-space-danger leading-relaxed">
+                                                âš ï¸ Has alcanzado el lÃ­mite de tu plan. Ciertas funciones o nuevas citas se encuentran bloqueadas.
                                             </div>
                                          ) : (subscription?.subscription_tiers?.max_monthly_appointments !== 999999 && monthlyAppointmentsCount >= (subscription?.subscription_tiers?.max_monthly_appointments || 150) * 0.8) ? (
                                             <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-[9px] font-black uppercase tracking-wider text-amber-700 leading-relaxed">
-                                                ⚠️ Estás cerca del límite de citas de tu plan Starter. ¡Sube de plan para evitar bloquear reservas!
+                                                âš ï¸ EstÃ¡s cerca del lÃ­mite de citas de tu plan Starter. Â¡Sube de plan para evitar bloquear reservas!
                                             </div>
                                          ) : null}
 
@@ -418,7 +418,7 @@ export default function DashboardHome() {
                             </section>
                         )}
                         
-                        {/* ── Retention Pulse ── */}
+                        {/* â”€â”€ Retention Pulse â”€â”€ */}
                         <section className="card p-8 bg-space-text text-white border-none shadow-xl relative overflow-hidden min-h-[300px] flex flex-col justify-between">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-space-primary/20 rounded-full blur-3xl -mr-16 -mt-16" />
                             <div>
@@ -427,11 +427,11 @@ export default function DashboardHome() {
                                         <PieChart size={14} className="text-space-primary" />
                                         Rendimiento
                                     </h2>
-                                    <span className="px-2 py-0.5 bg-white/10 rounded-md text-[8px] font-black text-white/40">ANÁLISIS PRO</span>
+                                    <span className="px-2 py-0.5 bg-white/10 rounded-md text-[8px] font-black text-white/40">ANÃLISIS PRO</span>
                                 </div>
                                 
                                 <div className="mb-6">
-                                    <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-2">Tasa de Retención</p>
+                                    <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-2">Tasa de RetenciÃ³n</p>
                                     <div className="flex items-baseline gap-2">
                                         <p className="text-5xl font-black text-white tracking-tighter italic">{statsData.returningRate.toFixed(1)}%</p>
                                         <TrendingUp size={20} className="text-space-primary" />
@@ -444,24 +444,24 @@ export default function DashboardHome() {
                                     <div className="h-full bg-space-primary shadow-[0_0_15px_rgba(74,132,99,0.5)]" style={{ width: `${statsData.returningRate}%` }} />
                                 </div>
                                 <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest leading-relaxed">
-                                    {statsData.returningRate > 50 ? '🎉 Fidelización brutal. Sigue así.' : '⚠️ Enfócate en la experiencia para subir la retención.'}
+                                    {statsData.returningRate > 50 ? 'ðŸŽ‰ FidelizaciÃ³n brutal. Sigue asÃ­.' : 'âš ï¸ EnfÃ³cate en la experiencia para subir la retenciÃ³n.'}
                                 </p>
                             </div>
                         </section>
 
-                        {/* ── Visibility Status ── */}
-                        <section className="card p-6 bg-white border border-space-border/20">
+                        {/* â”€â”€ Visibility Status â”€â”€ */}
+                        <section className="card p-6 bg-space-card border border-space-border/20">
                             <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
                                 <MapPin size={14} className="text-space-primary" />
                                 Presencia en Mapa
                             </h3>
                             <div className="space-y-3">
                                 {[
-                                    { label: 'Ahorro', active: services.some(s => s.price >= 10 && s.price <= 15), icon: '🪫' },
-                                    { label: 'Premium', active: services.some(s => s.price >= 40), icon: '⚡' },
-                                    { label: 'Popular', active: services.length > 5, icon: '🔥' }
+                                    { label: 'Ahorro', active: services.some(s => s.price >= 10 && s.price <= 15), icon: 'ðŸª«' },
+                                    { label: 'Premium', active: services.some(s => s.price >= 40), icon: 'âš¡' },
+                                    { label: 'Popular', active: services.length > 5, icon: 'ðŸ”¥' }
                                 ].map((mode) => (
-                                    <div key={mode.label} className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${mode.active ? 'bg-neutral-50 border-neutral-200 opacity-100' : 'bg-white border-transparent opacity-30 shadow-none'}`}>
+                                    <div key={mode.label} className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${mode.active ? 'bg-space-card2 border-space-border opacity-100' : 'bg-space-card border-transparent opacity-30 shadow-none'}`}>
                                         <div className="flex items-center gap-3">
                                             <span className="text-lg">{mode.icon}</span>
                                             <span className="text-[10px] font-black uppercase tracking-widest text-space-text">{mode.label}</span>
@@ -472,10 +472,10 @@ export default function DashboardHome() {
                             </div>
                         </section>
 
-                        {/* ── Revenue Chart Small ── */}
-                        <section className="card p-6 bg-white border border-space-border/20">
+                        {/* â”€â”€ Revenue Chart Small â”€â”€ */}
+                        <section className="card p-6 bg-space-card border border-space-border/20">
                             <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.3em] mb-6 flex items-center justify-between">
-                                Tendencia 7 Días
+                                Tendencia 7 DÃ­as
                                 <span className="text-space-primary font-black">+{statsData.revenueTrend.toFixed(0)}%</span>
                             </h3>
                             <div className="flex items-end justify-between h-24 gap-1.5 px-1">
@@ -497,7 +497,7 @@ export default function DashboardHome() {
                     </div>
                 </div>
 
-                {/* ── QUICK ACTIONS (BOTTOM) ────────────────────────────── */}
+                {/* â”€â”€ QUICK ACTIONS (BOTTOM) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
                 <div className="mt-12">
                      <h2 className="text-sm font-black text-space-text uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                         <ArrowRight size={16} className="text-space-primary" />
@@ -519,3 +519,4 @@ export default function DashboardHome() {
         </DashboardLayout>
     );
 }
+

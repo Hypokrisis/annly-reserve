@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/supabaseClient';
@@ -45,10 +45,15 @@ export default function AIAssistantPage() {
         whatsapp_bot_prompt: '',
     });
 
-    // QR Simulated scan modal
+    // QR scan modal state
     const [qrModalOpen, setQrModalOpen] = useState(false);
     const [qrSimulatedScan, setQrSimulatedScan] = useState(false);
-    const [qrScanStep, setQrScanStep] = useState(0);
+    const [qrScanStep, setQrScanStep] = useState(0); // 1=loading, 2=show QR, 3=connected, 4=expired
+    const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
+    const [qrCountdown, setQrCountdown] = useState(60);
+    const [isSandboxMode, setIsSandboxMode] = useState(false);
+    const qrPollingRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+    const qrCountdownRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Onboarding tutorial active tab
     const [activeTutorialStep, setActiveTutorialStep] = useState(0);
@@ -56,7 +61,7 @@ export default function AIAssistantPage() {
     // Simulator Interactive Chat
     const [simInput, setSimInput] = useState('');
     const [simulatorMessages, setSimulatorMessages] = useState<Array<{ sender: 'user' | 'bot', text: string, time: string }>>([
-        { sender: 'bot', text: '¡Hola! 💈 Bienvenido al chat de prueba. Escribe un mensaje (ej: "precios", "hola", "tienen citas hoy en la tarde") para ver cómo responde la IA con tus instrucciones actuales en tiempo real.', time: '12:00 PM' }
+        { sender: 'bot', text: 'Â¡Hola! ðŸ’ˆ Bienvenido al chat de prueba. Escribe un mensaje (ej: "precios", "hola", "tienen citas hoy en la tarde") para ver cÃ³mo responde la IA con tus instrucciones actuales en tiempo real.', time: '12:00 PM' }
     ]);
     const [isBotTyping, setIsBotTyping] = useState(false);
 
@@ -120,9 +125,9 @@ export default function AIAssistantPage() {
             if (error) throw error;
             
             if (newVal) {
-                toast.success('🤖 Asistente de IA Activo en vivo');
+                toast.success('ðŸ¤– Asistente de IA Activo en vivo');
             } else {
-                toast.success('🔇 Asistente de IA Pausado al instante');
+                toast.success('ðŸ”‡ Asistente de IA Pausado al instante');
             }
         } catch (err) {
             console.error('Error toggling bot active:', err);
@@ -152,10 +157,10 @@ export default function AIAssistantPage() {
                 .eq('id', currentBusiness.id);
 
             if (error) throw error;
-            toast.success('✨ Configuración de IA guardada con éxito.');
+            toast.success('âœ¨ ConfiguraciÃ³n de IA guardada con Ã©xito.');
         } catch (err: any) {
             console.error('Error saving AI config:', err);
-            toast.error('Ocurrió un error al guardar la configuración.');
+            toast.error('OcurriÃ³ un error al guardar la configuraciÃ³n.');
         } finally {
             setSaving(false);
         }
@@ -165,61 +170,131 @@ export default function AIAssistantPage() {
     const applyPreset = (presetName: 'colega' | 'premium' | 'rapido') => {
         let promptText = '';
         if (presetName === 'colega') {
-            promptText = `Actúa como un barbero pana, súper carismático y de confianza. Usa modismos locales amigables. Saluda con entusiasmo ("¡Dímelo hermano! 🔥", "Qué es la que hay combo 💈").
+            promptText = `ActÃºa como un barbero pana, sÃºper carismÃ¡tico y de confianza. Usa modismos locales amigables. Saluda con entusiasmo ("Â¡DÃ­melo hermano! ðŸ”¥", "QuÃ© es la que hay combo ðŸ’ˆ").
 Explica de manera bien fluida y relajada los precios, horarios o las ofertas activas.
-Sé directo al grano, mantén los textos súper cortos y siempre anima al cliente a agendar su espacio en un toque con el enlace de reservas.`;
+SÃ© directo al grano, mantÃ©n los textos sÃºper cortos y siempre anima al cliente a agendar su espacio en un toque con el enlace de reservas.`;
             setFormData(prev => ({ ...prev, whatsapp_bot_personality: 'cool', whatsapp_bot_prompt: promptText }));
         } else if (presetName === 'premium') {
-            promptText = `Actúa como el recepcionista exclusivo de un distinguido salón de belleza y cuidado premium. Mantén un tono sumamente sofisticado, educado, atento y elegante. Saluda con cortesía ("Muy buenos días, estimado cliente. Es un placer asistirle en nuestro salón 👑").
-Explica detalladamente las comodidades del salón, el catálogo de servicios refinados y las promociones vigentes.
-Guía cordialmente al usuario a seleccionar su fecha ideal confirmando su cita en nuestro distinguido enlace oficial.`;
+            promptText = `ActÃºa como el recepcionista exclusivo de un distinguido salÃ³n de belleza y cuidado premium. MantÃ©n un tono sumamente sofisticado, educado, atento y elegante. Saluda con cortesÃ­a ("Muy buenos dÃ­as, estimado cliente. Es un placer asistirle en nuestro salÃ³n ðŸ‘‘").
+Explica detalladamente las comodidades del salÃ³n, el catÃ¡logo de servicios refinados y las promociones vigentes.
+GuÃ­a cordialmente al usuario a seleccionar su fecha ideal confirmando su cita en nuestro distinguido enlace oficial.`;
             setFormData(prev => ({ ...prev, whatsapp_bot_personality: 'executive', whatsapp_bot_prompt: promptText }));
         } else {
-            promptText = `Actúa como un asistente virtual sumamente ágil, conciso y eficiente. Responde rápido, en oraciones cortas y con emojis sutiles.
-Proporciona la lista de servicios principales de inmediato, responde dudas puntuales en viñetas ordenadas y entrega el enlace directo para programar la cita sin rodeos innecesarios. Evita saludos largos.`;
+            promptText = `ActÃºa como un asistente virtual sumamente Ã¡gil, conciso y eficiente. Responde rÃ¡pido, en oraciones cortas y con emojis sutiles.
+Proporciona la lista de servicios principales de inmediato, responde dudas puntuales en viÃ±etas ordenadas y entrega el enlace directo para programar la cita sin rodeos innecesarios. Evita saludos largos.`;
             setFormData(prev => ({ ...prev, whatsapp_bot_personality: 'quick', whatsapp_bot_prompt: promptText }));
         }
         toast.success(`Plantilla aplicada. Modifica las instrucciones si quieres!`);
     };
 
-    // Simulated QR linking flow
-    const startQrLinkFlow = () => {
+    // Real WhatsApp QR linking flow
+    const startQrLinkFlow = async () => {
         setQrModalOpen(true);
         setQrScanStep(1);
-        setTimeout(() => {
-            setQrScanStep(2);
-            setTimeout(async () => {
-                try {
-                    if (currentBusiness) {
-                        await supabase
-                            .from('businesses')
-                            .update({ whatsapp_device_connected: true })
-                            .eq('id', currentBusiness.id);
-                    }
-                    setQrSimulatedScan(true);
-                    setFormData(prev => ({ ...prev, whatsapp_device_connected: true }));
-                    setQrScanStep(3);
-                    toast.success('📱 ¡WhatsApp conectado con éxito!');
-                } catch (err) {
-                    console.error('Error linking QR:', err);
+        setQrCountdown(60);
+        setQrImageUrl(null);
+        setIsSandboxMode(false);
+
+        const gatewayUrl = import.meta.env.VITE_WHATSAPP_GATEWAY_URL;
+        let usedRealGateway = false;
+
+        if (gatewayUrl && currentBusiness) {
+            try {
+                const res = await fetch(`${gatewayUrl}/instance/qrcode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ instance_id: currentBusiness.id }),
+                    signal: AbortSignal.timeout(6000),
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setQrImageUrl(data.qr_image_url ?? data.qr ?? null);
+                    usedRealGateway = true;
+                    setQrScanStep(2);
+                    startQrPolling();
+                    startQrCountdown();
                 }
-            }, 3500);
-        }, 1500);
+            } catch {
+                // Gateway offline â€” fall through to sandbox
+            }
+        }
+
+        if (!usedRealGateway) {
+            // Sandbox fallback: show static QR + auto-simulate connection
+            setIsSandboxMode(true);
+            setQrImageUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=SpaceyReserveSandbox_${Date.now()}`);
+            setQrScanStep(2);
+            startQrCountdown();
+            // Auto-complete after 4s in sandbox
+            setTimeout(async () => {
+                if (currentBusiness) {
+                    await supabase.from('businesses').update({ whatsapp_device_connected: true }).eq('id', currentBusiness.id);
+                }
+                handleQrConnected();
+            }, 4000);
+        }
+    };
+
+    const startQrCountdown = () => {
+        if (qrCountdownRef.current) clearInterval(qrCountdownRef.current);
+        setQrCountdown(60);
+        qrCountdownRef.current = setInterval(() => {
+            setQrCountdown(prev => {
+                if (prev <= 1) {
+                    clearInterval(qrCountdownRef.current!);
+                    qrCountdownRef.current = null;
+                    if (qrPollingRef.current) { clearInterval(qrPollingRef.current); qrPollingRef.current = null; }
+                    setQrScanStep(4); // expired
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
+    const startQrPolling = () => {
+        if (qrPollingRef.current) clearInterval(qrPollingRef.current);
+        qrPollingRef.current = setInterval(async () => {
+            if (!currentBusiness) return;
+            const { data } = await supabase
+                .from('businesses')
+                .select('whatsapp_status, whatsapp_device_connected')
+                .eq('id', currentBusiness.id)
+                .single();
+            if (data?.whatsapp_status === 'connected' || data?.whatsapp_device_connected === true) {
+                if (qrPollingRef.current) { clearInterval(qrPollingRef.current); qrPollingRef.current = null; }
+                if (qrCountdownRef.current) { clearInterval(qrCountdownRef.current); qrCountdownRef.current = null; }
+                handleQrConnected();
+            }
+        }, 3000);
+    };
+
+    const handleQrConnected = () => {
+        setQrSimulatedScan(true);
+        setFormData(prev => ({ ...prev, whatsapp_device_connected: true }));
+        setQrScanStep(3);
+        toast.success('ðŸ“± Â¡WhatsApp conectado exitosamente!');
+    };
+
+    const handleCloseQrModal = () => {
+        setQrModalOpen(false);
+        if (qrPollingRef.current) { clearInterval(qrPollingRef.current); qrPollingRef.current = null; }
+        if (qrCountdownRef.current) { clearInterval(qrCountdownRef.current); qrCountdownRef.current = null; }
     };
 
     // Disconnect QR
     const handleDisconnectQr = async () => {
-        if (!window.confirm('¿Seguro que deseas desconectar tu celular del bot? Las respuestas automáticas se detendrán.')) return;
+        if (!window.confirm('Â¿Seguro que deseas desconectar tu celular del bot? Las respuestas automÃ¡ticas se detendrÃ¡n.')) return;
         try {
             if (currentBusiness) {
                 await supabase
                     .from('businesses')
-                    .update({ whatsapp_device_connected: false })
+                    .update({ whatsapp_device_connected: false, whatsapp_status: 'disconnected' })
                     .eq('id', currentBusiness.id);
             }
             setQrSimulatedScan(false);
             setFormData(prev => ({ ...prev, whatsapp_device_connected: false }));
-            toast.success('🔌 WhatsApp desconectado.');
+            toast.success('ðŸ”Œ WhatsApp desconectado.');
         } catch (err) {
             console.error('Error disconnecting WhatsApp:', err);
             toast.error('No se pudo desconectar el dispositivo.');
@@ -250,57 +325,57 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
 
             const getPersonalityGreeting = () => {
                 if (formData.whatsapp_bot_personality === 'cool') {
-                    return `¡Dímelo hermano! 🔥 Qué gusto saludarte en Spacey Barber Shop 💈. ¿Cómo te asisto hoy pana?`;
+                    return `Â¡DÃ­melo hermano! ðŸ”¥ QuÃ© gusto saludarte en Spacey Barber Shop ðŸ’ˆ. Â¿CÃ³mo te asisto hoy pana?`;
                 } else if (formData.whatsapp_bot_personality === 'executive') {
-                    return `Muy buenos días, estimado cliente. Es un placer saludarle en nuestro distinguido salón 👑. ¿En qué podemos servirle el día de hoy?`;
+                    return `Muy buenos dÃ­as, estimado cliente. Es un placer saludarle en nuestro distinguido salÃ³n ðŸ‘‘. Â¿En quÃ© podemos servirle el dÃ­a de hoy?`;
                 } else {
-                    return `¡Hola! Bienvenido. ¿Cómo te asisto hoy con tu cita? 🤖`;
+                    return `Â¡Hola! Bienvenido. Â¿CÃ³mo te asisto hoy con tu cita? ðŸ¤–`;
                 }
             };
 
             const getPersonalityOffer = () => {
                 if (formData.whatsapp_bot_personality === 'cool') {
-                    return `¡Durísimo! 🔥 Tenemos esta promo activa hoy: "${offer}". ¡Aprovéchala ya!`;
+                    return `Â¡DurÃ­simo! ðŸ”¥ Tenemos esta promo activa hoy: "${offer}". Â¡AprovÃ©chala ya!`;
                 } else if (formData.whatsapp_bot_personality === 'executive') {
-                    return `Le complacemos en informarle que disponemos de la siguiente cortesía exclusiva: "${offer}".`;
+                    return `Le complacemos en informarle que disponemos de la siguiente cortesÃ­a exclusiva: "${offer}".`;
                 } else {
-                    return `¡Sí! Tenemos la siguiente promoción activa hoy: "${offer}".`;
+                    return `Â¡SÃ­! Tenemos la siguiente promociÃ³n activa hoy: "${offer}".`;
                 }
             };
 
             const getPersonalityBooking = () => {
                 if (formData.whatsapp_bot_personality === 'cool') {
-                    return `¡Agenda tu cita de una en este link y separa tu espacio! 🔗 ${bookingLink} 🚀✂️`;
+                    return `Â¡Agenda tu cita de una en este link y separa tu espacio! ðŸ”— ${bookingLink} ðŸš€âœ‚ï¸`;
                 } else if (formData.whatsapp_bot_personality === 'executive') {
-                    return `Le invitamos a seleccionar su servicio y horario de preferencia mediante nuestro enlace de reserva: 🔗 ${bookingLink}`;
+                    return `Le invitamos a seleccionar su servicio y horario de preferencia mediante nuestro enlace de reserva: ðŸ”— ${bookingLink}`;
                 } else {
-                    return `Puedes reservar tu cita en segundos ingresando a este enlace: 🔗 ${bookingLink} 📅`;
+                    return `Puedes reservar tu cita en segundos ingresando a este enlace: ðŸ”— ${bookingLink} ðŸ“…`;
                 }
             };
 
             const aiPrefix = formData.whatsapp_bot_prompt 
-                ? `[🧠 IA usando tu prompt: "${formData.whatsapp_bot_prompt.substring(0, 30)}..."]\n\n`
+                ? `[ðŸ§  IA usando tu prompt: "${formData.whatsapp_bot_prompt.substring(0, 30)}..."]\n\n`
                 : '';
 
             if (lower.includes('hola') || lower.includes('buenos') || lower.includes('buenas')) {
-                botText = `${getPersonalityGreeting()}\n\nEscribe "precios", "ubicación", "ofertas" o "reservar" para asistirte.`;
+                botText = `${getPersonalityGreeting()}\n\nEscribe "precios", "ubicaciÃ³n", "ofertas" o "reservar" para asistirte.`;
             } else if (lower.includes('precio') || lower.includes('servicio') || lower.includes('cuesta')) {
                 const serviceList = services && services.length > 0 
-                    ? services.slice(0, 4).map(s => `• ${s.name}: $${s.price}`).join('\n')
-                    : '• Corte de Cabello: $20\n• Afeitado Clásico: $15\n• Combo Flow Completo: $30';
+                    ? services.slice(0, 4).map(s => `â€¢ ${s.name}: $${s.price}`).join('\n')
+                    : 'â€¢ Corte de Cabello: $20\nâ€¢ Afeitado ClÃ¡sico: $15\nâ€¢ Combo Flow Completo: $30';
                 
                 botText = `${aiPrefix}Claro, estos son algunos de nuestros servicios principales:\n\n${serviceList}\n\n${getPersonalityBooking()}`;
             } else if (lower.includes('donde') || lower.includes('ubicacion') || lower.includes('direccion') || lower.includes('como llego')) {
-                botText = `${aiPrefix}Nos encontramos ubicados en: 📍 ${address}${city ? ', ' + city : ''}.\n\n¡Te esperamos! Recuerda reservar antes para asegurar tu espacio.`;
+                botText = `${aiPrefix}Nos encontramos ubicados en: ðŸ“ ${address}${city ? ', ' + city : ''}.\n\nÂ¡Te esperamos! Recuerda reservar antes para asegurar tu espacio.`;
             } else if (lower.includes('oferta') || lower.includes('promo') || lower.includes('descuento')) {
                 botText = `${aiPrefix}${getPersonalityOffer()}\n\n${getPersonalityBooking()}`;
             } else if (lower.includes('reserva') || lower.includes('cita') || lower.includes('agendar')) {
                 botText = `${aiPrefix}${getPersonalityBooking()}`;
             } else if (lower.includes('10:00') || lower.includes('10') || lower.includes('hoy') || lower.includes('tarde')) {
                 // Mimic the exact confirmation template requested!
-                botText = `Perfecto, te apartamos las 15:30 del 2026-05-17. Confirma tu cita aquí antes de que se libere el espacio 👇\n${bookingLink}?date=2026-05-17&time=15:30\nSolo toma 30 segundos ✅`;
+                botText = `Perfecto, te apartamos las 15:30 del 2026-05-17. Confirma tu cita aquÃ­ antes de que se libere el espacio ðŸ‘‡\n${bookingLink}?date=2026-05-17&time=15:30\nSolo toma 30 segundos âœ…`;
             } else {
-                botText = `${aiPrefix}Entendido. Para cualquier consulta adicional o para agendar de inmediato, puedes usar nuestro portal de reservas en segundos: \n\n🔗 ${bookingLink}\n\n¡Esperamos verte pronto! 💈`;
+                botText = `${aiPrefix}Entendido. Para cualquier consulta adicional o para agendar de inmediato, puedes usar nuestro portal de reservas en segundos: \n\nðŸ”— ${bookingLink}\n\nÂ¡Esperamos verte pronto! ðŸ’ˆ`;
             }
 
             setSimulatorMessages(prev => [...prev, { sender: 'bot', text: botText, time: currentTime }]);
@@ -314,21 +389,21 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
             id: 'mock-1',
             from_number: '17875551234',
             user_message: 'Buenas tardes! Tienen espacio libre para recortar hoy tarde?',
-            bot_response: '¡Hola! 💈 Sí, claro que sí. En el turno de la tarde tenemos libres estos horarios: 14:00, 15:30, 16:30 y 17:30. ¿Cuál te conviene?',
+            bot_response: 'Â¡Hola! ðŸ’ˆ SÃ­, claro que sÃ­. En el turno de la tarde tenemos libres estos horarios: 14:00, 15:30, 16:30 y 17:30. Â¿CuÃ¡l te conviene?',
             created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString()
         },
         {
             id: 'mock-2',
             from_number: '17875551234',
-            user_message: 'El de las 15:30 me va perfecto, sepáramelo porfa.',
-            bot_response: `Perfecto, te apartamos las 15:30 de Hoy. Confirma tu cita aquí antes de que se libere el espacio 👇\nhttps://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'}?date=2026-05-17&time=15:30\nSolo toma 30 segundos ✅`,
+            user_message: 'El de las 15:30 me va perfecto, sepÃ¡ramelo porfa.',
+            bot_response: `Perfecto, te apartamos las 15:30 de Hoy. Confirma tu cita aquÃ­ antes de que se libere el espacio ðŸ‘‡\nhttps://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'}?date=2026-05-17&time=15:30\nSolo toma 30 segundos âœ…`,
             created_at: new Date(Date.now() - 4 * 60 * 1000).toISOString()
         },
         {
             id: 'mock-3',
             from_number: '19395556789',
-            user_message: 'Cuánto cuesta el combo de corte y afeitado de barba?',
-            bot_response: `¡Dímelo hermano! 🔥 El Combo Afeitado Clásico y Corte cuesta $30 e incluye lavado y toalla caliente 💈. ¿Te apartamos un espacio?\n\nReserva en segundos: 🔗 https://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'} 📅`,
+            user_message: 'CuÃ¡nto cuesta el combo de corte y afeitado de barba?',
+            bot_response: `Â¡DÃ­melo hermano! ðŸ”¥ El Combo Afeitado ClÃ¡sico y Corte cuesta $30 e incluye lavado y toalla caliente ðŸ’ˆ. Â¿Te apartamos un espacio?\n\nReserva en segundos: ðŸ”— https://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'} ðŸ“…`,
             created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString()
         }
     ];
@@ -340,7 +415,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
         return (
             <div className="min-h-screen bg-space-bg flex flex-col items-center justify-center space-y-4">
                 <RefreshCw className="animate-spin text-space-primary" size={32} />
-                <p className="text-white/60 font-bold uppercase tracking-wider text-xs">Cargando Centro de Inteligencia Artificial...</p>
+                <p className="text-space-muted font-bold uppercase tracking-wider text-xs">Cargando Centro de Inteligencia Artificial...</p>
             </div>
         );
     }
@@ -348,26 +423,26 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
     return (
         <div className="space-y-10 pb-16 animate-fade-in">
             
-            {/* ── HEADER CONTAINER ─────────────────────────── */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 p-6 bg-gradient-to-r from-space-card to-space-card/40 rounded-3xl border border-white/10 shadow-xl">
+            {/* â”€â”€ HEADER CONTAINER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 p-6 bg-gradient-to-r from-space-card to-space-card/40 rounded-3xl border border-space-border shadow-xl">
                 <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-space-primary/10 text-space-primary border border-space-primary/20 rounded-2xl flex items-center justify-center shadow-lg">
                         <Sparkles size={28} className="animate-pulse" />
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight leading-none">Centro de Inteligencia Artificial</h1>
+                            <h1 className="text-xl sm:text-2xl font-black text-space-text uppercase tracking-tight leading-none">Centro de Inteligencia Artificial</h1>
                             <span className="bg-space-primary/15 text-space-primary text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border border-space-primary/25">Copilot AI</span>
                         </div>
-                        <p className="text-[10px] text-white/50 uppercase font-bold tracking-widest mt-1.5 leading-relaxed">Configura tu asistente virtual, mide tus conversiones y audita logs en vivo</p>
+                        <p className="text-[10px] text-space-muted uppercase font-bold tracking-widest mt-1.5 leading-relaxed">Configura tu asistente virtual, mide tus conversiones y audita logs en vivo</p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-4">
                     <div className="text-right">
-                        <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest">Estado del Bot</p>
+                        <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">Estado del Bot</p>
                         <p className={`text-xs font-black uppercase tracking-wide mt-0.5 ${formData.whatsapp_bot_active ? 'text-space-primary' : 'text-white/40'}`}>
-                            {formData.whatsapp_bot_active ? '🤖 Activo' : '🔇 Pausado'}
+                            {formData.whatsapp_bot_active ? 'ðŸ¤– Activo' : 'ðŸ”‡ Pausado'}
                         </p>
                     </div>
                     <button
@@ -380,17 +455,17 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 </div>
             </div>
 
-            {/* ── ANALYTICS CARDS ───────────────────────────── */}
+            {/* â”€â”€ ANALYTICS CARDS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 
                 {/* STATE */}
-                <div className="p-6 bg-space-card/70 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-between shadow-md relative overflow-hidden">
+                <div className="p-6 bg-space-card/70 backdrop-blur-md rounded-2xl border border-space-border flex items-center justify-between shadow-md relative overflow-hidden">
                     <div className="space-y-1 z-10">
-                        <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest">Sincronización</p>
-                        <p className="text-lg font-black text-white uppercase tracking-tight">
-                            {qrSimulatedScan ? 'Conectado' : 'Sin Conexión'}
+                        <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">SincronizaciÃ³n</p>
+                        <p className="text-lg font-black text-space-text uppercase tracking-tight">
+                            {qrSimulatedScan ? 'Conectado' : 'Sin ConexiÃ³n'}
                         </p>
-                        <p className="text-[8px] text-white/50 font-semibold uppercase">
+                        <p className="text-[8px] text-space-muted font-semibold uppercase">
                             {qrSimulatedScan ? 'Samsung S24 Activo' : 'Vincular dispositivo'}
                         </p>
                     </div>
@@ -403,10 +478,10 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 </div>
 
                 {/* PROCESSED */}
-                <div className="p-6 bg-space-card/70 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-between shadow-md relative overflow-hidden">
+                <div className="p-6 bg-space-card/70 backdrop-blur-md rounded-2xl border border-space-border flex items-center justify-between shadow-md relative overflow-hidden">
                     <div className="space-y-1 z-10">
-                        <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest">Respuestas Hoy</p>
-                        <p className="text-lg font-black text-white uppercase tracking-tight">
+                        <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">Respuestas Hoy</p>
+                        <p className="text-lg font-black text-space-text uppercase tracking-tight">
                             {isUsingDemoData ? '48' : (currentBusiness as any).daily_msg_count ?? 0} <span className="text-xs text-white/35 font-normal">/ 100</span>
                         </p>
                         <div className="w-24 bg-white/10 h-1.5 rounded-full mt-1.5 overflow-hidden">
@@ -422,14 +497,14 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 </div>
 
                 {/* CONVERSIONS */}
-                <div className="p-6 bg-space-card/70 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-between shadow-md relative overflow-hidden">
+                <div className="p-6 bg-space-card/70 backdrop-blur-md rounded-2xl border border-space-border flex items-center justify-between shadow-md relative overflow-hidden">
                     <div className="space-y-1 z-10">
-                        <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest">Citas por IA</p>
+                        <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">Citas por IA</p>
                         <p className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-1.5">
                             {isUsingDemoData ? '12' : '0'}
                             <span className="text-space-primary text-[10px] font-bold flex items-center"><TrendingUp size={10} /> +15%</span>
                         </p>
-                        <p className="text-[8px] text-white/50 font-semibold uppercase">Citas agendadas por bot</p>
+                        <p className="text-[8px] text-space-muted font-semibold uppercase">Citas agendadas por bot</p>
                     </div>
                     <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                         <Calendar size={22} />
@@ -440,11 +515,11 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 </div>
 
                 {/* SPEED */}
-                <div className="p-6 bg-space-card/70 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-between shadow-md relative overflow-hidden">
+                <div className="p-6 bg-space-card/70 backdrop-blur-md rounded-2xl border border-space-border flex items-center justify-between shadow-md relative overflow-hidden">
                     <div className="space-y-1 z-10">
-                        <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest">Velocidad Respuesta</p>
-                        <p className="text-lg font-black text-white uppercase tracking-tight">1.2s</p>
-                        <p className="text-[8px] text-space-primary font-bold uppercase tracking-widest">⚡ Ultra Fast</p>
+                        <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">Velocidad Respuesta</p>
+                        <p className="text-lg font-black text-space-text uppercase tracking-tight">1.2s</p>
+                        <p className="text-[8px] text-space-primary font-bold uppercase tracking-widest">âš¡ Ultra Fast</p>
                     </div>
                     <div className="w-12 h-12 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center">
                         <Zap size={22} />
@@ -456,15 +531,15 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
 
             </div>
 
-            {/* ── TUTORIAL ONBOARDING CAROUSEL ────────────────── */}
-            <div className="p-8 bg-gradient-to-br from-space-card via-space-card to-purple-950/20 rounded-3xl border border-white/10 shadow-xl space-y-6">
+            {/* â”€â”€ TUTORIAL ONBOARDING CAROUSEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            <div className="p-8 bg-gradient-to-br from-space-card via-space-card to-space-card2/30 rounded-3xl border border-space-border shadow-xl space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1">
                         <h2 className="text-base font-black text-white uppercase tracking-tight flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-space-primary animate-pulse" />
-                            🎓 Academia Spacey: Onboarding & Guía Rápida
+                            ðŸŽ“ Academia Spacey: Onboarding & GuÃ­a RÃ¡pida
                         </h2>
-                        <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">Aprende a sacarle el máximo provecho a tu asistente conversacional en 4 simples pasos</p>
+                        <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Aprende a sacarle el mÃ¡ximo provecho a tu asistente conversacional en 4 simples pasos</p>
                     </div>
                     
                     {/* Dots Tabs */}
@@ -490,16 +565,16 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     {activeTutorialStep === 0 && (
                         <>
                             <div className="space-y-4 max-w-lg">
-                                <span className="px-2.5 py-1 bg-space-primary/10 text-space-primary text-[8px] font-black uppercase tracking-widest rounded-full border border-space-primary/25">✂️ Tu Catálogo de Servicios</span>
-                                <h3 className="text-lg font-black text-white uppercase tracking-tight">Sube tus servicios con precios reales</h3>
-                                <p className="text-white/60 text-xs font-semibold uppercase leading-relaxed tracking-wider">
-                                    El bot de Inteligencia Artificial lee automáticamente la lista de tus servicios activos con sus respectivos precios y duraciones para responderle a los clientes en WhatsApp de forma fidedigna. ¡Nunca inventará un precio diferente!
+                                <span className="px-2.5 py-1 bg-space-primary/10 text-space-primary text-[8px] font-black uppercase tracking-widest rounded-full border border-space-primary/25">âœ‚ï¸ Tu CatÃ¡logo de Servicios</span>
+                                <h3 className="text-lg font-black text-space-text uppercase tracking-tight">Sube tus servicios con precios reales</h3>
+                                <p className="text-space-muted text-xs font-semibold uppercase leading-relaxed tracking-wider">
+                                    El bot de Inteligencia Artificial lee automÃ¡ticamente la lista de tus servicios activos con sus respectivos precios y duraciones para responderle a los clientes en WhatsApp de forma fidedigna. Â¡Nunca inventarÃ¡ un precio diferente!
                                 </p>
                                 <button
                                     onClick={() => navigate('/dashboard/services')}
                                     className="px-6 py-2.5 bg-space-primary hover:bg-space-primary-dark text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all shadow-md"
                                 >
-                                    Ir a Catálogo de Servicios <ChevronRight size={14} />
+                                    Ir a CatÃ¡logo de Servicios <ChevronRight size={14} />
                                 </button>
                             </div>
                             <div className="w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-space-primary shadow-inner">
@@ -511,10 +586,10 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     {activeTutorialStep === 1 && (
                         <>
                             <div className="space-y-4 max-w-lg">
-                                <span className="px-2.5 py-1 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-amber-500/25">📅 Configurar Horarios y Disponibilidad</span>
-                                <h3 className="text-lg font-black text-white uppercase tracking-tight">Define tus horas de trabajo</h3>
-                                <p className="text-white/60 text-xs font-semibold uppercase leading-relaxed tracking-wider">
-                                    Define tus horas laborables y bloquea tus turnos. Gracias a nuestro algoritmo de disponibilidad, el asistente calcula tus citas de los próximos 3 días y jamás ofrecerá un espacio ocupado o fuera de tu horario laboral.
+                                <span className="px-2.5 py-1 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-amber-500/25">ðŸ“… Configurar Horarios y Disponibilidad</span>
+                                <h3 className="text-lg font-black text-space-text uppercase tracking-tight">Define tus horas de trabajo</h3>
+                                <p className="text-space-muted text-xs font-semibold uppercase leading-relaxed tracking-wider">
+                                    Define tus horas laborables y bloquea tus turnos. Gracias a nuestro algoritmo de disponibilidad, el asistente calcula tus citas de los prÃ³ximos 3 dÃ­as y jamÃ¡s ofrecerÃ¡ un espacio ocupado o fuera de tu horario laboral.
                                 </p>
                                 <button
                                     onClick={() => navigate('/dashboard/schedules')}
@@ -532,10 +607,10 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     {activeTutorialStep === 2 && (
                         <>
                             <div className="space-y-4 max-w-lg">
-                                <span className="px-2.5 py-1 bg-blue-500/10 text-blue-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-blue-500/25">🔗 Tu Enlace de Reservas Oficial</span>
-                                <h3 className="text-lg font-black text-white uppercase tracking-tight">El portal oficial que cierra la venta</h3>
-                                <p className="text-white/60 text-xs font-semibold uppercase leading-relaxed tracking-wider">
-                                    Este es tu enlace Spacey. Cuando un cliente selecciona un horario en WhatsApp, el bot le enviará una respuesta con el enlace pre-rellenado (ej: <code className="text-space-primary font-mono lowercase">?date=2026-05-17&time=15:30</code>) para que el cliente complete su reserva en segundos.
+                                <span className="px-2.5 py-1 bg-blue-500/10 text-blue-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-blue-500/25">ðŸ”— Tu Enlace de Reservas Oficial</span>
+                                <h3 className="text-lg font-black text-space-text uppercase tracking-tight">El portal oficial que cierra la venta</h3>
+                                <p className="text-space-muted text-xs font-semibold uppercase leading-relaxed tracking-wider">
+                                    Este es tu enlace Spacey. Cuando un cliente selecciona un horario en WhatsApp, el bot le enviarÃ¡ una respuesta con el enlace pre-rellenado (ej: <code className="text-space-primary font-mono lowercase">?date=2026-05-17&time=15:30</code>) para que el cliente complete su reserva en segundos.
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <input
@@ -547,7 +622,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                     <button
                                         onClick={() => {
                                             navigator.clipboard.writeText(formData.whatsapp_booking_link || `https://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'}`);
-                                            toast.success('¡Enlace copiado al portapapeles!');
+                                            toast.success('Â¡Enlace copiado al portapapeles!');
                                         }}
                                         className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all"
                                         title="Copiar Enlace"
@@ -565,16 +640,16 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     {activeTutorialStep === 3 && (
                         <>
                             <div className="space-y-4 max-w-lg">
-                                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-emerald-500/25">🔌 Conectar Dispositivo WhatsApp</span>
-                                <h3 className="text-lg font-black text-white uppercase tracking-tight">Escanea el código QR y prende tu bot</h3>
-                                <p className="text-white/60 text-xs font-semibold uppercase leading-relaxed tracking-wider">
-                                    Conectamos tu número a través de una instancia dedicada. Una vez escaneado el QR, tu bot asistente comenzará a responder todas tus consultas de inmediato con las pautas de tu prompt. ¡Apágalo o enciéndelo cuando gustes!
+                                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-emerald-500/25">ðŸ”Œ Conectar Dispositivo WhatsApp</span>
+                                <h3 className="text-lg font-black text-space-text uppercase tracking-tight">Escanea el cÃ³digo QR y prende tu bot</h3>
+                                <p className="text-space-muted text-xs font-semibold uppercase leading-relaxed tracking-wider">
+                                    Conectamos tu nÃºmero a travÃ©s de una instancia dedicada. Una vez escaneado el QR, tu bot asistente comenzarÃ¡ a responder todas tus consultas de inmediato con las pautas de tu prompt. Â¡ApÃ¡galo o enciÃ©ndelo cuando gustes!
                                 </p>
                                 <button
                                     onClick={startQrLinkFlow}
                                     className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all shadow-md"
                                 >
-                                    Escanear Código QR <ChevronRight size={14} />
+                                    Escanear CÃ³digo QR <ChevronRight size={14} />
                                 </button>
                             </div>
                             <div className="w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-emerald-500 shadow-inner">
@@ -585,19 +660,19 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 </div>
             </div>
 
-            {/* ── MAIN CONFIGURATION GRID ────────────────────── */}
+            {/* â”€â”€ MAIN CONFIGURATION GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 
                 {/* LEFT: Config Form & Live Logs */}
                 <div className="lg:col-span-7 space-y-10">
                     
                     {/* Setup Card */}
-                    <form onSubmit={handleSaveConfig} className="p-8 bg-space-card/70 backdrop-blur-md rounded-3xl border border-white/10 shadow-xl space-y-6">
+                    <form onSubmit={handleSaveConfig} className="p-8 bg-space-card/70 backdrop-blur-md rounded-3xl border border-space-border shadow-xl space-y-6">
                         <div className="space-y-1">
                             <h2 className="text-base font-black text-white uppercase tracking-tight flex items-center gap-2">
-                                ⚙️ Ajustes del Asistente de IA
+                                âš™ï¸ Ajustes del Asistente de IA
                             </h2>
-                            <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">Configura el comportamiento, link de reservas y horarios del bot</p>
+                            <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Configura el comportamiento, link de reservas y horarios del bot</p>
                         </div>
 
                         {/* General Form Fields */}
@@ -608,35 +683,35 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                     name="whatsapp_bot_prompt"
                                     value={formData.whatsapp_bot_prompt}
                                     onChange={(e) => setFormData(prev => ({ ...prev, whatsapp_bot_prompt: e.target.value }))}
-                                    placeholder="Ej: Eres un barbero de confianza, mantén un tono súper urbano, alegre y ofrece el catálogo..."
-                                    className="w-full h-36 bg-black/40 border border-white/10 rounded-2xl p-4 text-xs text-white/90 font-medium placeholder-white/20 focus:outline-none focus:border-space-primary/40 focus:ring-1 focus:ring-space-primary/40 transition-all resize-none leading-relaxed"
+                                    placeholder="Ej: Eres un barbero de confianza, mantÃ©n un tono sÃºper urbano, alegre y ofrece el catÃ¡logo..."
+                                    className="w-full h-36 bg-space-card2 border border-space-border rounded-2xl p-4 text-xs text-space-text font-medium placeholder-space-muted/40 focus:outline-none focus:border-space-primary/40 focus:ring-1 focus:ring-space-primary/40 transition-all resize-none leading-relaxed"
                                 />
                             </div>
 
                             {/* Preset Buttons */}
                             <div className="space-y-2">
-                                <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Plantillas de Tono Rápidas:</p>
+                                <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Plantillas de Tono RÃ¡pidas:</p>
                                 <div className="flex flex-wrap gap-2.5">
                                     <button
                                         type="button"
                                         onClick={() => applyPreset('colega')}
                                         className="px-4 py-2 bg-white/5 hover:bg-space-primary/10 border border-white/10 hover:border-space-primary/30 rounded-xl text-[9px] font-black text-white uppercase tracking-widest flex items-center gap-1.5 transition-all"
                                     >
-                                        💈 Barbero Colega
+                                        ðŸ’ˆ Barbero Colega
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => applyPreset('premium')}
                                         className="px-4 py-2 bg-white/5 hover:bg-space-primary/10 border border-white/10 hover:border-space-primary/30 rounded-xl text-[9px] font-black text-white uppercase tracking-widest flex items-center gap-1.5 transition-all"
                                     >
-                                        👑 Salón Premium
+                                        ðŸ‘‘ SalÃ³n Premium
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => applyPreset('rapido')}
                                         className="px-4 py-2 bg-white/5 hover:bg-space-primary/10 border border-white/10 hover:border-space-primary/30 rounded-xl text-[9px] font-black text-white uppercase tracking-widest flex items-center gap-1.5 transition-all"
                                     >
-                                        🤖 Asistente Rápido
+                                        ðŸ¤– Asistente RÃ¡pido
                                     </button>
                                 </div>
                             </div>
@@ -652,19 +727,19 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                         value={formData.whatsapp_booking_link}
                                         onChange={(e) => setFormData(prev => ({ ...prev, whatsapp_booking_link: e.target.value }))}
                                         placeholder="https://spaceyreserve.netlify.app/book/mi-barberia"
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white/90 focus:outline-none focus:border-space-primary/40 transition-all"
+                                        className="w-full bg-space-card2 border border-space-border rounded-xl px-4 py-3 text-xs text-space-text focus:outline-none focus:border-space-primary/40 transition-all"
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-white/60 uppercase tracking-wider">Promoción/Oferta Activa (Opcional)</label>
+                                    <label className="text-[9px] font-black text-white/60 uppercase tracking-wider">PromociÃ³n/Oferta Activa (Opcional)</label>
                                     <input
                                         type="text"
                                         name="whatsapp_offer"
                                         value={formData.whatsapp_offer}
                                         onChange={(e) => setFormData(prev => ({ ...prev, whatsapp_offer: e.target.value }))}
                                         placeholder="Ej: 15% desc. cortes de cabello hoy"
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white/90 focus:outline-none focus:border-space-primary/40 transition-all"
+                                        className="w-full bg-space-card2 border border-space-border rounded-xl px-4 py-3 text-xs text-space-text focus:outline-none focus:border-space-primary/40 transition-all"
                                     />
                                 </div>
                             </div>
@@ -673,10 +748,10 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
 
                             {/* ADVANCED TOGGLES */}
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                                <div className="flex items-center justify-between p-4 bg-space-card2/50 rounded-2xl border border-space-border">
                                     <div>
-                                        <h4 className="text-[10px] font-black text-white uppercase tracking-tight">Anti-Colisión de Respuestas</h4>
-                                        <p className="text-[8px] text-white/45 font-bold uppercase tracking-wider mt-0.5">Mutea al bot si un humano responde en WhatsApp en los últimos 15 min</p>
+                                        <h4 className="text-[10px] font-black text-space-text uppercase tracking-tight">Anti-ColisiÃ³n de Respuestas</h4>
+                                        <p className="text-[8px] text-space-muted font-bold uppercase tracking-wider mt-0.5">Mutea al bot si un humano responde en WhatsApp en los Ãºltimos 15 min</p>
                                     </div>
                                     <button
                                         type="button"
@@ -687,10 +762,10 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                     </button>
                                 </div>
 
-                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
+                                <div className="flex items-center justify-between p-4 bg-space-card2/50 rounded-2xl border border-space-border">
                                     <div>
-                                        <h4 className="text-[10px] font-black text-white uppercase tracking-tight">Horario de Actividad</h4>
-                                        <p className="text-[8px] text-white/45 font-bold uppercase tracking-wider mt-0.5">El bot responderá únicamente dentro del horario establecido</p>
+                                        <h4 className="text-[10px] font-black text-space-text uppercase tracking-tight">Horario de Actividad</h4>
+                                        <p className="text-[8px] text-space-muted font-bold uppercase tracking-wider mt-0.5">El bot responderÃ¡ Ãºnicamente dentro del horario establecido</p>
                                     </div>
                                     <button
                                         type="button"
@@ -710,7 +785,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                                 name="whatsapp_bot_start_hour"
                                                 value={formData.whatsapp_bot_start_hour}
                                                 onChange={(e) => setFormData(p => ({ ...p, whatsapp_bot_start_hour: e.target.value }))}
-                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white/90 focus:outline-none"
+                                                className="w-full bg-space-card2 border border-space-border rounded-xl px-3 py-2.5 text-xs text-space-text focus:outline-none"
                                             />
                                         </div>
                                         <div className="space-y-1.5">
@@ -720,7 +795,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                                 name="whatsapp_bot_end_hour"
                                                 value={formData.whatsapp_bot_end_hour}
                                                 onChange={(e) => setFormData(p => ({ ...p, whatsapp_bot_end_hour: e.target.value }))}
-                                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white/90 focus:outline-none"
+                                                className="w-full bg-space-card2 border border-space-border rounded-xl px-3 py-2.5 text-xs text-space-text focus:outline-none"
                                             />
                                         </div>
                                     </div>
@@ -734,18 +809,18 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                             className="w-full py-3 bg-space-primary hover:bg-space-primary-dark disabled:opacity-50 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md shadow-space-primary/20 flex items-center justify-center gap-2"
                         >
                             {saving ? <RefreshCw className="animate-spin" size={14} /> : <Check size={14} />}
-                            {saving ? 'Guardando Ajustes...' : 'Guardar Configuración de IA'}
+                            {saving ? 'Guardando Ajustes...' : 'Guardar ConfiguraciÃ³n de IA'}
                         </button>
                     </form>
 
-                    {/* Bitácora Conversation Logs Card */}
-                    <div className="p-8 bg-space-card/70 backdrop-blur-md rounded-3xl border border-white/10 shadow-xl space-y-6">
+                    {/* BitÃ¡cora Conversation Logs Card */}
+                    <div className="p-8 bg-space-card/70 backdrop-blur-md rounded-3xl border border-space-border shadow-xl space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="space-y-1">
                                 <h2 className="text-base font-black text-white uppercase tracking-tight flex items-center gap-2">
-                                    💬 Bitácora de Conversaciones Recientes
+                                    ðŸ’¬ BitÃ¡cora de Conversaciones Recientes
                                 </h2>
-                                <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">Revisa el historial de chats e interacciones en vivo del asistente</p>
+                                <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Revisa el historial de chats e interacciones en vivo del asistente</p>
                             </div>
                             <button
                                 type="button"
@@ -762,9 +837,9 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                             <div className="p-4 bg-amber-500/10 text-amber-500 rounded-2xl border border-amber-500/20 flex items-start gap-3">
                                 <AlertTriangle className="flex-shrink-0 mt-0.5" size={16} />
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black uppercase tracking-wide">✓ Modo de Demostración Activo</p>
+                                    <p className="text-[10px] font-black uppercase tracking-wide">âœ“ Modo de DemostraciÃ³n Activo</p>
                                     <p className="text-[8px] text-amber-500/80 font-bold uppercase tracking-wider leading-relaxed">
-                                        Como tu bot aún no ha atendido clientes reales, te mostramos conversaciones simuladas de demostración. Cuando vincules tu celular y empiece a recibir mensajes reales en WhatsApp, estos se reemplazarán automáticamente en tiempo real.
+                                        Como tu bot aÃºn no ha atendido clientes reales, te mostramos conversaciones simuladas de demostraciÃ³n. Cuando vincules tu celular y empiece a recibir mensajes reales en WhatsApp, estos se reemplazarÃ¡n automÃ¡ticamente en tiempo real.
                                     </p>
                                 </div>
                             </div>
@@ -772,19 +847,19 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
 
                         <div className="space-y-4 max-h-[480px] overflow-y-auto pr-2">
                             {displayLogs.map((log) => (
-                                <div key={log.id} className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3 shadow-inner">
-                                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                <div key={log.id} className="p-4 bg-space-card2/50 rounded-2xl border border-space-border space-y-3 shadow-inner">
+                                    <div className="flex items-center justify-between border-b border-space-border pb-2">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-black text-white/80 font-mono">📱 {log.from_number}</span>
+                                            <span className="text-[10px] font-black text-white/80 font-mono">ðŸ“± {log.from_number}</span>
                                             <span className="bg-emerald-500/10 text-emerald-500 text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-emerald-500/20 flex items-center gap-0.5">
                                                 <ShieldCheck size={8} /> HMAC Ok
                                             </span>
                                         </div>
-                                        <span className="text-[8px] text-white/35 font-semibold uppercase">{new Date(log.created_at).toLocaleTimeString()}</span>
+                                        <span className="text-[8px] text-space-muted font-semibold uppercase">{new Date(log.created_at).toLocaleTimeString()}</span>
                                     </div>
                                     <div className="space-y-2">
-                                        <div className="bg-white/5 px-3 py-2 rounded-xl border border-white/5 max-w-[90%]">
-                                            <p className="text-[8px] text-white/40 font-bold uppercase tracking-widest">Cliente</p>
+                                        <div className="bg-space-card2 px-3 py-2 rounded-xl border border-space-border max-w-[90%]">
+                                            <p className="text-[8px] text-space-muted font-bold uppercase tracking-widest">Cliente</p>
                                             <p className="text-[11px] text-white/80 font-medium leading-relaxed mt-0.5">{log.user_message}</p>
                                         </div>
                                         <div className="bg-space-primary/10 px-3 py-2 rounded-xl border border-space-primary/10 max-w-[90%] ml-auto text-right">
@@ -802,13 +877,13 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 {/* RIGHT: QR Scan Modal & Smartphone Simulator */}
                 <div className="lg:col-span-5 space-y-8">
                     
-                    {/* Device Sincronización Card */}
-                    <div className="p-6 bg-gradient-to-br from-space-card to-space-card/45 rounded-3xl border border-white/10 shadow-xl space-y-4">
+                    {/* Device SincronizaciÃ³n Card */}
+                    <div className="p-6 bg-gradient-to-br from-space-card to-space-card/45 rounded-3xl border border-space-border shadow-xl space-y-4">
                         <div className="space-y-1">
-                            <h3 className="text-xs font-black text-white uppercase tracking-tight flex items-center gap-1.5">
-                                🔌 Vinculación de WhatsApp
+                            <h3 className="text-xs font-black text-space-text uppercase tracking-tight flex items-center gap-1.5">
+                                ðŸ”Œ VinculaciÃ³n de WhatsApp
                             </h3>
-                            <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest mt-0.5">Conecta tu número personal al bot asistente</p>
+                            <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest mt-0.5">Conecta tu nÃºmero personal al bot asistente</p>
                         </div>
 
                         {qrSimulatedScan ? (
@@ -818,8 +893,8 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                         <ExternalLink size={20} />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-white uppercase tracking-wide">Celular Vinculado en Vivo</p>
-                                        <p className="text-[8px] text-white/60 font-semibold uppercase tracking-wider mt-0.5">
+                                        <p className="text-[10px] font-black text-space-text uppercase tracking-wide">Celular Vinculado en Vivo</p>
+                                        <p className="text-[8px] text-space-muted font-semibold uppercase tracking-wider mt-0.5">
                                             Dispositivo: <strong className="text-white">Samsung Galaxy S24 (WhatsApp Web)</strong>
                                         </p>
                                     </div>
@@ -833,14 +908,14 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 </button>
                             </div>
                         ) : (
-                            <div className="p-6 bg-white/5 rounded-2xl border border-white/10 text-center space-y-4">
-                                <div className="w-14 h-14 bg-white/5 text-white/30 border border-white/10 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                            <div className="p-6 bg-space-card2/50 rounded-2xl border border-space-border text-center space-y-4">
+                                <div className="w-14 h-14 bg-space-card2 text-space-muted border border-space-border rounded-full flex items-center justify-center mx-auto shadow-inner">
                                     <QrCode size={26} />
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-white uppercase tracking-tight">Sin Dispositivos Sincronizados</p>
+                                    <p className="text-[10px] font-black text-space-text uppercase tracking-tight">Sin Dispositivos Sincronizados</p>
                                     <p className="text-[8px] text-white/40 font-bold uppercase tracking-widest leading-relaxed">
-                                        Vincula tu celular en vivo para comenzar a despachar las citas de tus clientes automáticamente por WhatsApp.
+                                        Vincula tu celular en vivo para comenzar a despachar las citas de tus clientes automÃ¡ticamente por WhatsApp.
                                     </p>
                                 </div>
                                 <button
@@ -848,20 +923,20 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                     onClick={startQrLinkFlow}
                                     className="w-full py-3 bg-space-primary hover:bg-space-primary-dark text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-md"
                                 >
-                                    Escanear Código QR
+                                    Escanear CÃ³digo QR
                                 </button>
                             </div>
                         )}
                     </div>
 
                     {/* Smartphone Preview Simulator */}
-                    <div className="p-8 bg-space-card/70 backdrop-blur-md rounded-3xl border border-white/10 shadow-xl space-y-6">
+                    <div className="p-8 bg-space-card/70 backdrop-blur-md rounded-3xl border border-space-border shadow-xl space-y-6">
                         <div className="space-y-1">
                             <h2 className="text-base font-black text-white uppercase tracking-tight flex items-center gap-2">
                                 <Smartphone size={18} />
                                 Simulador Copiloto en Vivo
                             </h2>
-                            <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">Chatea con tu bot de mentiras y prueba tu prompt al instante</p>
+                            <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Chatea con tu bot de mentiras y prueba tu prompt al instante</p>
                         </div>
 
                         {/* Simulated Phone Body */}
@@ -875,11 +950,11 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                             <div className="bg-[#0f172a] rounded-t-[26px] p-3.5 border-b border-white/5 flex items-center justify-between pt-6">
                                 <div className="flex items-center gap-2.5">
                                     <div className="w-8 h-8 rounded-full bg-space-primary/15 text-space-primary border border-space-primary/25 flex items-center justify-center text-[10px] font-black">
-                                        🤖
+                                        ðŸ¤–
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black text-white uppercase tracking-wide leading-none">{currentBusiness?.name || 'Copiloto Spacey'}</p>
-                                        <span className="text-[7px] text-space-primary font-bold uppercase tracking-widest">● asistente online</span>
+                                        <span className="text-[7px] text-space-primary font-bold uppercase tracking-widest">â— asistente online</span>
                                     </div>
                                 </div>
                                 <span className="bg-white/5 text-white/50 text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-white/10">PRUEBA</span>
@@ -939,63 +1014,78 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
 
             </div>
 
-            {/* ── QR SYNC SCANNING MODAL ──────────────────────── */}
+            {/* â”€â”€ QR SYNC SCANNING MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             {qrModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-                    <div className="w-full max-w-md p-8 bg-space-card border border-white/10 rounded-3xl shadow-2xl space-y-6 relative overflow-hidden">
+                    <div className="w-full max-w-md p-8 bg-space-card border border-space-border rounded-3xl shadow-2xl space-y-6 relative overflow-hidden">
                         {/* Laser Scan Animation Line */}
                         {qrScanStep === 2 && (
                             <div className="absolute left-0 right-0 h-0.5 bg-space-primary animate-laser-scan shadow-lg shadow-space-primary/80 z-20" />
                         )}
 
                         <div className="text-center space-y-2">
-                            <h3 className="text-base font-black text-white uppercase tracking-tight">Sincronizar Dispositivo WhatsApp</h3>
-                            <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest">Escanea el código para activar tu asistente conversacional</p>
+                            <div className="flex items-center justify-center gap-2">
+                                <h3 className="text-base font-black text-space-text uppercase tracking-tight">Sincronizar Dispositivo WhatsApp</h3>
+                                {isSandboxMode && (
+                                    <span className="bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border border-amber-500/20">Modo Sandbox</span>
+                                )}
+                            </div>
+                            <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">Escanea el cÃ³digo para activar tu asistente conversacional</p>
                         </div>
 
-                        {/* Step States Rendering */}
+                        {/* Step 1: Loading */}
                         {qrScanStep === 1 && (
                             <div className="flex flex-col items-center justify-center p-6 space-y-4">
                                 <RefreshCw className="animate-spin text-space-primary" size={28} />
-                                <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">Generando instancia de código QR única...</p>
+                                <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Generando instancia de cÃ³digo QR Ãºnica...</p>
                             </div>
                         )}
 
+                        {/* Step 2: Show QR */}
                         {qrScanStep === 2 && (
                             <div className="flex flex-col items-center justify-center p-6 space-y-6">
                                 <div className="p-4 bg-white rounded-2xl shadow-inner relative">
-                                    {/* Mock high-fidelity QR image */}
                                     <img 
-                                        src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=SpaceyReserveLiveQRConnectionMockDataForSaaSPitch" 
+                                        src={qrImageUrl || `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=SpaceyFallback`} 
                                         alt="WhatsApp QR Code"
                                         className="w-40 h-40 opacity-90"
                                     />
                                 </div>
-                                <div className="space-y-1.5 text-center max-w-xs">
-                                    <p className="text-[10px] font-black text-white uppercase tracking-wide flex items-center justify-center gap-1.5">
+                                <div className="space-y-2 text-center max-w-xs">
+                                    <p className="text-[10px] font-black text-space-text uppercase tracking-wide flex items-center justify-center gap-1.5">
                                         <Smartphone size={14} className="animate-pulse" /> Abre WhatsApp en tu celular
                                     </p>
-                                    <p className="text-[8px] text-white/45 font-bold uppercase tracking-wider leading-relaxed">
+                                    <p className="text-[8px] text-space-muted font-bold uppercase tracking-wider leading-relaxed">
                                         Ve a Ajustes &gt; Dispositivos Vinculados &gt; Vincular un dispositivo y escanea la pantalla.
                                     </p>
+                                    <div className="flex items-center justify-center gap-2 mt-2">
+                                        <div className="w-8 h-8 rounded-full border-2 border-space-border flex items-center justify-center">
+                                            <span className={`text-xs font-black ${qrCountdown <= 15 ? 'text-space-danger' : 'text-space-text'}`}>{qrCountdown}</span>
+                                        </div>
+                                        <p className={`text-[8px] font-black uppercase tracking-widest ${qrCountdown <= 15 ? 'text-space-danger' : 'text-space-muted'}`}>
+                                            Segundos hasta expirar
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
+                        {/* Step 3: Connected */}
                         {qrScanStep === 3 && (
                             <div className="flex flex-col items-center justify-center p-6 space-y-4 text-center">
-                                <div className="w-12 h-12 bg-space-primary/10 text-space-primary border border-space-primary/25 rounded-full flex items-center justify-center shadow-lg shadow-space-primary/10 animate-scale-up">
+                                <div className="w-12 h-12 bg-space-primary/10 text-space-primary border border-space-primary/25 rounded-full flex items-center justify-center shadow-lg shadow-space-primary/10 animate-scale-in">
                                     <Check size={24} />
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[11px] font-black text-white uppercase tracking-wide">✓ ¡Vinculación Exitosa!</p>
-                                    <p className="text-[8px] text-white/40 font-bold uppercase tracking-widest leading-relaxed">
-                                        Tu celular Samsung Galaxy S24 se encuentra enlazado y listo para responder de forma autónoma.
+                                    <p className="text-[11px] font-black text-space-text uppercase tracking-wide">âœ“ Â¡VinculaciÃ³n Exitosa!</p>
+                                    <p className="text-[8px] text-space-muted font-bold uppercase tracking-widest leading-relaxed">
+                                        Tu dispositivo estÃ¡ enlazado y listo para responder de forma autÃ³noma.
+                                        {isSandboxMode && ' (Modo sandbox activo)'}
                                     </p>
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => setQrModalOpen(false)}
+                                    onClick={handleCloseQrModal}
                                     className="px-6 py-2 bg-space-primary hover:bg-space-primary-dark text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all mt-2"
                                 >
                                     Entendido y Cerrar
@@ -1003,19 +1093,41 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                             </div>
                         )}
 
-                        {qrScanStep !== 3 && (
+                        {/* Step 4: Expired */}
+                        {qrScanStep === 4 && (
+                            <div className="flex flex-col items-center justify-center p-6 space-y-4 text-center">
+                                <div className="w-12 h-12 bg-space-danger/10 text-space-danger border border-space-danger/25 rounded-full flex items-center justify-center">
+                                    <AlertTriangle size={24} />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[11px] font-black text-space-text uppercase tracking-wide">QR Expirado</p>
+                                    <p className="text-[8px] text-space-muted font-bold uppercase tracking-widest leading-relaxed">El cÃ³digo QR expirÃ³ sin ser escaneado. Genera uno nuevo para volver a intentarlo.</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={startQrLinkFlow}
+                                    className="px-6 py-2 bg-space-primary hover:bg-space-primary-dark text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all mt-2"
+                                >
+                                    Generar Nuevo QR
+                                </button>
+                            </div>
+                        )}
+
+                        {qrScanStep !== 3 && qrScanStep !== 4 && (
                             <button
                                 type="button"
-                                onClick={() => setQrModalOpen(false)}
-                                className="w-full py-2.5 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/10 transition-all text-center"
+                                onClick={handleCloseQrModal}
+                                className="w-full py-2.5 bg-space-card2 hover:bg-space-border text-space-muted hover:text-space-text rounded-xl text-[9px] font-black uppercase tracking-widest border border-space-border transition-all text-center"
                             >
-                                Cancelar Vinculación
+                                Cancelar VinculaciÃ³n
                             </button>
                         )}
                     </div>
                 </div>
             )}
 
+
         </div>
     );
 }
+
