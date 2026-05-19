@@ -300,7 +300,7 @@ export default function ClientsPage() {
                                     onChange={(e) => setCustomMessage(e.target.value)}
                                 />
                                 <p className="text-[9px] text-space-muted font-bold mt-1 uppercase tracking-widest">
-                                    Se insertará en el mensaje: "Queremos comentarte lo siguiente: [TU MENSAJE AQUÃ]."
+                                    Se insertará en el mensaje: "Queremos comentarte lo siguiente: [TU MENSAJE AQUÍ]."
                                 </p>
                             </div>
 

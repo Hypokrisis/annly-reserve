@@ -61,7 +61,7 @@ export default function AIAssistantPage() {
     // Simulator Interactive Chat
     const [simInput, setSimInput] = useState('');
     const [simulatorMessages, setSimulatorMessages] = useState<Array<{ sender: 'user' | 'bot', text: string, time: string }>>([
-        { sender: 'bot', text: '¡Hola! ðŸ’ˆ Bienvenido al chat de prueba. Escribe un mensaje (ej: "precios", "hola", "tienen citas hoy en la tarde") para ver cómo responde la IA con tus instrucciones actuales en tiempo real.', time: '12:00 PM' }
+        { sender: 'bot', text: '¡Hola! 💈 Bienvenido al chat de prueba. Escribe un mensaje (ej: "precios", "hola", "tienen citas hoy en la tarde") para ver cómo responde la IA con tus instrucciones actuales en tiempo real.', time: '12:00 PM' }
     ]);
     const [isBotTyping, setIsBotTyping] = useState(false);
 
@@ -125,9 +125,9 @@ export default function AIAssistantPage() {
             if (error) throw error;
             
             if (newVal) {
-                toast.success('ðŸ¤– Asistente de IA Activo en vivo');
+                toast.success('🤖 Asistente de IA Activo en vivo');
             } else {
-                toast.success('ðŸ”‡ Asistente de IA Pausado al instante');
+                toast.success('🔇 Asistente de IA Pausado al instante');
             }
         } catch (err) {
             console.error('Error toggling bot active:', err);
@@ -170,12 +170,12 @@ export default function AIAssistantPage() {
     const applyPreset = (presetName: 'colega' | 'premium' | 'rapido') => {
         let promptText = '';
         if (presetName === 'colega') {
-            promptText = `Actúa como un barbero pana, súper carismático y de confianza. Usa modismos locales amigables. Saluda con entusiasmo ("¡Dímelo hermano! ðŸ”¥", "Qué es la que hay combo ðŸ’ˆ").
+            promptText = `Actúa como un barbero pana, súper carismático y de confianza. Usa modismos locales amigables. Saluda con entusiasmo ("¡Dímelo hermano! 🔥", "Qué es la que hay combo 💈").
 Explica de manera bien fluida y relajada los precios, horarios o las ofertas activas.
 Sé directo al grano, mantén los textos súper cortos y siempre anima al cliente a agendar su espacio en un toque con el enlace de reservas.`;
             setFormData(prev => ({ ...prev, whatsapp_bot_personality: 'cool', whatsapp_bot_prompt: promptText }));
         } else if (presetName === 'premium') {
-            promptText = `Actúa como el recepcionista exclusivo de un distinguido salón de belleza y cuidado premium. Mantén un tono sumamente sofisticado, educado, atento y elegante. Saluda con cortesía ("Muy buenos días, estimado cliente. Es un placer asistirle en nuestro salón ðŸ‘‘").
+            promptText = `Actúa como el recepcionista exclusivo de un distinguido salón de belleza y cuidado premium. Mantén un tono sumamente sofisticado, educado, atento y elegante. Saluda con cortesía ("Muy buenos días, estimado cliente. Es un placer asistirle en nuestro salón 👑").
 Explica detalladamente las comodidades del salón, el catálogo de servicios refinados y las promociones vigentes.
 Guía cordialmente al usuario a seleccionar su fecha ideal confirmando su cita en nuestro distinguido enlace oficial.`;
             setFormData(prev => ({ ...prev, whatsapp_bot_personality: 'executive', whatsapp_bot_prompt: promptText }));
@@ -215,7 +215,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     startQrCountdown();
                 }
             } catch {
-                // Gateway offline â€” fall through to sandbox
+                // Gateway offline — fall through to sandbox
             }
         }
 
@@ -273,7 +273,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
         setQrSimulatedScan(true);
         setFormData(prev => ({ ...prev, whatsapp_device_connected: true }));
         setQrScanStep(3);
-        toast.success('ðŸ“± ¡WhatsApp conectado exitosamente!');
+        toast.success('📱 ¡WhatsApp conectado exitosamente!');
     };
 
     const handleCloseQrModal = () => {
@@ -294,7 +294,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
             }
             setQrSimulatedScan(false);
             setFormData(prev => ({ ...prev, whatsapp_device_connected: false }));
-            toast.success('ðŸ”Œ WhatsApp desconectado.');
+            toast.success('📌 WhatsApp desconectado.');
         } catch (err) {
             console.error('Error disconnecting WhatsApp:', err);
             toast.error('No se pudo desconectar el dispositivo.');
@@ -325,17 +325,17 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
 
             const getPersonalityGreeting = () => {
                 if (formData.whatsapp_bot_personality === 'cool') {
-                    return `¡Dímelo hermano! ðŸ”¥ Qué gusto saludarte en Spacey Barber Shop ðŸ’ˆ. ¿Cómo te asisto hoy pana?`;
+                    return `¡Dímelo hermano! 🔥 Qué gusto saludarte en Spacey Barber Shop 💈. ¿Cómo te asisto hoy pana?`;
                 } else if (formData.whatsapp_bot_personality === 'executive') {
-                    return `Muy buenos días, estimado cliente. Es un placer saludarle en nuestro distinguido salón ðŸ‘‘. ¿En qué podemos servirle el día de hoy?`;
+                    return `Muy buenos días, estimado cliente. Es un placer saludarle en nuestro distinguido salón 👑. ¿En qué podemos servirle el día de hoy?`;
                 } else {
-                    return `¡Hola! Bienvenido. ¿Cómo te asisto hoy con tu cita? ðŸ¤–`;
+                    return `¡Hola! Bienvenido. ¿Cómo te asisto hoy con tu cita? 🤖`;
                 }
             };
 
             const getPersonalityOffer = () => {
                 if (formData.whatsapp_bot_personality === 'cool') {
-                    return `¡Durísimo! ðŸ”¥ Tenemos esta promo activa hoy: "${offer}". ¡Aprovéchala ya!`;
+                    return `¡Durísimo! 🔥 Tenemos esta promo activa hoy: "${offer}". ¡Aprovéchala ya!`;
                 } else if (formData.whatsapp_bot_personality === 'executive') {
                     return `Le complacemos en informarle que disponemos de la siguiente cortesía exclusiva: "${offer}".`;
                 } else {
@@ -345,37 +345,37 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
 
             const getPersonalityBooking = () => {
                 if (formData.whatsapp_bot_personality === 'cool') {
-                    return `¡Agenda tu cita de una en este link y separa tu espacio! ðŸ”— ${bookingLink} ðŸš€âœ‚ï¸`;
+                    return `¡Agenda tu cita de una en este link y separa tu espacio! 🔗 ${bookingLink} 🚀✂️`;
                 } else if (formData.whatsapp_bot_personality === 'executive') {
-                    return `Le invitamos a seleccionar su servicio y horario de preferencia mediante nuestro enlace de reserva: ðŸ”— ${bookingLink}`;
+                    return `Le invitamos a seleccionar su servicio y horario de preferencia mediante nuestro enlace de reserva: 🔗 ${bookingLink}`;
                 } else {
-                    return `Puedes reservar tu cita en segundos ingresando a este enlace: ðŸ”— ${bookingLink} ðŸ“…`;
+                    return `Puedes reservar tu cita en segundos ingresando a este enlace: 🔗 ${bookingLink} 📅`;
                 }
             };
 
             const aiPrefix = formData.whatsapp_bot_prompt 
-                ? `[ðŸ§  IA usando tu prompt: "${formData.whatsapp_bot_prompt.substring(0, 30)}..."]\n\n`
+                ? `[🧠 IA usando tu prompt: "${formData.whatsapp_bot_prompt.substring(0, 30)}..."]\n\n`
                 : '';
 
             if (lower.includes('hola') || lower.includes('buenos') || lower.includes('buenas')) {
                 botText = `${getPersonalityGreeting()}\n\nEscribe "precios", "ubicación", "ofertas" o "reservar" para asistirte.`;
             } else if (lower.includes('precio') || lower.includes('servicio') || lower.includes('cuesta')) {
                 const serviceList = services && services.length > 0 
-                    ? services.slice(0, 4).map(s => `â€¢ ${s.name}: $${s.price}`).join('\n')
-                    : 'â€¢ Corte de Cabello: $20\nâ€¢ Afeitado Clásico: $15\nâ€¢ Combo Flow Completo: $30';
+                    ? services.slice(0, 4).map(s => `• ${s.name}: $${s.price}`).join('\n')
+                    : '• Corte de Cabello: $20\n• Afeitado Clásico: $15\n• Combo Flow Completo: $30';
                 
                 botText = `${aiPrefix}Claro, estos son algunos de nuestros servicios principales:\n\n${serviceList}\n\n${getPersonalityBooking()}`;
             } else if (lower.includes('donde') || lower.includes('ubicacion') || lower.includes('direccion') || lower.includes('como llego')) {
-                botText = `${aiPrefix}Nos encontramos ubicados en: ðŸ“ ${address}${city ? ', ' + city : ''}.\n\n¡Te esperamos! Recuerda reservar antes para asegurar tu espacio.`;
+                botText = `${aiPrefix}Nos encontramos ubicados en: 📍 ${address}${city ? ", " + city : ""}.\n\n¡Te esperamos! Recuerda reservar antes para asegurar tu espacio.`;
             } else if (lower.includes('oferta') || lower.includes('promo') || lower.includes('descuento')) {
                 botText = `${aiPrefix}${getPersonalityOffer()}\n\n${getPersonalityBooking()}`;
             } else if (lower.includes('reserva') || lower.includes('cita') || lower.includes('agendar')) {
                 botText = `${aiPrefix}${getPersonalityBooking()}`;
             } else if (lower.includes('10:00') || lower.includes('10') || lower.includes('hoy') || lower.includes('tarde')) {
                 // Mimic the exact confirmation template requested!
-                botText = `Perfecto, te apartamos las 15:30 del 2026-05-17. Confirma tu cita aquí antes de que se libere el espacio ðŸ‘‡\n${bookingLink}?date=2026-05-17&time=15:30\nSolo toma 30 segundos âœ…`;
+                botText = `Perfecto, te apartamos las 15:30 del 2026-05-17. Confirma tu cita aquí antes de que se libere el espacio 👇\n${bookingLink}?date=2026-05-17&time=15:30\nSolo toma 30 segundos ✅`;
             } else {
-                botText = `${aiPrefix}Entendido. Para cualquier consulta adicional o para agendar de inmediato, puedes usar nuestro portal de reservas en segundos: \n\nðŸ”— ${bookingLink}\n\n¡Esperamos verte pronto! ðŸ’ˆ`;
+                botText = `${aiPrefix}Entendido. Para cualquier consulta adicional o para agendar de inmediato, puedes usar nuestro portal de reservas en segundos: \n\n🔗 ${bookingLink}\n\n¡Esperamos verte pronto! 💈`;
             }
 
             setSimulatorMessages(prev => [...prev, { sender: 'bot', text: botText, time: currentTime }]);
@@ -389,21 +389,21 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
             id: 'mock-1',
             from_number: '17875551234',
             user_message: 'Buenas tardes! Tienen espacio libre para recortar hoy tarde?',
-            bot_response: '¡Hola! ðŸ’ˆ Sí, claro que sí. En el turno de la tarde tenemos libres estos horarios: 14:00, 15:30, 16:30 y 17:30. ¿Cuál te conviene?',
+            bot_response: '¡Hola! 💈 Sí, claro que sí. En el turno de la tarde tenemos libres estos horarios: 14:00, 15:30, 16:30 y 17:30. ¿Cuál te conviene?',
             created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString()
         },
         {
             id: 'mock-2',
             from_number: '17875551234',
             user_message: 'El de las 15:30 me va perfecto, sepáramelo porfa.',
-            bot_response: `Perfecto, te apartamos las 15:30 de Hoy. Confirma tu cita aquí antes de que se libere el espacio ðŸ‘‡\nhttps://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'}?date=2026-05-17&time=15:30\nSolo toma 30 segundos âœ…`,
+            bot_response: `Perfecto, te apartamos las 15:30 de Hoy. Confirma tu cita aquí antes de que se libere el espacio 👇\nhttps://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'}?date=2026-05-17&time=15:30\nSolo toma 30 segundos ✅`,
             created_at: new Date(Date.now() - 4 * 60 * 1000).toISOString()
         },
         {
             id: 'mock-3',
             from_number: '19395556789',
             user_message: 'Cuánto cuesta el combo de corte y afeitado de barba?',
-            bot_response: `¡Dímelo hermano! ðŸ”¥ El Combo Afeitado Clásico y Corte cuesta $30 e incluye lavado y toalla caliente ðŸ’ˆ. ¿Te apartamos un espacio?\n\nReserva en segundos: ðŸ”— https://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'} ðŸ“…`,
+            bot_response: `¡Dímelo hermano! 🔥 El Combo Afeitado Clásico y Corte cuesta $30 e incluye lavado y toalla caliente 💈. ¿Te apartamos un espacio?\n\nReserva en segundos: 🔗 https://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'} 📅`,
             created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString()
         }
     ];
@@ -545,7 +545,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     <div className="space-y-1">
                         <h2 className="text-base font-black text-space-text uppercase tracking-tight flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-space-primary animate-pulse" />
-                            ðŸŽ“ Academia Spacey: Onboarding & Guía Rápida
+                            🎓 Academia Spacey: Onboarding & Guía Rápida
                         </h2>
                         <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Aprende a sacarle el máximo provecho a tu asistente conversacional en 4 simples pasos</p>
                     </div>
@@ -594,7 +594,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     {activeTutorialStep === 1 && (
                         <>
                             <div className="space-y-4 max-w-lg">
-                                <span className="px-2.5 py-1 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-amber-500/25">ðŸ“… Configurar Horarios y Disponibilidad</span>
+                                <span className="px-2.5 py-1 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-amber-500/25">📅 Configurar Horarios y Disponibilidad</span>
                                 <h3 className="text-lg font-black text-space-text uppercase tracking-tight">Define tus horas de trabajo</h3>
                                 <p className="text-space-muted text-xs font-semibold uppercase leading-relaxed tracking-wider">
                                     Define tus horas laborables y bloquea tus turnos. Gracias a nuestro algoritmo de disponibilidad, el asistente calcula tus citas de los próximos 3 días y jamás ofrecerá un espacio ocupado o fuera de tu horario laboral.
@@ -615,7 +615,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     {activeTutorialStep === 2 && (
                         <>
                             <div className="space-y-4 max-w-lg">
-                                <span className="px-2.5 py-1 bg-blue-500/10 text-blue-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-blue-500/25">ðŸ”— Tu Enlace de Reservas Oficial</span>
+                                <span className="px-2.5 py-1 bg-blue-500/10 text-blue-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-blue-500/25">🔗 Tu Enlace de Reservas Oficial</span>
                                 <h3 className="text-lg font-black text-space-text uppercase tracking-tight">El portal oficial que cierra la venta</h3>
                                 <p className="text-space-muted text-xs font-semibold uppercase leading-relaxed tracking-wider">
                                     Este es tu enlace Spacey. Cuando un cliente selecciona un horario en WhatsApp, el bot le enviará una respuesta con el enlace pre-rellenado (ej: <code className="text-space-primary font-mono lowercase">?date=2026-05-17&time=15:30</code>) para que el cliente complete su reserva en segundos.
@@ -648,7 +648,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     {activeTutorialStep === 3 && (
                         <>
                             <div className="space-y-4 max-w-lg">
-                                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-emerald-500/25">ðŸ”Œ Conectar Dispositivo WhatsApp</span>
+                                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-emerald-500/25">📌 Conectar Dispositivo WhatsApp</span>
                                 <h3 className="text-lg font-black text-space-text uppercase tracking-tight">Escanea el código QR y prende tu bot</h3>
                                 <p className="text-space-muted text-xs font-semibold uppercase leading-relaxed tracking-wider">
                                     Conectamos tu número a través de una instancia dedicada. Una vez escaneado el QR, tu bot asistente comenzará a responder todas tus consultas de inmediato con las pautas de tu prompt. ¡Apágalo o enciéndelo cuando gustes!
@@ -705,21 +705,21 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                         onClick={() => applyPreset('colega')}
                                         className="px-4 py-2 bg-space-card2 hover:bg-space-primary/10 border border-space-border hover:border-space-primary/30 rounded-xl text-[9px] font-black text-space-text uppercase tracking-widest flex items-center gap-1.5 transition-all"
                                     >
-                                        ðŸ’ˆ Barbero Colega
+                                        💈 Barbero Colega
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => applyPreset('premium')}
                                         className="px-4 py-2 bg-space-card2 hover:bg-space-primary/10 border border-space-border hover:border-space-primary/30 rounded-xl text-[9px] font-black text-space-text uppercase tracking-widest flex items-center gap-1.5 transition-all"
                                     >
-                                        ðŸ‘‘ Salón Premium
+                                        👑 Salón Premium
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => applyPreset('rapido')}
                                         className="px-4 py-2 bg-space-card2 hover:bg-space-primary/10 border border-space-border hover:border-space-primary/30 rounded-xl text-[9px] font-black text-space-text uppercase tracking-widest flex items-center gap-1.5 transition-all"
                                     >
-                                        ðŸ¤– Asistente Rápido
+                                        🤖 Asistente Rápido
                                     </button>
                                 </div>
                             </div>
@@ -826,7 +826,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                         <div className="flex items-center justify-between">
                             <div className="space-y-1">
                                 <h2 className="text-base font-black text-space-text uppercase tracking-tight flex items-center gap-2">
-                                    ðŸ’¬ Bitácora de Conversaciones Recientes
+                                    💬 Bitácora de Conversaciones Recientes
                                 </h2>
                                 <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Revisa el historial de chats e interacciones en vivo del asistente</p>
                             </div>
@@ -858,7 +858,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 <div key={log.id} className="p-4 bg-space-card2/50 rounded-2xl border border-space-border space-y-3 shadow-inner">
                                     <div className="flex items-center justify-between border-b border-space-border pb-2">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-black text-space-text font-mono">ðŸ“± {log.from_number}</span>
+                                            <span className="text-[10px] font-black text-space-text font-mono">📱 {log.from_number}</span>
                                             <span className="bg-emerald-500/10 text-emerald-500 text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-emerald-500/20 flex items-center gap-0.5">
                                                 <ShieldCheck size={8} /> HMAC Ok
                                             </span>
@@ -889,7 +889,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     <div className="p-6 bg-gradient-to-br from-space-card to-space-card/45 rounded-3xl border border-space-border shadow-xl space-y-4">
                         <div className="space-y-1">
                             <h3 className="text-xs font-black text-space-text uppercase tracking-tight flex items-center gap-1.5">
-                                ðŸ”Œ Vinculación de WhatsApp
+                                📌 Vinculación de WhatsApp
                             </h3>
                             <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest mt-0.5">Conecta tu número personal al bot asistente</p>
                         </div>
@@ -958,11 +958,11 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                             <div className="bg-[#0f172a] rounded-t-[26px] p-3.5 border-b border-white/5 flex items-center justify-between pt-6">
                                 <div className="flex items-center gap-2.5">
                                     <div className="w-8 h-8 rounded-full bg-space-primary/15 text-space-primary border border-space-primary/25 flex items-center justify-center text-[10px] font-black">
-                                        ðŸ¤–
+                                        🤖
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black text-white uppercase tracking-wide leading-none">{currentBusiness?.name || 'Copiloto Spacey'}</p>
-                                        <span className="text-[7px] text-space-primary font-bold uppercase tracking-widest">â— asistente online</span>
+                                        <span className="text-[7px] text-space-primary font-bold uppercase tracking-widest">● asistente online</span>
                                     </div>
                                 </div>
                                 <span className="bg-white/5 text-white/50 text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-white/10">PRUEBA</span>

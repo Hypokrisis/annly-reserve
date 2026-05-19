@@ -456,9 +456,9 @@ export default function DashboardHome() {
                             </h3>
                             <div className="space-y-3">
                                 {[
-                                    { label: 'Ahorro', active: services.some(s => s.price >= 10 && s.price <= 15), icon: 'ðŸª«' },
+                                    { label: 'Ahorro', active: services.some(s => s.price >= 10 && s.price <= 15), icon: '🪫' },
                                     { label: 'Premium', active: services.some(s => s.price >= 40), icon: 'âš¡' },
-                                    { label: 'Popular', active: services.length > 5, icon: 'ðŸ”¥' }
+                                    { label: 'Popular', active: services.length > 5, icon: '🔥' }
                                 ].map((mode) => (
                                     <div key={mode.label} className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${mode.active ? 'bg-space-card2 border-space-border opacity-100' : 'bg-space-card border-transparent opacity-30 shadow-none'}`}>
                                         <div className="flex items-center gap-3">
@@ -474,7 +474,7 @@ export default function DashboardHome() {
                         {/* â”€â”€ Revenue Chart Small â”€â”€ */}
                         <section className="card p-6 bg-space-card border border-space-border/20">
                             <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.3em] mb-6 flex items-center justify-between">
-                                Tendencia 7 DÃ­as
+                                Tendencia 7 Días
                                 <span className="text-space-primary font-black">+{statsData.revenueTrend.toFixed(0)}%</span>
                             </h3>
                             <div className="flex items-end justify-between h-24 gap-1.5 px-1">
