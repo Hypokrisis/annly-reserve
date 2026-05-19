@@ -77,7 +77,7 @@ export default function SignupPage() {
     if (success) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-space-bg px-4">
-                <div className="max-w-md w-full card p-10 text-center shadow-card-lg animate-fade-up border-2 border-space-primary/20">
+                <div className="max-w-md w-full bg-space-card border border-space-border rounded-[2.5rem] p-10 text-center shadow-[0_20px_50px_rgba(0,0,0,0.05)] animate-fade-up border-2 border-space-primary/20">
                     <div className="relative w-20 h-20 mx-auto mb-6">
                         <div className="absolute inset-0 bg-space-primary/10 rounded-full animate-ping opacity-75"></div>
                         <div className="relative w-full h-full bg-space-primary rounded-full flex items-center justify-center shadow-lg">
@@ -91,8 +91,8 @@ export default function SignupPage() {
                         Hemos enviado un enlace de confirmación a{' '}
                         <strong className="text-space-text">{formData.email}</strong>.
                     </p>
-                    <p className="text-space-muted font-bold text-sm mb-6 mt-4 p-4 bg-amber-50 rounded-xl border border-amber-200">
-                        <span className="flex items-center justify-center gap-2 mb-1 text-amber-700">
+                    <p className="text-space-muted font-bold text-sm mb-6 mt-4 p-4 bg-space-warning/10 rounded-2xl border border-space-warning/30">
+                        <span className="flex items-center justify-center gap-2 mb-1 text-space-warning">
                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -110,7 +110,7 @@ export default function SignupPage() {
     }
 
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex bg-space-bg">
 
             {/* ── Left Branding ──────────────────────────────── */}
             <div className="hidden lg:flex lg:w-5/12 bg-space-primary flex-col justify-between p-12 relative overflow-hidden">
@@ -172,17 +172,17 @@ export default function SignupPage() {
                                 key={type} type="button"
                                 onClick={() => setUserType(type)}
                                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200
-                                    ${userType === type ? 'bg-white text-space-primary shadow-card' : 'text-space-muted hover:text-space-text'}`}
+                                    ${userType === type ? 'bg-space-card text-space-primary shadow-sm border border-space-border' : 'text-space-muted hover:text-space-text'}`}
                             >
                                 <Icon size={15} /> {label}
                             </button>
                         ))}
                     </div>
 
-                    <div className="card p-7 shadow-card-lg">
+                    <div className="bg-space-card border border-space-border rounded-[2.5rem] p-7 shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {error && (
-                                <div className="bg-red-50 border border-red-200 text-space-danger px-4 py-3 rounded-xl text-sm">
+                                <div className="bg-space-danger/10 border border-space-danger/20 text-space-danger px-4 py-3 rounded-xl text-sm">
                                     {error}
                                 </div>
                             )}
@@ -275,3 +275,4 @@ export default function SignupPage() {
         </div>
     );
 }
+

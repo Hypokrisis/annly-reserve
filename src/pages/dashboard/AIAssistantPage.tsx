@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/supabaseClient';
@@ -61,7 +61,7 @@ export default function AIAssistantPage() {
     // Simulator Interactive Chat
     const [simInput, setSimInput] = useState('');
     const [simulatorMessages, setSimulatorMessages] = useState<Array<{ sender: 'user' | 'bot', text: string, time: string }>>([
-        { sender: 'bot', text: 'Â¡Hola! ðŸ’ˆ Bienvenido al chat de prueba. Escribe un mensaje (ej: "precios", "hola", "tienen citas hoy en la tarde") para ver cÃ³mo responde la IA con tus instrucciones actuales en tiempo real.', time: '12:00 PM' }
+        { sender: 'bot', text: '¡Hola! ðŸ’ˆ Bienvenido al chat de prueba. Escribe un mensaje (ej: "precios", "hola", "tienen citas hoy en la tarde") para ver cómo responde la IA con tus instrucciones actuales en tiempo real.', time: '12:00 PM' }
     ]);
     const [isBotTyping, setIsBotTyping] = useState(false);
 
@@ -157,10 +157,10 @@ export default function AIAssistantPage() {
                 .eq('id', currentBusiness.id);
 
             if (error) throw error;
-            toast.success('âœ¨ ConfiguraciÃ³n de IA guardada con Ã©xito.');
+            toast.success('âœ¨ Configuración de IA guardada con éxito.');
         } catch (err: any) {
             console.error('Error saving AI config:', err);
-            toast.error('OcurriÃ³ un error al guardar la configuraciÃ³n.');
+            toast.error('Ocurrió un error al guardar la configuración.');
         } finally {
             setSaving(false);
         }
@@ -170,18 +170,18 @@ export default function AIAssistantPage() {
     const applyPreset = (presetName: 'colega' | 'premium' | 'rapido') => {
         let promptText = '';
         if (presetName === 'colega') {
-            promptText = `ActÃºa como un barbero pana, sÃºper carismÃ¡tico y de confianza. Usa modismos locales amigables. Saluda con entusiasmo ("Â¡DÃ­melo hermano! ðŸ”¥", "QuÃ© es la que hay combo ðŸ’ˆ").
+            promptText = `Actúa como un barbero pana, súper carismático y de confianza. Usa modismos locales amigables. Saluda con entusiasmo ("¡Dímelo hermano! ðŸ”¥", "Qué es la que hay combo ðŸ’ˆ").
 Explica de manera bien fluida y relajada los precios, horarios o las ofertas activas.
-SÃ© directo al grano, mantÃ©n los textos sÃºper cortos y siempre anima al cliente a agendar su espacio en un toque con el enlace de reservas.`;
+Sé directo al grano, mantén los textos súper cortos y siempre anima al cliente a agendar su espacio en un toque con el enlace de reservas.`;
             setFormData(prev => ({ ...prev, whatsapp_bot_personality: 'cool', whatsapp_bot_prompt: promptText }));
         } else if (presetName === 'premium') {
-            promptText = `ActÃºa como el recepcionista exclusivo de un distinguido salÃ³n de belleza y cuidado premium. MantÃ©n un tono sumamente sofisticado, educado, atento y elegante. Saluda con cortesÃ­a ("Muy buenos dÃ­as, estimado cliente. Es un placer asistirle en nuestro salÃ³n ðŸ‘‘").
-Explica detalladamente las comodidades del salÃ³n, el catÃ¡logo de servicios refinados y las promociones vigentes.
-GuÃ­a cordialmente al usuario a seleccionar su fecha ideal confirmando su cita en nuestro distinguido enlace oficial.`;
+            promptText = `Actúa como el recepcionista exclusivo de un distinguido salón de belleza y cuidado premium. Mantén un tono sumamente sofisticado, educado, atento y elegante. Saluda con cortesía ("Muy buenos días, estimado cliente. Es un placer asistirle en nuestro salón ðŸ‘‘").
+Explica detalladamente las comodidades del salón, el catálogo de servicios refinados y las promociones vigentes.
+Guía cordialmente al usuario a seleccionar su fecha ideal confirmando su cita en nuestro distinguido enlace oficial.`;
             setFormData(prev => ({ ...prev, whatsapp_bot_personality: 'executive', whatsapp_bot_prompt: promptText }));
         } else {
-            promptText = `ActÃºa como un asistente virtual sumamente Ã¡gil, conciso y eficiente. Responde rÃ¡pido, en oraciones cortas y con emojis sutiles.
-Proporciona la lista de servicios principales de inmediato, responde dudas puntuales en viÃ±etas ordenadas y entrega el enlace directo para programar la cita sin rodeos innecesarios. Evita saludos largos.`;
+            promptText = `Actúa como un asistente virtual sumamente ágil, conciso y eficiente. Responde rápido, en oraciones cortas y con emojis sutiles.
+Proporciona la lista de servicios principales de inmediato, responde dudas puntuales en viñetas ordenadas y entrega el enlace directo para programar la cita sin rodeos innecesarios. Evita saludos largos.`;
             setFormData(prev => ({ ...prev, whatsapp_bot_personality: 'quick', whatsapp_bot_prompt: promptText }));
         }
         toast.success(`Plantilla aplicada. Modifica las instrucciones si quieres!`);
@@ -273,7 +273,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
         setQrSimulatedScan(true);
         setFormData(prev => ({ ...prev, whatsapp_device_connected: true }));
         setQrScanStep(3);
-        toast.success('ðŸ“± Â¡WhatsApp conectado exitosamente!');
+        toast.success('ðŸ“± ¡WhatsApp conectado exitosamente!');
     };
 
     const handleCloseQrModal = () => {
@@ -284,7 +284,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
 
     // Disconnect QR
     const handleDisconnectQr = async () => {
-        if (!window.confirm('Â¿Seguro que deseas desconectar tu celular del bot? Las respuestas automÃ¡ticas se detendrÃ¡n.')) return;
+        if (!window.confirm('¿Seguro que deseas desconectar tu celular del bot? Las respuestas automáticas se detendrán.')) return;
         try {
             if (currentBusiness) {
                 await supabase
@@ -325,27 +325,27 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
 
             const getPersonalityGreeting = () => {
                 if (formData.whatsapp_bot_personality === 'cool') {
-                    return `Â¡DÃ­melo hermano! ðŸ”¥ QuÃ© gusto saludarte en Spacey Barber Shop ðŸ’ˆ. Â¿CÃ³mo te asisto hoy pana?`;
+                    return `¡Dímelo hermano! ðŸ”¥ Qué gusto saludarte en Spacey Barber Shop ðŸ’ˆ. ¿Cómo te asisto hoy pana?`;
                 } else if (formData.whatsapp_bot_personality === 'executive') {
-                    return `Muy buenos dÃ­as, estimado cliente. Es un placer saludarle en nuestro distinguido salÃ³n ðŸ‘‘. Â¿En quÃ© podemos servirle el dÃ­a de hoy?`;
+                    return `Muy buenos días, estimado cliente. Es un placer saludarle en nuestro distinguido salón ðŸ‘‘. ¿En qué podemos servirle el día de hoy?`;
                 } else {
-                    return `Â¡Hola! Bienvenido. Â¿CÃ³mo te asisto hoy con tu cita? ðŸ¤–`;
+                    return `¡Hola! Bienvenido. ¿Cómo te asisto hoy con tu cita? ðŸ¤–`;
                 }
             };
 
             const getPersonalityOffer = () => {
                 if (formData.whatsapp_bot_personality === 'cool') {
-                    return `Â¡DurÃ­simo! ðŸ”¥ Tenemos esta promo activa hoy: "${offer}". Â¡AprovÃ©chala ya!`;
+                    return `¡Durísimo! ðŸ”¥ Tenemos esta promo activa hoy: "${offer}". ¡Aprovéchala ya!`;
                 } else if (formData.whatsapp_bot_personality === 'executive') {
-                    return `Le complacemos en informarle que disponemos de la siguiente cortesÃ­a exclusiva: "${offer}".`;
+                    return `Le complacemos en informarle que disponemos de la siguiente cortesía exclusiva: "${offer}".`;
                 } else {
-                    return `Â¡SÃ­! Tenemos la siguiente promociÃ³n activa hoy: "${offer}".`;
+                    return `¡Sí! Tenemos la siguiente promoción activa hoy: "${offer}".`;
                 }
             };
 
             const getPersonalityBooking = () => {
                 if (formData.whatsapp_bot_personality === 'cool') {
-                    return `Â¡Agenda tu cita de una en este link y separa tu espacio! ðŸ”— ${bookingLink} ðŸš€âœ‚ï¸`;
+                    return `¡Agenda tu cita de una en este link y separa tu espacio! ðŸ”— ${bookingLink} ðŸš€âœ‚ï¸`;
                 } else if (formData.whatsapp_bot_personality === 'executive') {
                     return `Le invitamos a seleccionar su servicio y horario de preferencia mediante nuestro enlace de reserva: ðŸ”— ${bookingLink}`;
                 } else {
@@ -358,24 +358,24 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 : '';
 
             if (lower.includes('hola') || lower.includes('buenos') || lower.includes('buenas')) {
-                botText = `${getPersonalityGreeting()}\n\nEscribe "precios", "ubicaciÃ³n", "ofertas" o "reservar" para asistirte.`;
+                botText = `${getPersonalityGreeting()}\n\nEscribe "precios", "ubicación", "ofertas" o "reservar" para asistirte.`;
             } else if (lower.includes('precio') || lower.includes('servicio') || lower.includes('cuesta')) {
                 const serviceList = services && services.length > 0 
                     ? services.slice(0, 4).map(s => `â€¢ ${s.name}: $${s.price}`).join('\n')
-                    : 'â€¢ Corte de Cabello: $20\nâ€¢ Afeitado ClÃ¡sico: $15\nâ€¢ Combo Flow Completo: $30';
+                    : 'â€¢ Corte de Cabello: $20\nâ€¢ Afeitado Clásico: $15\nâ€¢ Combo Flow Completo: $30';
                 
                 botText = `${aiPrefix}Claro, estos son algunos de nuestros servicios principales:\n\n${serviceList}\n\n${getPersonalityBooking()}`;
             } else if (lower.includes('donde') || lower.includes('ubicacion') || lower.includes('direccion') || lower.includes('como llego')) {
-                botText = `${aiPrefix}Nos encontramos ubicados en: ðŸ“ ${address}${city ? ', ' + city : ''}.\n\nÂ¡Te esperamos! Recuerda reservar antes para asegurar tu espacio.`;
+                botText = `${aiPrefix}Nos encontramos ubicados en: ðŸ“ ${address}${city ? ', ' + city : ''}.\n\n¡Te esperamos! Recuerda reservar antes para asegurar tu espacio.`;
             } else if (lower.includes('oferta') || lower.includes('promo') || lower.includes('descuento')) {
                 botText = `${aiPrefix}${getPersonalityOffer()}\n\n${getPersonalityBooking()}`;
             } else if (lower.includes('reserva') || lower.includes('cita') || lower.includes('agendar')) {
                 botText = `${aiPrefix}${getPersonalityBooking()}`;
             } else if (lower.includes('10:00') || lower.includes('10') || lower.includes('hoy') || lower.includes('tarde')) {
                 // Mimic the exact confirmation template requested!
-                botText = `Perfecto, te apartamos las 15:30 del 2026-05-17. Confirma tu cita aquÃ­ antes de que se libere el espacio ðŸ‘‡\n${bookingLink}?date=2026-05-17&time=15:30\nSolo toma 30 segundos âœ…`;
+                botText = `Perfecto, te apartamos las 15:30 del 2026-05-17. Confirma tu cita aquí antes de que se libere el espacio ðŸ‘‡\n${bookingLink}?date=2026-05-17&time=15:30\nSolo toma 30 segundos âœ…`;
             } else {
-                botText = `${aiPrefix}Entendido. Para cualquier consulta adicional o para agendar de inmediato, puedes usar nuestro portal de reservas en segundos: \n\nðŸ”— ${bookingLink}\n\nÂ¡Esperamos verte pronto! ðŸ’ˆ`;
+                botText = `${aiPrefix}Entendido. Para cualquier consulta adicional o para agendar de inmediato, puedes usar nuestro portal de reservas en segundos: \n\nðŸ”— ${bookingLink}\n\n¡Esperamos verte pronto! ðŸ’ˆ`;
             }
 
             setSimulatorMessages(prev => [...prev, { sender: 'bot', text: botText, time: currentTime }]);
@@ -389,21 +389,21 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
             id: 'mock-1',
             from_number: '17875551234',
             user_message: 'Buenas tardes! Tienen espacio libre para recortar hoy tarde?',
-            bot_response: 'Â¡Hola! ðŸ’ˆ SÃ­, claro que sÃ­. En el turno de la tarde tenemos libres estos horarios: 14:00, 15:30, 16:30 y 17:30. Â¿CuÃ¡l te conviene?',
+            bot_response: '¡Hola! ðŸ’ˆ Sí, claro que sí. En el turno de la tarde tenemos libres estos horarios: 14:00, 15:30, 16:30 y 17:30. ¿Cuál te conviene?',
             created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString()
         },
         {
             id: 'mock-2',
             from_number: '17875551234',
-            user_message: 'El de las 15:30 me va perfecto, sepÃ¡ramelo porfa.',
-            bot_response: `Perfecto, te apartamos las 15:30 de Hoy. Confirma tu cita aquÃ­ antes de que se libere el espacio ðŸ‘‡\nhttps://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'}?date=2026-05-17&time=15:30\nSolo toma 30 segundos âœ…`,
+            user_message: 'El de las 15:30 me va perfecto, sepáramelo porfa.',
+            bot_response: `Perfecto, te apartamos las 15:30 de Hoy. Confirma tu cita aquí antes de que se libere el espacio ðŸ‘‡\nhttps://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'}?date=2026-05-17&time=15:30\nSolo toma 30 segundos âœ…`,
             created_at: new Date(Date.now() - 4 * 60 * 1000).toISOString()
         },
         {
             id: 'mock-3',
             from_number: '19395556789',
-            user_message: 'CuÃ¡nto cuesta el combo de corte y afeitado de barba?',
-            bot_response: `Â¡DÃ­melo hermano! ðŸ”¥ El Combo Afeitado ClÃ¡sico y Corte cuesta $30 e incluye lavado y toalla caliente ðŸ’ˆ. Â¿Te apartamos un espacio?\n\nReserva en segundos: ðŸ”— https://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'} ðŸ“…`,
+            user_message: 'Cuánto cuesta el combo de corte y afeitado de barba?',
+            bot_response: `¡Dímelo hermano! ðŸ”¥ El Combo Afeitado Clásico y Corte cuesta $30 e incluye lavado y toalla caliente ðŸ’ˆ. ¿Te apartamos un espacio?\n\nReserva en segundos: ðŸ”— https://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'} ðŸ“…`,
             created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString()
         }
     ];
@@ -421,9 +421,17 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
     }
 
     return (
-        <div className="space-y-10 pb-16 animate-fade-in">
-            
-            {/* â”€â”€ HEADER CONTAINER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="p-4 sm:p-8 space-y-10 pb-16 animate-fade-in">
+            {/* ← Back button */}
+            <button
+                type="button"
+                onClick={() => navigate('/dashboard')}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-space-card border border-space-border rounded-xl text-[10px] font-black text-space-muted hover:text-space-primary hover:border-space-primary/40 uppercase tracking-widest transition-all"
+            >
+                <ArrowRight size={14} className="rotate-180" /> Volver al Dashboard
+            </button>
+
+            {/* ── HEADER CONTAINER ─────────────────────────── */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 p-6 bg-gradient-to-r from-space-card to-space-card/40 rounded-3xl border border-space-border shadow-xl">
                 <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-space-primary/10 text-space-primary border border-space-primary/20 rounded-2xl flex items-center justify-center shadow-lg">
@@ -441,14 +449,14 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 <div className="flex items-center gap-4">
                     <div className="text-right">
                         <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">Estado del Bot</p>
-                        <p className={`text-xs font-black uppercase tracking-wide mt-0.5 ${formData.whatsapp_bot_active ? 'text-space-primary' : 'text-white/40'}`}>
-                            {formData.whatsapp_bot_active ? 'ðŸ¤– Activo' : 'ðŸ”‡ Pausado'}
+                        <p className={`text-xs font-black uppercase tracking-wide mt-0.5 ${formData.whatsapp_bot_active ? 'text-space-primary' : 'text-space-muted'}`}>
+                            {formData.whatsapp_bot_active ? '🤖 Activo' : '🔇 Pausado'}
                         </p>
                     </div>
                     <button
                         type="button"
                         onClick={handleToggleBotActive}
-                        className={`w-14 h-8 rounded-full relative transition-all duration-300 ${formData.whatsapp_bot_active ? 'bg-space-primary' : 'bg-white/10'}`}
+                        className={`w-14 h-8 rounded-full relative transition-all duration-300 ${formData.whatsapp_bot_active ? 'bg-space-primary' : 'bg-space-card2'}`}
                     >
                         <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 shadow-md ${formData.whatsapp_bot_active ? 'left-7' : 'left-1'}`} />
                     </button>
@@ -461,9 +469,9 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 {/* STATE */}
                 <div className="p-6 bg-space-card/70 backdrop-blur-md rounded-2xl border border-space-border flex items-center justify-between shadow-md relative overflow-hidden">
                     <div className="space-y-1 z-10">
-                        <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">SincronizaciÃ³n</p>
+                        <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">Sincronización</p>
                         <p className="text-lg font-black text-space-text uppercase tracking-tight">
-                            {qrSimulatedScan ? 'Conectado' : 'Sin ConexiÃ³n'}
+                            {qrSimulatedScan ? 'Conectado' : 'Sin Conexión'}
                         </p>
                         <p className="text-[8px] text-space-muted font-semibold uppercase">
                             {qrSimulatedScan ? 'Samsung S24 Activo' : 'Vincular dispositivo'}
@@ -482,9 +490,9 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     <div className="space-y-1 z-10">
                         <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">Respuestas Hoy</p>
                         <p className="text-lg font-black text-space-text uppercase tracking-tight">
-                            {isUsingDemoData ? '48' : (currentBusiness as any).daily_msg_count ?? 0} <span className="text-xs text-white/35 font-normal">/ 100</span>
+                            {isUsingDemoData ? '48' : (currentBusiness as any).daily_msg_count ?? 0} <span className="text-xs text-space-muted font-normal">/ 100</span>
                         </p>
-                        <div className="w-24 bg-white/10 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                        <div className="w-24 bg-space-border/50 h-1.5 rounded-full mt-1.5 overflow-hidden">
                             <div className="bg-space-primary h-full rounded-full" style={{ width: `${isUsingDemoData ? 48 : ((currentBusiness as any).daily_msg_count ?? 0)}%` }} />
                         </div>
                     </div>
@@ -500,7 +508,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 <div className="p-6 bg-space-card/70 backdrop-blur-md rounded-2xl border border-space-border flex items-center justify-between shadow-md relative overflow-hidden">
                     <div className="space-y-1 z-10">
                         <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">Citas por IA</p>
-                        <p className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-1.5">
+                        <p className="text-lg font-black text-space-text uppercase tracking-tight flex items-center gap-1.5">
                             {isUsingDemoData ? '12' : '0'}
                             <span className="text-space-primary text-[10px] font-bold flex items-center"><TrendingUp size={10} /> +15%</span>
                         </p>
@@ -535,15 +543,15 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
             <div className="p-8 bg-gradient-to-br from-space-card via-space-card to-space-card2/30 rounded-3xl border border-space-border shadow-xl space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1">
-                        <h2 className="text-base font-black text-white uppercase tracking-tight flex items-center gap-2">
+                        <h2 className="text-base font-black text-space-text uppercase tracking-tight flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-space-primary animate-pulse" />
-                            ðŸŽ“ Academia Spacey: Onboarding & GuÃ­a RÃ¡pida
+                            ðŸŽ“ Academia Spacey: Onboarding & Guía Rápida
                         </h2>
-                        <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Aprende a sacarle el mÃ¡ximo provecho a tu asistente conversacional en 4 simples pasos</p>
+                        <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Aprende a sacarle el máximo provecho a tu asistente conversacional en 4 simples pasos</p>
                     </div>
                     
                     {/* Dots Tabs */}
-                    <div className="flex items-center gap-1.5 bg-white/5 p-1 rounded-full border border-white/5">
+                    <div className="flex items-center gap-1.5 bg-space-card2 p-1 rounded-full border border-space-border">
                         {[0, 1, 2, 3].map((step) => (
                             <button
                                 key={step}
@@ -551,7 +559,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${
                                     activeTutorialStep === step 
                                         ? 'bg-space-primary text-white shadow-md' 
-                                        : 'text-white/40 hover:text-white/60'
+                                        : 'text-space-muted hover:text-space-text'
                                 }`}
                             >
                                 Paso {step + 1}
@@ -561,23 +569,23 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 </div>
 
                 {/* Stepper Content Slider */}
-                <div className="p-6 bg-white/5 rounded-2xl border border-white/10 flex flex-col md:flex-row items-center justify-between gap-6 transition-all duration-300">
+                <div className="p-6 bg-space-card2/50 rounded-2xl border border-space-border flex flex-col md:flex-row items-center justify-between gap-6 transition-all duration-300">
                     {activeTutorialStep === 0 && (
                         <>
                             <div className="space-y-4 max-w-lg">
-                                <span className="px-2.5 py-1 bg-space-primary/10 text-space-primary text-[8px] font-black uppercase tracking-widest rounded-full border border-space-primary/25">âœ‚ï¸ Tu CatÃ¡logo de Servicios</span>
+                                <span className="px-2.5 py-1 bg-space-primary/10 text-space-primary text-[8px] font-black uppercase tracking-widest rounded-full border border-space-primary/25">âœ‚ï¸ Tu Catálogo de Servicios</span>
                                 <h3 className="text-lg font-black text-space-text uppercase tracking-tight">Sube tus servicios con precios reales</h3>
                                 <p className="text-space-muted text-xs font-semibold uppercase leading-relaxed tracking-wider">
-                                    El bot de Inteligencia Artificial lee automÃ¡ticamente la lista de tus servicios activos con sus respectivos precios y duraciones para responderle a los clientes en WhatsApp de forma fidedigna. Â¡Nunca inventarÃ¡ un precio diferente!
+                                    El bot de Inteligencia Artificial lee automáticamente la lista de tus servicios activos con sus respectivos precios y duraciones para responderle a los clientes en WhatsApp de forma fidedigna. ¡Nunca inventará un precio diferente!
                                 </p>
                                 <button
                                     onClick={() => navigate('/dashboard/services')}
                                     className="px-6 py-2.5 bg-space-primary hover:bg-space-primary-dark text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all shadow-md"
                                 >
-                                    Ir a CatÃ¡logo de Servicios <ChevronRight size={14} />
+                                    Ir a Catálogo de Servicios <ChevronRight size={14} />
                                 </button>
                             </div>
-                            <div className="w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-space-primary shadow-inner">
+                            <div className="w-24 h-24 rounded-2xl bg-space-card2 flex items-center justify-center border border-space-border text-space-primary shadow-inner">
                                 <Scissors size={48} />
                             </div>
                         </>
@@ -589,7 +597,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 <span className="px-2.5 py-1 bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-amber-500/25">ðŸ“… Configurar Horarios y Disponibilidad</span>
                                 <h3 className="text-lg font-black text-space-text uppercase tracking-tight">Define tus horas de trabajo</h3>
                                 <p className="text-space-muted text-xs font-semibold uppercase leading-relaxed tracking-wider">
-                                    Define tus horas laborables y bloquea tus turnos. Gracias a nuestro algoritmo de disponibilidad, el asistente calcula tus citas de los prÃ³ximos 3 dÃ­as y jamÃ¡s ofrecerÃ¡ un espacio ocupado o fuera de tu horario laboral.
+                                    Define tus horas laborables y bloquea tus turnos. Gracias a nuestro algoritmo de disponibilidad, el asistente calcula tus citas de los próximos 3 días y jamás ofrecerá un espacio ocupado o fuera de tu horario laboral.
                                 </p>
                                 <button
                                     onClick={() => navigate('/dashboard/schedules')}
@@ -598,7 +606,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                     Configurar Horarios <ChevronRight size={14} />
                                 </button>
                             </div>
-                            <div className="w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-amber-500 shadow-inner">
+                            <div className="w-24 h-24 rounded-2xl bg-space-card2 flex items-center justify-center border border-space-border text-amber-500 shadow-inner">
                                 <Clock size={48} />
                             </div>
                         </>
@@ -610,28 +618,28 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 <span className="px-2.5 py-1 bg-blue-500/10 text-blue-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-blue-500/25">ðŸ”— Tu Enlace de Reservas Oficial</span>
                                 <h3 className="text-lg font-black text-space-text uppercase tracking-tight">El portal oficial que cierra la venta</h3>
                                 <p className="text-space-muted text-xs font-semibold uppercase leading-relaxed tracking-wider">
-                                    Este es tu enlace Spacey. Cuando un cliente selecciona un horario en WhatsApp, el bot le enviarÃ¡ una respuesta con el enlace pre-rellenado (ej: <code className="text-space-primary font-mono lowercase">?date=2026-05-17&time=15:30</code>) para que el cliente complete su reserva en segundos.
+                                    Este es tu enlace Spacey. Cuando un cliente selecciona un horario en WhatsApp, el bot le enviará una respuesta con el enlace pre-rellenado (ej: <code className="text-space-primary font-mono lowercase">?date=2026-05-17&time=15:30</code>) para que el cliente complete su reserva en segundos.
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="text"
                                         readOnly
                                         value={formData.whatsapp_booking_link || `https://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'}`}
-                                        className="px-4 py-2 bg-black/30 border border-white/10 rounded-xl text-[10px] text-white/80 font-mono w-64 focus:outline-none"
+                                        className="px-4 py-2 bg-space-card2 border border-space-border rounded-xl text-[10px] text-space-text font-mono w-64 focus:outline-none"
                                     />
                                     <button
                                         onClick={() => {
                                             navigator.clipboard.writeText(formData.whatsapp_booking_link || `https://spaceyreserve.netlify.app/book/${currentBusiness?.slug || 'mi-barberia'}`);
-                                            toast.success('Â¡Enlace copiado al portapapeles!');
+                                            toast.success('¡Enlace copiado al portapapeles!');
                                         }}
-                                        className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all"
+                                        className="p-2 bg-space-card2 hover:bg-space-border border border-space-border rounded-xl text-space-text transition-all"
                                         title="Copiar Enlace"
                                     >
                                         <Copy size={14} />
                                     </button>
                                 </div>
                             </div>
-                            <div className="w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-blue-500 shadow-inner">
+                            <div className="w-24 h-24 rounded-2xl bg-space-card2 flex items-center justify-center border border-space-border text-blue-500 shadow-inner">
                                 <ExternalLink size={48} />
                             </div>
                         </>
@@ -641,18 +649,18 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                         <>
                             <div className="space-y-4 max-w-lg">
                                 <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase tracking-widest rounded-full border border-emerald-500/25">ðŸ”Œ Conectar Dispositivo WhatsApp</span>
-                                <h3 className="text-lg font-black text-space-text uppercase tracking-tight">Escanea el cÃ³digo QR y prende tu bot</h3>
+                                <h3 className="text-lg font-black text-space-text uppercase tracking-tight">Escanea el código QR y prende tu bot</h3>
                                 <p className="text-space-muted text-xs font-semibold uppercase leading-relaxed tracking-wider">
-                                    Conectamos tu nÃºmero a travÃ©s de una instancia dedicada. Una vez escaneado el QR, tu bot asistente comenzarÃ¡ a responder todas tus consultas de inmediato con las pautas de tu prompt. Â¡ApÃ¡galo o enciÃ©ndelo cuando gustes!
+                                    Conectamos tu número a través de una instancia dedicada. Una vez escaneado el QR, tu bot asistente comenzará a responder todas tus consultas de inmediato con las pautas de tu prompt. ¡Apágalo o enciéndelo cuando gustes!
                                 </p>
                                 <button
                                     onClick={startQrLinkFlow}
                                     className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all shadow-md"
                                 >
-                                    Escanear CÃ³digo QR <ChevronRight size={14} />
+                                    Escanear Código QR <ChevronRight size={14} />
                                 </button>
                             </div>
-                            <div className="w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-emerald-500 shadow-inner">
+                            <div className="w-24 h-24 rounded-2xl bg-space-card2 flex items-center justify-center border border-space-border text-emerald-500 shadow-inner">
                                 <QrCode size={48} />
                             </div>
                         </>
@@ -669,7 +677,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     {/* Setup Card */}
                     <form onSubmit={handleSaveConfig} className="p-8 bg-space-card/70 backdrop-blur-md rounded-3xl border border-space-border shadow-xl space-y-6">
                         <div className="space-y-1">
-                            <h2 className="text-base font-black text-white uppercase tracking-tight flex items-center gap-2">
+                            <h2 className="text-base font-black text-space-text uppercase tracking-tight flex items-center gap-2">
                                 âš™ï¸ Ajustes del Asistente de IA
                             </h2>
                             <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Configura el comportamiento, link de reservas y horarios del bot</p>
@@ -678,49 +686,49 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                         {/* General Form Fields */}
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-[9px] font-black text-white/60 uppercase tracking-wider">Instrucciones del Prompt del Sistema (Personalidad y Reglas)</label>
+                                <label className="text-[9px] font-black text-space-muted uppercase tracking-wider">Instrucciones del Prompt del Sistema (Personalidad y Reglas)</label>
                                 <textarea
                                     name="whatsapp_bot_prompt"
                                     value={formData.whatsapp_bot_prompt}
                                     onChange={(e) => setFormData(prev => ({ ...prev, whatsapp_bot_prompt: e.target.value }))}
-                                    placeholder="Ej: Eres un barbero de confianza, mantÃ©n un tono sÃºper urbano, alegre y ofrece el catÃ¡logo..."
+                                    placeholder="Ej: Eres un barbero de confianza, mantén un tono súper urbano, alegre y ofrece el catálogo..."
                                     className="w-full h-36 bg-space-card2 border border-space-border rounded-2xl p-4 text-xs text-space-text font-medium placeholder-space-muted/40 focus:outline-none focus:border-space-primary/40 focus:ring-1 focus:ring-space-primary/40 transition-all resize-none leading-relaxed"
                                 />
                             </div>
 
                             {/* Preset Buttons */}
                             <div className="space-y-2">
-                                <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">Plantillas de Tono RÃ¡pidas:</p>
+                                <p className="text-[8px] font-black text-space-muted uppercase tracking-widest">Plantillas de Tono Rápidas:</p>
                                 <div className="flex flex-wrap gap-2.5">
                                     <button
                                         type="button"
                                         onClick={() => applyPreset('colega')}
-                                        className="px-4 py-2 bg-white/5 hover:bg-space-primary/10 border border-white/10 hover:border-space-primary/30 rounded-xl text-[9px] font-black text-white uppercase tracking-widest flex items-center gap-1.5 transition-all"
+                                        className="px-4 py-2 bg-space-card2 hover:bg-space-primary/10 border border-space-border hover:border-space-primary/30 rounded-xl text-[9px] font-black text-space-text uppercase tracking-widest flex items-center gap-1.5 transition-all"
                                     >
                                         ðŸ’ˆ Barbero Colega
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => applyPreset('premium')}
-                                        className="px-4 py-2 bg-white/5 hover:bg-space-primary/10 border border-white/10 hover:border-space-primary/30 rounded-xl text-[9px] font-black text-white uppercase tracking-widest flex items-center gap-1.5 transition-all"
+                                        className="px-4 py-2 bg-space-card2 hover:bg-space-primary/10 border border-space-border hover:border-space-primary/30 rounded-xl text-[9px] font-black text-space-text uppercase tracking-widest flex items-center gap-1.5 transition-all"
                                     >
-                                        ðŸ‘‘ SalÃ³n Premium
+                                        ðŸ‘‘ Salón Premium
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => applyPreset('rapido')}
-                                        className="px-4 py-2 bg-white/5 hover:bg-space-primary/10 border border-white/10 hover:border-space-primary/30 rounded-xl text-[9px] font-black text-white uppercase tracking-widest flex items-center gap-1.5 transition-all"
+                                        className="px-4 py-2 bg-space-card2 hover:bg-space-primary/10 border border-space-border hover:border-space-primary/30 rounded-xl text-[9px] font-black text-space-text uppercase tracking-widest flex items-center gap-1.5 transition-all"
                                     >
-                                        ðŸ¤– Asistente RÃ¡pido
+                                        ðŸ¤– Asistente Rápido
                                     </button>
                                 </div>
                             </div>
 
-                            <hr className="border-white/5" />
+                            <hr className="border-space-border" />
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-white/60 uppercase tracking-wider">Enlace Oficial de Reservas</label>
+                                    <label className="text-[9px] font-black text-space-muted uppercase tracking-wider">Enlace Oficial de Reservas</label>
                                     <input
                                         type="text"
                                         name="whatsapp_booking_link"
@@ -732,7 +740,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-white/60 uppercase tracking-wider">PromociÃ³n/Oferta Activa (Opcional)</label>
+                                    <label className="text-[9px] font-black text-space-muted uppercase tracking-wider">Promoción/Oferta Activa (Opcional)</label>
                                     <input
                                         type="text"
                                         name="whatsapp_offer"
@@ -744,19 +752,19 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 </div>
                             </div>
 
-                            <hr className="border-white/5" />
+                            <hr className="border-space-border" />
 
                             {/* ADVANCED TOGGLES */}
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between p-4 bg-space-card2/50 rounded-2xl border border-space-border">
                                     <div>
-                                        <h4 className="text-[10px] font-black text-space-text uppercase tracking-tight">Anti-ColisiÃ³n de Respuestas</h4>
-                                        <p className="text-[8px] text-space-muted font-bold uppercase tracking-wider mt-0.5">Mutea al bot si un humano responde en WhatsApp en los Ãºltimos 15 min</p>
+                                        <h4 className="text-[10px] font-black text-space-text uppercase tracking-tight">Anti-Colisión de Respuestas</h4>
+                                        <p className="text-[8px] text-space-muted font-bold uppercase tracking-wider mt-0.5">Mutea al bot si un humano responde en WhatsApp en los últimos 15 min</p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, whatsapp_bot_anti_collision: !prev.whatsapp_bot_anti_collision }))}
-                                        className={`w-10 h-6 rounded-full relative transition-all ${formData.whatsapp_bot_anti_collision ? 'bg-space-primary' : 'bg-white/10'}`}
+                                        className={`w-10 h-6 rounded-full relative transition-all ${formData.whatsapp_bot_anti_collision ? 'bg-space-primary' : 'bg-space-card2'}`}
                                     >
                                         <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all ${formData.whatsapp_bot_anti_collision ? 'left-4.5' : 'left-0.5'}`} />
                                     </button>
@@ -765,21 +773,21 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 <div className="flex items-center justify-between p-4 bg-space-card2/50 rounded-2xl border border-space-border">
                                     <div>
                                         <h4 className="text-[10px] font-black text-space-text uppercase tracking-tight">Horario de Actividad</h4>
-                                        <p className="text-[8px] text-space-muted font-bold uppercase tracking-wider mt-0.5">El bot responderÃ¡ Ãºnicamente dentro del horario establecido</p>
+                                        <p className="text-[8px] text-space-muted font-bold uppercase tracking-wider mt-0.5">El bot responderá únicamente dentro del horario establecido</p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, whatsapp_bot_auto_schedule: !prev.whatsapp_bot_auto_schedule }))}
-                                        className={`w-10 h-6 rounded-full relative transition-all ${formData.whatsapp_bot_auto_schedule ? 'bg-space-primary' : 'bg-white/10'}`}
+                                        className={`w-10 h-6 rounded-full relative transition-all ${formData.whatsapp_bot_auto_schedule ? 'bg-space-primary' : 'bg-space-card2'}`}
                                     >
                                         <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all ${formData.whatsapp_bot_auto_schedule ? 'left-4.5' : 'left-0.5'}`} />
                                     </button>
                                 </div>
 
                                 {formData.whatsapp_bot_auto_schedule && (
-                                    <div className="grid grid-cols-2 gap-4 p-4 bg-black/30 rounded-2xl border border-white/5 animate-slide-down">
+                                    <div className="grid grid-cols-2 gap-4 p-4 bg-space-card2 rounded-2xl border border-space-border animate-slide-down">
                                         <div className="space-y-1.5">
-                                            <label className="text-[8px] font-black text-white/40 uppercase tracking-widest">Hora de Apertura Bot</label>
+                                            <label className="text-[8px] font-black text-space-muted uppercase tracking-widest">Hora de Apertura Bot</label>
                                             <input
                                                 type="time"
                                                 name="whatsapp_bot_start_hour"
@@ -789,7 +797,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                             />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[8px] font-black text-white/40 uppercase tracking-widest">Hora de Cierre Bot</label>
+                                            <label className="text-[8px] font-black text-space-muted uppercase tracking-widest">Hora de Cierre Bot</label>
                                             <input
                                                 type="time"
                                                 name="whatsapp_bot_end_hour"
@@ -809,16 +817,16 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                             className="w-full py-3 bg-space-primary hover:bg-space-primary-dark disabled:opacity-50 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md shadow-space-primary/20 flex items-center justify-center gap-2"
                         >
                             {saving ? <RefreshCw className="animate-spin" size={14} /> : <Check size={14} />}
-                            {saving ? 'Guardando Ajustes...' : 'Guardar ConfiguraciÃ³n de IA'}
+                            {saving ? 'Guardando Ajustes...' : 'Guardar Configuración de IA'}
                         </button>
                     </form>
 
-                    {/* BitÃ¡cora Conversation Logs Card */}
+                    {/* Bitácora Conversation Logs Card */}
                     <div className="p-8 bg-space-card/70 backdrop-blur-md rounded-3xl border border-space-border shadow-xl space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="space-y-1">
-                                <h2 className="text-base font-black text-white uppercase tracking-tight flex items-center gap-2">
-                                    ðŸ’¬ BitÃ¡cora de Conversaciones Recientes
+                                <h2 className="text-base font-black text-space-text uppercase tracking-tight flex items-center gap-2">
+                                    ðŸ’¬ Bitácora de Conversaciones Recientes
                                 </h2>
                                 <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Revisa el historial de chats e interacciones en vivo del asistente</p>
                             </div>
@@ -826,7 +834,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 type="button"
                                 onClick={fetchLogs}
                                 disabled={logsLoading}
-                                className="p-2 bg-white/5 hover:bg-white/10 rounded-xl text-white/60 hover:text-white transition-all border border-white/10"
+                                className="p-2 bg-space-card2 hover:bg-space-border rounded-xl text-space-muted hover:text-space-text transition-all border border-space-border"
                                 title="Refrescar Logs"
                             >
                                 <RefreshCw className={`w-3.5 h-3.5 ${logsLoading ? 'animate-spin' : ''}`} />
@@ -837,9 +845,9 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                             <div className="p-4 bg-amber-500/10 text-amber-500 rounded-2xl border border-amber-500/20 flex items-start gap-3">
                                 <AlertTriangle className="flex-shrink-0 mt-0.5" size={16} />
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black uppercase tracking-wide">âœ“ Modo de DemostraciÃ³n Activo</p>
+                                    <p className="text-[10px] font-black uppercase tracking-wide">âœ“ Modo de Demostración Activo</p>
                                     <p className="text-[8px] text-amber-500/80 font-bold uppercase tracking-wider leading-relaxed">
-                                        Como tu bot aÃºn no ha atendido clientes reales, te mostramos conversaciones simuladas de demostraciÃ³n. Cuando vincules tu celular y empiece a recibir mensajes reales en WhatsApp, estos se reemplazarÃ¡n automÃ¡ticamente en tiempo real.
+                                        Como tu bot aún no ha atendido clientes reales, te mostramos conversaciones simuladas de demostración. Cuando vincules tu celular y empiece a recibir mensajes reales en WhatsApp, estos se reemplazarán automáticamente en tiempo real.
                                     </p>
                                 </div>
                             </div>
@@ -850,7 +858,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 <div key={log.id} className="p-4 bg-space-card2/50 rounded-2xl border border-space-border space-y-3 shadow-inner">
                                     <div className="flex items-center justify-between border-b border-space-border pb-2">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-black text-white/80 font-mono">ðŸ“± {log.from_number}</span>
+                                            <span className="text-[10px] font-black text-space-text font-mono">ðŸ“± {log.from_number}</span>
                                             <span className="bg-emerald-500/10 text-emerald-500 text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-emerald-500/20 flex items-center gap-0.5">
                                                 <ShieldCheck size={8} /> HMAC Ok
                                             </span>
@@ -860,11 +868,11 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                     <div className="space-y-2">
                                         <div className="bg-space-card2 px-3 py-2 rounded-xl border border-space-border max-w-[90%]">
                                             <p className="text-[8px] text-space-muted font-bold uppercase tracking-widest">Cliente</p>
-                                            <p className="text-[11px] text-white/80 font-medium leading-relaxed mt-0.5">{log.user_message}</p>
+                                            <p className="text-[11px] text-space-text font-medium leading-relaxed mt-0.5">{log.user_message}</p>
                                         </div>
                                         <div className="bg-space-primary/10 px-3 py-2 rounded-xl border border-space-primary/10 max-w-[90%] ml-auto text-right">
                                             <p className="text-[8px] text-space-primary font-bold uppercase tracking-widest">Copilot AI</p>
-                                            <p className="text-[11px] text-white/80 font-medium leading-relaxed mt-0.5 whitespace-pre-line text-left">{log.bot_response}</p>
+                                            <p className="text-[11px] text-space-text font-medium leading-relaxed mt-0.5 whitespace-pre-line text-left">{log.bot_response}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -877,13 +885,13 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                 {/* RIGHT: QR Scan Modal & Smartphone Simulator */}
                 <div className="lg:col-span-5 space-y-8">
                     
-                    {/* Device SincronizaciÃ³n Card */}
+                    {/* Device Sincronización Card */}
                     <div className="p-6 bg-gradient-to-br from-space-card to-space-card/45 rounded-3xl border border-space-border shadow-xl space-y-4">
                         <div className="space-y-1">
                             <h3 className="text-xs font-black text-space-text uppercase tracking-tight flex items-center gap-1.5">
-                                ðŸ”Œ VinculaciÃ³n de WhatsApp
+                                ðŸ”Œ Vinculación de WhatsApp
                             </h3>
-                            <p className="text-[9px] text-white/40 font-bold uppercase tracking-widest mt-0.5">Conecta tu nÃºmero personal al bot asistente</p>
+                            <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest mt-0.5">Conecta tu número personal al bot asistente</p>
                         </div>
 
                         {qrSimulatedScan ? (
@@ -895,7 +903,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                     <div>
                                         <p className="text-[10px] font-black text-space-text uppercase tracking-wide">Celular Vinculado en Vivo</p>
                                         <p className="text-[8px] text-space-muted font-semibold uppercase tracking-wider mt-0.5">
-                                            Dispositivo: <strong className="text-white">Samsung Galaxy S24 (WhatsApp Web)</strong>
+                                            Dispositivo: <strong className="text-space-text">Samsung Galaxy S24 (WhatsApp Web)</strong>
                                         </p>
                                     </div>
                                 </div>
@@ -914,8 +922,8 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-[10px] font-black text-space-text uppercase tracking-tight">Sin Dispositivos Sincronizados</p>
-                                    <p className="text-[8px] text-white/40 font-bold uppercase tracking-widest leading-relaxed">
-                                        Vincula tu celular en vivo para comenzar a despachar las citas de tus clientes automÃ¡ticamente por WhatsApp.
+                                    <p className="text-[8px] text-space-muted font-bold uppercase tracking-widest leading-relaxed">
+                                        Vincula tu celular en vivo para comenzar a despachar las citas de tus clientes automáticamente por WhatsApp.
                                     </p>
                                 </div>
                                 <button
@@ -923,7 +931,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                     onClick={startQrLinkFlow}
                                     className="w-full py-3 bg-space-primary hover:bg-space-primary-dark text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-md"
                                 >
-                                    Escanear CÃ³digo QR
+                                    Escanear Código QR
                                 </button>
                             </div>
                         )}
@@ -932,7 +940,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                     {/* Smartphone Preview Simulator */}
                     <div className="p-8 bg-space-card/70 backdrop-blur-md rounded-3xl border border-space-border shadow-xl space-y-6">
                         <div className="space-y-1">
-                            <h2 className="text-base font-black text-white uppercase tracking-tight flex items-center gap-2">
+                            <h2 className="text-base font-black text-space-text uppercase tracking-tight flex items-center gap-2">
                                 <Smartphone size={18} />
                                 Simulador Copiloto en Vivo
                             </h2>
@@ -940,7 +948,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                         </div>
 
                         {/* Simulated Phone Body */}
-                        <div className="w-full max-w-[340px] mx-auto bg-[#0a0f18] rounded-[36px] p-3.5 border-4 border-[#1f293d] shadow-2xl relative overflow-hidden flex flex-col h-[520px]">
+                        <div className="w-full max-w-[320px] mx-auto bg-[#0a0f18] rounded-[36px] p-3.5 border-4 border-[#1f293d] shadow-2xl relative overflow-hidden flex flex-col h-[520px]">
                             {/* iPhone Camera Notch */}
                             <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-[#1f293d] rounded-full z-30 flex items-center justify-center">
                                 <div className="w-2.5 h-2.5 bg-black rounded-full ml-auto mr-4" />
@@ -1030,14 +1038,14 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                     <span className="bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border border-amber-500/20">Modo Sandbox</span>
                                 )}
                             </div>
-                            <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">Escanea el cÃ³digo para activar tu asistente conversacional</p>
+                            <p className="text-[9px] text-space-muted font-bold uppercase tracking-widest">Escanea el código para activar tu asistente conversacional</p>
                         </div>
 
                         {/* Step 1: Loading */}
                         {qrScanStep === 1 && (
                             <div className="flex flex-col items-center justify-center p-6 space-y-4">
                                 <RefreshCw className="animate-spin text-space-primary" size={28} />
-                                <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Generando instancia de cÃ³digo QR Ãºnica...</p>
+                                <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Generando instancia de código QR única...</p>
                             </div>
                         )}
 
@@ -1077,9 +1085,9 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                     <Check size={24} />
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[11px] font-black text-space-text uppercase tracking-wide">âœ“ Â¡VinculaciÃ³n Exitosa!</p>
+                                    <p className="text-[11px] font-black text-space-text uppercase tracking-wide">âœ“ ¡Vinculación Exitosa!</p>
                                     <p className="text-[8px] text-space-muted font-bold uppercase tracking-widest leading-relaxed">
-                                        Tu dispositivo estÃ¡ enlazado y listo para responder de forma autÃ³noma.
+                                        Tu dispositivo está enlazado y listo para responder de forma autónoma.
                                         {isSandboxMode && ' (Modo sandbox activo)'}
                                     </p>
                                 </div>
@@ -1101,7 +1109,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-[11px] font-black text-space-text uppercase tracking-wide">QR Expirado</p>
-                                    <p className="text-[8px] text-space-muted font-bold uppercase tracking-widest leading-relaxed">El cÃ³digo QR expirÃ³ sin ser escaneado. Genera uno nuevo para volver a intentarlo.</p>
+                                    <p className="text-[8px] text-space-muted font-bold uppercase tracking-widest leading-relaxed">El código QR expiró sin ser escaneado. Genera uno nuevo para volver a intentarlo.</p>
                                 </div>
                                 <button
                                     type="button"
@@ -1119,7 +1127,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                                 onClick={handleCloseQrModal}
                                 className="w-full py-2.5 bg-space-card2 hover:bg-space-border text-space-muted hover:text-space-text rounded-xl text-[9px] font-black uppercase tracking-widest border border-space-border transition-all text-center"
                             >
-                                Cancelar VinculaciÃ³n
+                                Cancelar Vinculación
                             </button>
                         )}
                     </div>

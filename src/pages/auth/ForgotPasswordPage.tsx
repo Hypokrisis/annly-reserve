@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
                     <span className="font-bold text-space-text text-2xl tracking-tight font-outfit">Spacey</span>
                 </div>
 
-                <div className="card p-8 shadow-card-lg">
+                <div className="bg-space-card border border-space-border rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                     <div className="text-center mb-6">
                         <div className="w-16 h-16 bg-space-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl overflow-hidden">
                             <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
 
                     {success ? (
                         <div className="text-center">
-                            <div className="bg-green-50 border border-green-200 text-space-success px-4 py-3 rounded-xl text-sm mb-6">
+                            <div className="bg-space-success/10 border border-space-success/20 text-space-success px-4 py-3 rounded-xl text-sm mb-6">
                                 ✅ Email enviado. Revisa tu bandeja de entrada.
                             </div>
                             <Link to="/login" className="btn-primary justify-center w-full">
@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-5">
                             {error && (
-                                <div className="bg-red-50 border border-red-200 text-space-danger px-4 py-3 rounded-xl text-sm">
+                                <div className="bg-space-danger/10 border border-space-danger/20 text-space-danger px-4 py-3 rounded-xl text-sm">
                                     {error}
                                 </div>
                             )}
@@ -91,3 +91,4 @@ export default function ForgotPasswordPage() {
         </div>
     );
 }
+

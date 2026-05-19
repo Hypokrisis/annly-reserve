@@ -63,13 +63,13 @@ export default function AuthCallbackPage() {
 
     return (
         <div className="min-h-screen bg-space-bg flex items-center justify-center px-4">
-            <div className="card p-10 max-w-md w-full text-center bg-white border-2 border-space-border/50 shadow-xl rounded-3xl">
+            <div className="bg-space-card border border-space-border shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[2.5rem] p-10 max-w-md w-full text-center">
                 {/* Logo */}
                 <div className="w-16 h-16 bg-space-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl overflow-hidden">
                     <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                 </div>
 
-                <h1 className="text-3xl font-black text-space-text tracking-tight mb-2">Spacey</h1>
+                <h1 className="text-3xl font-black text-space-text tracking-tight mb-2 font-outfit">Spacey</h1>
                 <p className="text-[10px] text-space-muted font-black uppercase tracking-[0.3em] mb-8">Confirmación de Cuenta</p>
 
                 <div className="flex flex-col items-center gap-4">
@@ -81,15 +81,15 @@ export default function AuthCallbackPage() {
                     )}
                     {status === 'success' && (
                         <>
-                            <CheckCircle2 size={48} className="text-emerald-500" />
-                            <p className="font-bold text-emerald-700">{message}</p>
+                            <CheckCircle2 size={48} className="text-space-success" />
+                            <p className="font-bold text-space-success">{message}</p>
                             <p className="text-xs text-space-muted font-bold mt-2">Serás redirigido automáticamente...</p>
                         </>
                     )}
                     {status === 'error' && (
                         <>
-                            <XCircle size={48} className="text-red-500" />
-                            <p className="font-bold text-red-700">{message}</p>
+                            <XCircle size={48} className="text-space-danger" />
+                            <p className="font-bold text-space-danger">{message}</p>
                             <button
                                 onClick={() => navigate('/login')}
                                 className="mt-4 px-6 py-3 bg-space-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-space-primary/90 transition-all"
@@ -103,3 +103,4 @@ export default function AuthCallbackPage() {
         </div>
     );
 }
+

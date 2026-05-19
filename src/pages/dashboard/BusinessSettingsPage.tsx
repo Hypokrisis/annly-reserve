@@ -322,7 +322,7 @@ export default function BusinessSettingsPage() {
             <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-4 z-40">
                 <button
                     onClick={() => navigate('/dashboard')}
-                    className="group w-full sm:w-auto flex items-center gap-3 bg-white border-2 border-space-border/40 hover:border-space-primary/40 px-6 py-4 rounded-2xl transition-all shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 group"
+                    className="group w-full sm:w-auto flex items-center gap-3 bg-space-card border-2 border-space-border/40 hover:border-space-primary/40 px-6 py-4 rounded-2xl transition-all shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 group"
                 >
                     <div className="w-8 h-8 rounded-xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:scale-110 transition-transform">
                         <ChevronLeft size={20} />
@@ -357,11 +357,11 @@ export default function BusinessSettingsPage() {
                 {message && (
                     <div className={`p-5 rounded-3xl flex items-center gap-4 animate-fade-in shadow-sm ${
                         message.type === 'success' 
-                        ? 'bg-emerald-50 border border-emerald-100 text-emerald-800' 
-                        : 'bg-red-50 border border-red-100 text-red-800'
+                        ? 'bg-space-success/10 border border-space-success/30 text-space-success' 
+                        : 'bg-space-danger/10 border border-space-danger/30 text-space-danger'
                     }`}>
                         <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
-                            message.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
+                            message.type === 'success' ? 'bg-space-success text-white' : 'bg-space-danger text-white'
                         }`}>
                             {message.type === 'success' ? <Check size={20} /> : <Info size={20} />}
                         </div>
@@ -370,7 +370,7 @@ export default function BusinessSettingsPage() {
                 )}
 
                 {/* Section 1: Visual Identity */}
-                <section className="bg-white rounded-[2.5rem] p-6 sm:p-10 border border-space-border/20 shadow-[0_20px_60px_rgba(0,0,0,0.035)] group">
+                <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)] group">
                     <div className="flex items-center gap-3 mb-10 overflow-hidden">
                         <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:bg-space-primary group-hover:text-white transition-all duration-500">
                             <Sparkles size={24} />
@@ -398,7 +398,7 @@ export default function BusinessSettingsPage() {
                 </section>
 
                 {/* Section 2: General Info */}
-                <section className="bg-white rounded-[2.5rem] p-6 sm:p-10 border border-space-border/20 shadow-[0_20px_60px_rgba(0,0,0,0.035)]">
+                <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)]">
                     <div className="flex items-center gap-3 mb-10">
                         <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary">
                             <Info size={24} />
@@ -428,7 +428,7 @@ export default function BusinessSettingsPage() {
                                 value={formData.description}
                                 onChange={handleChange}
                                 rows={4}
-                                className="w-full px-6 py-4 bg-neutral-50/50 border-2 border-transparent rounded-[1.5rem] text-sm font-medium text-space-text focus:bg-white focus:ring-4 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-neutral-300 resize-none min-h-[120px]"
+                                className="w-full px-6 py-4 bg-space-card2 border-2 border-transparent rounded-[1.5rem] text-sm font-medium text-space-text focus:bg-space-card focus:ring-4 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-space-muted/40 resize-none min-h-[120px]"
                                 placeholder="Cuéntanos un poco sobre tu barbería y lo que la hace especial..."
                             />
                         </div>
@@ -436,7 +436,7 @@ export default function BusinessSettingsPage() {
                 </section>
 
                 {/* Section 3: Gallery */}
-                <section className="bg-white rounded-[2.5rem] p-6 sm:p-10 border border-space-border/20 shadow-[0_20px_60px_rgba(0,0,0,0.035)] group">
+                <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)] group">
                     <div className="flex items-center gap-3 mb-10 overflow-hidden">
                         <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:bg-space-primary group-hover:text-white transition-all duration-500">
                             <Sparkles size={24} />
@@ -454,7 +454,7 @@ export default function BusinessSettingsPage() {
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center">
                                     <button 
                                         onClick={() => setFormData(p => ({ ...p, gallery: p.gallery.filter((_, i) => i !== idx) }))}
-                                        className="bg-white/20 text-white p-2 rounded-xl hover:bg-space-danger transition-colors"
+                                        className="bg-space-danger/20 text-space-danger p-2 rounded-xl hover:bg-space-danger hover:text-white transition-colors"
                                     >
                                         <Info size={16} /> {/* Using Info as a placeholder for trash icon if not imported, but let's assume X is better */}
                                     </button>
@@ -473,7 +473,7 @@ export default function BusinessSettingsPage() {
                 </section>
 
                 {/* Section 4: Location */}
-                <section className="bg-white rounded-[2.5rem] p-6 sm:p-10 border border-space-border/20 shadow-[0_20px_60px_rgba(0,0,0,0.035)]">
+                <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)]">
                     <div className="flex items-center gap-3 mb-10">
                         <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary">
                             <MapPin size={24} />
@@ -490,7 +490,7 @@ export default function BusinessSettingsPage() {
                             <Input label="Ciudad" name="city" value={formData.city} onChange={handleChange} placeholder="Santo Domingo" />
                         </div>
 
-                        <div className="p-8 bg-neutral-50/80 rounded-[2rem] border border-neutral-100 flex flex-col items-center">
+                        <div className="p-8 bg-space-card2/50 rounded-[2rem] border border-space-border flex flex-col items-center">
                             <div className="w-full flex flex-col md:flex-row gap-8 items-center mb-6">
                                 <div className="md:w-1/3">
                                     <div className="flex items-center gap-2 mb-3">
@@ -510,7 +510,7 @@ export default function BusinessSettingsPage() {
                             
                             <button
                                 onClick={handleDetectLocation}
-                                className="w-full py-4 bg-white border-2 border-space-primary/30 text-space-primary hover:bg-space-primary hover:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-sm"
+                                className="w-full py-4 bg-space-card2 border-2 border-space-primary/30 text-space-primary hover:bg-space-primary hover:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-sm"
                             >
                                 <MapPin size={16} />
                                 Detectar mi ubicación actual (GPS)

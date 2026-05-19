@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useBarbers } from '@/hooks/useBarbers';
@@ -91,7 +91,7 @@ export default function SchedulesPage() {
         const sourceDay = weekSchedule.find(d => d.dayOfWeek === dayOfWeek);
         if (!sourceDay) return;
 
-        if (!confirm(`Â¿Copiar el horario de ${getDayName(dayOfWeek)} a todos los dÃ­as?`)) {
+        if (!confirm(`¿Copiar el horario de ${getDayName(dayOfWeek)} a todos los días?`)) {
             return;
         }
 

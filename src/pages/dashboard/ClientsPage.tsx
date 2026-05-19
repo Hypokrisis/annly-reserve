@@ -35,7 +35,7 @@ export default function ClientsPage() {
     const [inactiveDays, setInactiveDays] = useState(14);
     const [sending, setSending] = useState(false);
     const [reminderResult, setReminderResult] = useState<{ ok: boolean; results: ReminderResult[] } | null>(null);
-    const [customMessage, setCustomMessage] = useState('Hoy tenemos una promociÃ³n especial de 2x1 en recortes.');
+    const [customMessage, setCustomMessage] = useState('Hoy tenemos una promoción especial de 2x1 en recortes.');
 
     // Manual selection
     const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
@@ -85,17 +85,17 @@ export default function ClientsPage() {
         }
     };
 
-    // Individual manual send â€” queues via notification_jobs
+    // Individual manual send — queues via notification_jobs
     // so the same Twilio worker handles it (with template support)
     const handleSendReminder = async (client: Client) => {
         if (!business || !client.phone) {
-            toast.error('Este cliente no tiene nÃºmero de telÃ©fono registrado.');
+            toast.error('Este cliente no tiene número de teléfono registrado.');
             return;
         }
         try {
             // Generate templated message based on active business configurations
             const messageTemplate = (business as any).whatsapp_reminder_template || 
-                "Â¡Hola {{customer_name}}! Te escribimos de {{business_name}} ðŸ’ˆ. Ya llevas un tiempo sin visitarnos. Reserva tu prÃ³xima cita aquÃ­: {{booking_link}}";
+                "¡Hola {{customer_name}}! Te escribimos de {{business_name}} 💈. Ya llevas un tiempo sin visitarnos. Reserva tu próxima cita aquí: {{booking_link}}";
             
             const bookingLink = (business as any).whatsapp_booking_link || `${window.location.origin}/book/${business.slug}`;
             const offer = (business as any).whatsapp_offer || "";
@@ -124,7 +124,7 @@ export default function ClientsPage() {
 
     const handleBulkReminders = async () => {
         if (selectedEmails.size === 0 && inactiveCount === 0) {
-            toast.warning('No hay clientes para enviar. Ajusta los dÃ­as o selecciona clientes manualmente.');
+            toast.warning('No hay clientes para enviar. Ajusta los días o selecciona clientes manualmente.');
             return;
         }
 
@@ -164,11 +164,11 @@ export default function ClientsPage() {
 
             const totalSent = (json.results || []).reduce((acc: number, r: any) => acc + (r.sent ?? 0), 0);
             if (totalSent > 0) {
-                toast.success(`Â¡${totalSent} mensaje(s) enviados con Ã©xito!`);
+                toast.success(`¡${totalSent} mensaje(s) enviados con éxito!`);
                 setSelectedEmails(new Set());
             } else {
                 const reason = json.results?.[0]?.reason;
-                toast.warning(reason || 'No se enviaron mensajes. Verifica la configuraciÃ³n.');
+                toast.warning(reason || 'No se enviaron mensajes. Verifica la configuración.');
             }
 
         } catch (err: any) {
@@ -251,9 +251,9 @@ export default function ClientsPage() {
                                     <Bell size={20} className="text-space-primary" />
                                 </div>
                                 <div>
-                                    <h2 className="font-black text-space-text uppercase tracking-tight text-sm">CampaÃ±as & Recordatorios</h2>
+                                    <h2 className="font-black text-space-text uppercase tracking-tight text-sm">Campañas & Recordatorios</h2>
                                     <p className="text-[10px] text-space-muted font-bold uppercase tracking-widest">
-                                        Automatiza por dÃ­as o selecciona clientes manualmente
+                                        Automatiza por días o selecciona clientes manualmente
                                     </p>
                                 </div>
                             </div>
@@ -264,9 +264,9 @@ export default function ClientsPage() {
                             <div className={`lg:col-span-2 transition-opacity ${selectedEmails.size > 0 ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
                                 <div className="flex items-center justify-between mb-2">
                                     <label className="text-[10px] font-black text-space-muted uppercase tracking-widest">
-                                        Modo AutomÃ¡tico: Inactividad
+                                        Modo Automático: Inactividad
                                     </label>
-                                    <span className="text-lg font-black text-space-primary">{inactiveDays} dÃ­as</span>
+                                    <span className="text-lg font-black text-space-primary">{inactiveDays} días</span>
                                 </div>
                                 <input
                                     type="range"
@@ -278,12 +278,12 @@ export default function ClientsPage() {
                                     className="w-full h-2 rounded-full accent-space-primary cursor-pointer"
                                 />
                                 <div className="flex justify-between text-[9px] text-space-muted font-bold mt-1">
-                                    <span>7 dÃ­as</span><span>30 dÃ­as</span><span>60 dÃ­as</span>
+                                    <span>7 días</span><span>30 días</span><span>60 días</span>
                                 </div>
                                 <p className="text-[10px] text-space-muted font-bold mt-3 uppercase tracking-widest">
                                     {inactiveCount > 0
                                         ? <span className="text-amber-600">âš ï¸ {inactiveCount} cliente(s) inactivo(s).</span>
-                                        : <span className="text-emerald-600">âœ… Todos han visitado recientemente.</span>
+                                        : <span className="text-emerald-600">✅ Todos han visitado recientemente.</span>
                                     }
                                 </p>
                             </div>
@@ -300,7 +300,7 @@ export default function ClientsPage() {
                                     onChange={(e) => setCustomMessage(e.target.value)}
                                 />
                                 <p className="text-[9px] text-space-muted font-bold mt-1 uppercase tracking-widest">
-                                    Se insertarÃ¡ en el mensaje: "Queremos comentarte lo siguiente: [TU MENSAJE AQUÃ]."
+                                    Se insertará en el mensaje: "Queremos comentarte lo siguiente: [TU MENSAJE AQUÃ]."
                                 </p>
                             </div>
 
@@ -335,8 +335,8 @@ export default function ClientsPage() {
                                     {reminderResult.results.map((r, i) => (
                                         <div key={i} className="mb-2 last:mb-0">
                                             <p>{reminderResult.ok
-                                                ? `âœ… ${r.sent ?? 0} mensajes enviados con Ã©xito a ${r.business}.${r.reason ? ` (${r.reason})` : ''}`
-                                                : `âŒ ${r.reason || 'Error crÃ­tico al enviar.'}`
+                                                ? `✅ ${r.sent ?? 0} mensajes enviados con éxito a ${r.business}.${r.reason ? ` (${r.reason})` : ''}`
+                                                : `âŒ ${r.reason || 'Error crítico al enviar.'}`
                                             }</p>
                                             {r.errors && r.errors.length > 0 && (
                                                 <div className="mt-1 text-red-600 font-normal text-[10px] bg-red-100 p-2 rounded-lg">
@@ -394,8 +394,8 @@ export default function ClientsPage() {
                 ) : filteredClients.length === 0 ? (
                     <div className="card p-20 text-center border-dashed border-4 border-space-border/50 bg-transparent">
                         <User size={60} className="mx-auto text-space-border mb-4 opacity-50" />
-                        <h3 className="text-xl font-black text-space-text uppercase tracking-tight">No hay clientes aÃºn</h3>
-                        <p className="text-sm text-space-muted font-bold mt-2 uppercase tracking-widest">Las personas que reserven aparecerÃ¡n aquÃ­ automÃ¡ticamente.</p>
+                        <h3 className="text-xl font-black text-space-text uppercase tracking-tight">No hay clientes aún</h3>
+                        <p className="text-sm text-space-muted font-bold mt-2 uppercase tracking-widest">Las personas que reserven aparecerán aquí automáticamente.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 gap-4">
@@ -443,7 +443,7 @@ export default function ClientsPage() {
                                                         <History size={12} className="text-space-primary" /> {client.total_appointments} Visitas
                                                     </p>
                                                     <p className="text-xs text-space-muted font-bold flex items-center gap-1.5 leading-none">
-                                                        hace {status.days} dÃ­as
+                                                        hace {status.days} días
                                                     </p>
                                                 </div>
                                             </div>
@@ -451,7 +451,7 @@ export default function ClientsPage() {
 
                                         <div className="flex flex-col sm:flex-row items-center gap-4 border-t lg:border-t-0 pt-4 lg:pt-0 border-space-border/50">
                                             <div className="text-right flex-1 lg:flex-initial pr-4">
-                                                <p className="text-[9px] font-black text-space-muted uppercase tracking-widest mb-1">Ãšltima Visita</p>
+                                                <p className="text-[9px] font-black text-space-muted uppercase tracking-widest mb-1">Última Visita</p>
                                                 <p className="text-sm font-black text-space-text uppercase tracking-tight flex items-center gap-2">
                                                     <Calendar size={14} className="text-space-primary" />
                                                     {format(new Date(client.last_visit), "d 'de' MMMM", { locale: es })}

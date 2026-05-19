@@ -109,7 +109,7 @@ export default function LoginPage() {
             </div>
 
             {/* ── Right: Login Form ──────────────────────────── */}
-            <div className="flex-1 flex items-center justify-center p-8 bg-neutral-50 relative">
+            <div className="flex-1 flex items-center justify-center p-8 bg-space-bg relative">
                 <div className="w-full max-w-sm relative z-10">
                     
                     {/* Brand for Mobile */}
@@ -125,10 +125,10 @@ export default function LoginPage() {
                         <p className="text-space-muted text-xs font-bold uppercase tracking-widest">Inicia sesión en tu panel de control</p>
                     </div>
 
-                    <div className="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] p-10 border border-neutral-100">
+                    <div className="bg-space-card rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] p-10 border border-space-border">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {error && (
-                                <div className="bg-red-50 border border-red-100 text-space-danger px-4 py-3 rounded-2xl text-[11px] font-bold uppercase text-center flex items-center justify-center gap-2">
+                                <div className="bg-space-danger/10 border border-space-danger/20 text-space-danger px-4 py-3 rounded-2xl text-[11px] font-bold uppercase text-center flex items-center justify-center gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-space-danger"></span>
                                     {error}
                                 </div>
@@ -139,7 +139,7 @@ export default function LoginPage() {
                                 <input
                                     type="email" id="email" name="email"
                                     value={formData.email} onChange={handleChange}
-                                    className="w-full px-6 py-4 bg-neutral-50 border-transparent rounded-[1.25rem] text-sm font-bold text-space-text focus:bg-white focus:ring-2 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-neutral-300" 
+                                    className="w-full px-6 py-4 bg-space-card2 border border-space-border rounded-[1.25rem] text-sm font-bold text-space-text focus:bg-space-card focus:ring-2 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-space-muted/40" 
                                     placeholder="nombre@empresa.com"
                                     disabled={loading} autoComplete="email"
                                 />
@@ -157,14 +157,14 @@ export default function LoginPage() {
                                         type={showPwd ? 'text' : 'password'}
                                         id="password" name="password"
                                         value={formData.password} onChange={handleChange}
-                                        className="w-full px-6 py-4 bg-neutral-50 border-transparent rounded-[1.25rem] text-sm font-bold text-space-text focus:bg-white focus:ring-2 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-neutral-300"
+                                        className="w-full px-6 py-4 bg-space-card2 border border-space-border rounded-[1.25rem] text-sm font-bold text-space-text focus:bg-space-card focus:ring-2 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-space-muted/40"
                                         placeholder="••••••••"
                                         disabled={loading} autoComplete="current-password"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPwd(!showPwd)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-neutral-300 hover:text-space-primary transition-colors"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-space-muted hover:text-space-primary transition-colors"
                                     >
                                         {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
@@ -188,7 +188,7 @@ export default function LoginPage() {
                             </button>
                         </form>
 
-                        <div className="mt-8 pt-8 border-t border-neutral-50 text-center">
+                        <div className="mt-8 pt-8 border-t border-space-border text-center">
                             <p className="text-[10px] font-bold text-space-muted uppercase tracking-widest">
                                 ¿Nuevo en Spacey?{' '}
                                 <Link to="/signup" className="text-space-primary hover:text-space-primary-dark font-black transition underline decoration-2 underline-offset-4">
@@ -199,7 +199,7 @@ export default function LoginPage() {
                     </div>
 
                     <div className="mt-8 flex justify-center">
-                        <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-space-muted font-black rounded-full hover:text-space-primary transition-all uppercase tracking-widest text-[9px] border border-neutral-100 hover:border-space-primary/10 hover:shadow-lg">
+                        <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-space-card text-space-muted font-black rounded-full hover:text-space-primary transition-all uppercase tracking-widest text-[9px] border border-space-border hover:border-space-primary/10 hover:shadow-lg">
                             ← Volver al inicio
                         </Link>
                     </div>

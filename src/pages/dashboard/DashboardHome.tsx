@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -157,17 +157,17 @@ export default function DashboardHome() {
 
 
     const quickActions = [
-        { to: '/dashboard/services',     icon: Scissors, label: 'Servicios',   desc: 'Precios y duraciÃ³n' },
-        { to: '/dashboard/barbers',      icon: Users,    label: 'Equipo',      desc: 'AÃ±ade barberos' },
+        { to: '/dashboard/services',     icon: Scissors, label: 'Servicios',   desc: 'Precios y duración' },
+        { to: '/dashboard/barbers',      icon: Users,    label: 'Equipo',      desc: 'Añade barberos' },
         { to: '/dashboard/schedules',    icon: Clock,    label: 'Horarios',    desc: 'Define disponibilidad' },
-        { to: '/dashboard/appointments', icon: Calendar, label: 'Citas',       desc: 'Ver agenda del dÃ­a' },
+        { to: '/dashboard/appointments', icon: Calendar, label: 'Citas',       desc: 'Ver agenda del día' },
     ];
 
     return (
         <DashboardLayout>
             <div className="animate-fade-up pb-10">
 
-                {/* â”€â”€ 5-SECOND PULSE HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+                {/* ── 5-SECOND PULSE HEADER ──────────────────── */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
                     <div className="flex items-center gap-5">
                         <div className="w-16 h-16 rounded-[1.5rem] bg-space-text border-2 border-space-border/20 overflow-hidden shadow-lg flex items-center justify-center shrink-0">
@@ -179,11 +179,11 @@ export default function DashboardHome() {
                         </div>
                         <div>
                             <h1 className="text-2xl font-black text-space-text tracking-tighter uppercase italic leading-none mb-1">
-                                {business?.name || 'Mi BarberÃ­a'}
+                                {business?.name || 'Mi Barbería'}
                             </h1>
                             <p className="text-[10px] font-black text-space-muted uppercase tracking-[0.3em] flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-space-success animate-pulse" />
-                                Sistema en lÃ­nea â€¢ {role === 'owner' ? 'Panel de Control' : 'Vista de Staff'}
+                                Sistema en línea • {role === 'owner' ? 'Panel de Control' : 'Vista de Staff'}
                             </p>
                         </div>
                     </div>
@@ -237,7 +237,7 @@ export default function DashboardHome() {
                                 <div className="card p-10 text-center border-2 border-dashed border-space-border/60 bg-neutral-50/50">
                                     <Calendar size={32} className="text-space-muted mx-auto mb-3 opacity-20" />
                                     <p className="text-[11px] font-black text-space-muted uppercase tracking-widest">Sin citas confirmadas para hoy</p>
-                                    <p className="text-[9px] text-space-muted/60 mt-2 font-bold uppercase">Tus clientes verÃ¡n los huecos libres en tu pÃ¡gina</p>
+                                    <p className="text-[9px] text-space-muted/60 mt-2 font-bold uppercase">Tus clientes verán los huecos libres en tu página</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -316,7 +316,7 @@ export default function DashboardHome() {
                             {/* Top Team */}
                             <div className="card p-6 bg-white">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em]">LÃ­deres de Equipo</h3>
+                                    <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em]">Líderes de Equipo</h3>
                                     <Award size={14} className="text-indigo-600" />
                                 </div>
                                 <div className="space-y-3">
@@ -336,8 +336,7 @@ export default function DashboardHome() {
 
                     {/* Right Column: Pulse & Insights (4 cols) */}
                     <div className="xl:col-span-4 space-y-8">
-                        
-                        {/* â”€â”€ Plan Usage / Limits â”€â”€ */}
+                        {/* ── Plan Usage / Limits ── */}
                         {role === 'owner' && (
                             <section className="card p-6 bg-space-card border border-space-border/20 shadow-sm space-y-6">
                                 <div className="flex items-center justify-between">
@@ -377,7 +376,7 @@ export default function DashboardHome() {
                                         <div className="flex justify-between text-[10px] font-black uppercase mb-1">
                                             <span className="text-space-text">Citas de este Mes</span>
                                             <span className="text-space-muted font-mono">
-                                                {monthlyAppointmentsCount} / {subscription?.subscription_tiers?.max_monthly_appointments === 999999 ? 'âˆž' : (subscription?.subscription_tiers?.max_monthly_appointments || 150)}
+                                                {monthlyAppointmentsCount} / {subscription?.subscription_tiers?.max_monthly_appointments === 999999 ? '∞' : (subscription?.subscription_tiers?.max_monthly_appointments || 150)}
                                             </span>
                                         </div>
                                         <div className="w-full h-2 bg-space-border/40 rounded-full overflow-hidden">
@@ -398,11 +397,11 @@ export default function DashboardHome() {
                                         {((subscription?.subscription_tiers?.max_monthly_appointments !== 999999 && monthlyAppointmentsCount >= (subscription?.subscription_tiers?.max_monthly_appointments || 150)) ||
                                          (barbers.filter(b => b.is_active).length >= (subscription?.subscription_tiers?.max_barbers || 3))) ? (
                                             <div className="p-3 bg-space-danger/10 border border-space-danger/30 rounded-xl mb-4 text-[9px] font-black uppercase tracking-wider text-space-danger leading-relaxed">
-                                                âš ï¸ Has alcanzado el lÃ­mite de tu plan. Ciertas funciones o nuevas citas se encuentran bloqueadas.
+                                                ⚠️ Has alcanzado el límite de tu plan. Ciertas funciones o nuevas citas se encuentran bloqueadas.
                                             </div>
                                          ) : (subscription?.subscription_tiers?.max_monthly_appointments !== 999999 && monthlyAppointmentsCount >= (subscription?.subscription_tiers?.max_monthly_appointments || 150) * 0.8) ? (
                                             <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-[9px] font-black uppercase tracking-wider text-amber-700 leading-relaxed">
-                                                âš ï¸ EstÃ¡s cerca del lÃ­mite de citas de tu plan Starter. Â¡Sube de plan para evitar bloquear reservas!
+                                                ⚠️ Estás cerca del límite de citas de tu plan Starter. ¡Sube de plan para evitar bloquear reservas!
                                             </div>
                                          ) : null}
 
@@ -418,7 +417,7 @@ export default function DashboardHome() {
                             </section>
                         )}
                         
-                        {/* â”€â”€ Retention Pulse â”€â”€ */}
+                        {/* ── Retention Pulse ──────────────────── */}
                         <section className="card p-8 bg-space-text text-white border-none shadow-xl relative overflow-hidden min-h-[300px] flex flex-col justify-between">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-space-primary/20 rounded-full blur-3xl -mr-16 -mt-16" />
                             <div>
@@ -427,11 +426,11 @@ export default function DashboardHome() {
                                         <PieChart size={14} className="text-space-primary" />
                                         Rendimiento
                                     </h2>
-                                    <span className="px-2 py-0.5 bg-white/10 rounded-md text-[8px] font-black text-white/40">ANÃLISIS PRO</span>
+                                    <span className="px-2 py-0.5 bg-white/10 rounded-md text-[8px] font-black text-white/40">ANÁLISIS PRO</span>
                                 </div>
                                 
                                 <div className="mb-6">
-                                    <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-2">Tasa de RetenciÃ³n</p>
+                                    <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-2">Tasa de Retención</p>
                                     <div className="flex items-baseline gap-2">
                                         <p className="text-5xl font-black text-white tracking-tighter italic">{statsData.returningRate.toFixed(1)}%</p>
                                         <TrendingUp size={20} className="text-space-primary" />
@@ -444,12 +443,12 @@ export default function DashboardHome() {
                                     <div className="h-full bg-space-primary shadow-[0_0_15px_rgba(74,132,99,0.5)]" style={{ width: `${statsData.returningRate}%` }} />
                                 </div>
                                 <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest leading-relaxed">
-                                    {statsData.returningRate > 50 ? 'ðŸŽ‰ FidelizaciÃ³n brutal. Sigue asÃ­.' : 'âš ï¸ EnfÃ³cate en la experiencia para subir la retenciÃ³n.'}
+                                    {statsData.returningRate > 50 ? '🎉 Fidelización brutal. Sigue así.' : '⚠️ Enfócate en la experiencia para subir la retención.'}
                                 </p>
                             </div>
                         </section>
 
-                        {/* â”€â”€ Visibility Status â”€â”€ */}
+                        {/* ── Visibility Status ──────────────────── */}
                         <section className="card p-6 bg-space-card border border-space-border/20">
                             <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
                                 <MapPin size={14} className="text-space-primary" />
