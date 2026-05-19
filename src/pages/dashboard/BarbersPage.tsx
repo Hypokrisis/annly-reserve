@@ -319,7 +319,7 @@ export default function BarbersPage() {
                 <Modal isOpen={isModalOpen} onClose={handleCloseModal}
                     title={editingBarber ? 'Editar Barbero' : 'Nuevo Barbero'} size="lg">
                     <form onSubmit={handleSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto px-1 pr-3 scrollbar-custom">
-                        <div className="space-y-4">
+                        <div className="space-y-4 pb-24">
                             <Input label="Nombre" value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 error={formErrors.name} placeholder="Ej: Juan Pérez" required />

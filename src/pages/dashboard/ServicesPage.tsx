@@ -237,7 +237,7 @@ export default function ServicesPage() {
                 <Modal isOpen={isModalOpen} onClose={handleCloseModal}
                     title={editingService ? 'Editar Servicio' : 'Nuevo Servicio'} size="lg">
                     <form onSubmit={handleSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto px-1 pr-3 scrollbar-custom">
-                        <div className="space-y-4">
+                        <div className="space-y-4 pb-24">
                             <Input label="Nombre del Servicio" value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 error={formErrors.name} placeholder="Ej: Corte de pelo + Lavado" required />
