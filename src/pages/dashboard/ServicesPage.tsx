@@ -259,7 +259,7 @@ export default function ServicesPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-space-border sticky bottom-0 bg-space-card z-10 pb-2">
+                        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-space-border bg-space-card pb-2">
                             <button type="button" onClick={handleCloseModal} className="btn-secondary w-full sm:w-auto h-12 rounded-2xl font-bold uppercase tracking-widest text-[10px]">Cancelar</button>
                             <button type="submit" disabled={loading} className="btn-primary w-full sm:w-auto h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-space-primary/15">
                                 {loading ? 'Guardando...' : editingService ? 'Actualizar Servicio' : 'Crear Servicio'}
