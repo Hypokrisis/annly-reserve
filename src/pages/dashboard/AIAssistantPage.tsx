@@ -434,7 +434,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
             {/* ── HEADER CONTAINER ─────────────────────────── */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 p-6 bg-gradient-to-r from-space-card to-space-card/40 rounded-3xl border border-space-border shadow-xl">
                 <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-space-primary/10 text-space-primary border border-space-primary/20 rounded-2xl flex items-center justify-center shadow-lg">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-space-primary/10 text-space-primary border border-space-primary/20 rounded-2xl flex items-center justify-center shadow-lg">
                         <Sparkles size={28} className="animate-pulse" />
                     </div>
                     <div>
@@ -477,7 +477,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                             {qrSimulatedScan ? 'Samsung S24 Activo' : 'Vincular dispositivo'}
                         </p>
                     </div>
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${qrSimulatedScan ? 'bg-space-primary/10 text-space-primary' : 'bg-rose-500/10 text-rose-500'}`}>
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center ${qrSimulatedScan ? 'bg-space-primary/10 text-space-primary' : 'bg-rose-500/10 text-rose-500'}`}>
                         <QrCode size={22} className={qrSimulatedScan ? '' : 'animate-pulse'} />
                     </div>
                     {isUsingDemoData && (
@@ -496,7 +496,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                             <div className="bg-space-primary h-full rounded-full" style={{ width: `${isUsingDemoData ? 48 : ((currentBusiness as any).daily_msg_count ?? 0)}%` }} />
                         </div>
                     </div>
-                    <div className="w-12 h-12 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center">
                         <MessageSquare size={22} />
                     </div>
                     {isUsingDemoData && (
@@ -514,7 +514,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                         </p>
                         <p className="text-[8px] text-space-muted font-semibold uppercase">Citas agendadas por bot</p>
                     </div>
-                    <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                         <Calendar size={22} />
                     </div>
                     {isUsingDemoData && (
@@ -529,7 +529,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                         <p className="text-lg font-black text-space-text uppercase tracking-tight">1.2s</p>
                         <p className="text-[8px] text-space-primary font-bold uppercase tracking-widest">âš¡ Ultra Fast</p>
                     </div>
-                    <div className="w-12 h-12 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center">
                         <Zap size={22} />
                     </div>
                     {isUsingDemoData && (
@@ -669,7 +669,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
             </div>
 
             {/* â”€â”€ MAIN CONFIGURATION GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                 
                 {/* LEFT: Config Form & Live Logs */}
                 <div className="lg:col-span-7 space-y-10">
@@ -917,7 +917,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                             </div>
                         ) : (
                             <div className="p-6 bg-space-card2/50 rounded-2xl border border-space-border text-center space-y-4">
-                                <div className="w-14 h-14 bg-space-card2 text-space-muted border border-space-border rounded-full flex items-center justify-center mx-auto shadow-inner">
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-space-card2 text-space-muted border border-space-border rounded-full flex items-center justify-center mx-auto shadow-inner">
                                     <QrCode size={26} />
                                 </div>
                                 <div className="space-y-1">
@@ -1081,7 +1081,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                         {/* Step 3: Connected */}
                         {qrScanStep === 3 && (
                             <div className="flex flex-col items-center justify-center p-6 space-y-4 text-center">
-                                <div className="w-12 h-12 bg-space-primary/10 text-space-primary border border-space-primary/25 rounded-full flex items-center justify-center shadow-lg shadow-space-primary/10 animate-scale-in">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-space-primary/10 text-space-primary border border-space-primary/25 rounded-full flex items-center justify-center shadow-lg shadow-space-primary/10 animate-scale-in">
                                     <Check size={24} />
                                 </div>
                                 <div className="space-y-1">
@@ -1104,7 +1104,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                         {/* Step 4: Expired */}
                         {qrScanStep === 4 && (
                             <div className="flex flex-col items-center justify-center p-6 space-y-4 text-center">
-                                <div className="w-12 h-12 bg-space-danger/10 text-space-danger border border-space-danger/25 rounded-full flex items-center justify-center">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-space-danger/10 text-space-danger border border-space-danger/25 rounded-full flex items-center justify-center">
                                     <AlertTriangle size={24} />
                                 </div>
                                 <div className="space-y-1">

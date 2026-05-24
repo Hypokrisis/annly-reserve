@@ -199,7 +199,7 @@ export default function CampaignsPage() {
             <DashboardLayout>
                 <div className="max-w-4xl mx-auto py-12 space-y-8 animate-in fade-in duration-700">
                     <div className="text-center space-y-4">
-                        <div className="w-12 h-12 bg-space-primary/10 rounded-full flex items-center justify-center mx-auto text-space-primary">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-space-primary/10 rounded-full flex items-center justify-center mx-auto text-space-primary">
                             <Zap size={24} />
                         </div>
                         <h1 className="text-4xl font-black text-space-text tracking-tight uppercase italic leading-none">
@@ -280,7 +280,7 @@ export default function CampaignsPage() {
 
                     <button 
                         onClick={() => setIsModalOpen(true)}
-                        className="h-14 px-8 bg-space-primary hover:bg-space-primary-dark text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-space-primary/20"
+                        className="w-full md:w-auto h-12 md:h-14 px-8 bg-space-primary hover:bg-space-primary-dark text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-space-primary/20"
                     >
                         <Plus size={20} /> Nueva Campaña
                     </button>
@@ -346,7 +346,7 @@ export default function CampaignsPage() {
                         </div>
                     ) : campaigns.length === 0 ? (
                         <div className="py-20 flex flex-col items-center gap-4 text-center px-6">
-                            <div className="w-16 h-16 bg-space-card2 rounded-3xl flex items-center justify-center text-space-muted mb-2">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-space-card2 rounded-3xl flex items-center justify-center text-space-muted mb-2">
                                 <Zap size={32} />
                             </div>
                             <h3 className="text-lg font-black text-space-text uppercase tracking-tight">No hay campañas aún</h3>
@@ -473,7 +473,7 @@ export default function CampaignsPage() {
                             {/* Modal Header */}
                             <div className="px-10 py-8 border-b-2 border-space-border flex items-center justify-between bg-space-card2/50">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-space-primary rounded-2xl flex items-center justify-center text-white shadow-btn">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-space-primary rounded-2xl flex items-center justify-center text-white shadow-btn">
                                         <Zap size={24} />
                                     </div>
                                     <div>
@@ -481,7 +481,7 @@ export default function CampaignsPage() {
                                         <p className="text-[10px] text-space-muted font-bold uppercase tracking-widest">Paso {step} de 3</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setIsModalOpen(false)} className="w-10 h-10 bg-white border-2 border-space-border rounded-xl flex items-center justify-center text-space-muted hover:text-space-danger transition-colors">
+                                <button onClick={() => setIsModalOpen(false)} className="w-8 h-8 sm:w-10 sm:h-10 bg-white border-2 border-space-border rounded-xl flex items-center justify-center text-space-muted hover:text-space-danger transition-colors">
                                     <X size={20} />
                                 </button>
                             </div>
@@ -539,7 +539,7 @@ export default function CampaignsPage() {
                                                         onClick={() => setFormData(p => ({ ...p, audience_type: 'inactive' }))}
                                                         className={`p-6 rounded-[2rem] border-2 transition-all flex items-center gap-4 text-left ${formData.audience_type === 'inactive' ? 'border-space-primary bg-space-primary/5' : 'border-space-border bg-white hover:bg-space-card2'}`}
                                                     >
-                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${formData.audience_type === 'inactive' ? 'bg-space-primary text-white' : 'bg-space-card2 text-space-muted'}`}>
+                                                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center ${formData.audience_type === 'inactive' ? 'bg-space-primary text-white' : 'bg-space-card2 text-space-muted'}`}>
                                                             <Clock size={24} />
                                                         </div>
                                                         <div>
@@ -554,7 +554,7 @@ export default function CampaignsPage() {
                                                         onClick={() => setFormData(p => ({ ...p, audience_type: 'all' }))}
                                                         className={`p-6 rounded-[2rem] border-2 transition-all flex items-center gap-4 text-left ${formData.audience_type === 'all' ? 'border-space-primary bg-space-primary/5' : 'border-space-border bg-white hover:bg-space-card2'}`}
                                                     >
-                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${formData.audience_type === 'all' ? 'bg-space-primary text-white' : 'bg-space-card2 text-space-muted'}`}>
+                                                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center ${formData.audience_type === 'all' ? 'bg-space-primary text-white' : 'bg-space-card2 text-space-muted'}`}>
                                                             <Users size={24} />
                                                         </div>
                                                         <div>

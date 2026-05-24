@@ -161,7 +161,7 @@ export default function ServicesPage() {
                     <div className="flex justify-center py-20"><LoadingSpinner /></div>
                 ) : services.length === 0 ? (
                     <div className="bg-space-card rounded-2xl p-8 sm:p-16 text-center border-2 border-dashed border-space-border">
-                        <div className="w-14 h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Scissors size={28} className="text-space-muted" />
                         </div>
                         <h3 className="text-lg font-bold text-space-text mb-2">Catálogo vacío</h3>
@@ -180,9 +180,9 @@ export default function ServicesPage() {
                             >
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div className="flex gap-3 sm:gap-4 items-start flex-1 min-w-0">
-                                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0
+                                        <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0
                                             ${service.is_active ? 'bg-space-primary-light text-space-primary' : 'bg-space-card2 text-space-muted'}`}>
-                                            <Scissors size={18} className="sm:w-5 sm:h-5" />
+                                            <Scissors size={18} className="w-4 h-4 sm:w-5 sm:h-5" />
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center gap-2 flex-wrap mb-0.5">
@@ -202,27 +202,27 @@ export default function ServicesPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 sm:gap-3 bg-space-card2/50 sm:bg-transparent p-2 sm:p-0 rounded-xl sm:rounded-none justify-between sm:justify-end">
-                                        <div className="flex items-center gap-1.5">
+                                    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 bg-space-card2/50 sm:bg-transparent p-2 sm:p-0 rounded-xl sm:rounded-none w-full sm:w-auto justify-between sm:justify-end">
+                                        <div className="flex items-center gap-1.5 w-full sm:w-auto justify-start sm:justify-end">
                                             <button onClick={() => handleOpenModal(service)}
-                                                className="w-10 h-10 sm:w-9 sm:h-9 bg-space-card2 sm:bg-transparent border border-space-border sm:border-none shadow-sm sm:shadow-none flex items-center justify-center rounded-xl text-space-muted hover:text-space-primary hover:bg-space-card2 transition-all" title="Editar">
+                                                className="w-8 h-8 sm:w-9 sm:h-9 bg-space-card2 sm:bg-transparent border border-space-border sm:border-none shadow-sm sm:shadow-none flex items-center justify-center rounded-xl text-space-muted hover:text-space-primary hover:bg-space-card2 transition-all" title="Editar">
                                                 <Edit2 size={16} />
                                             </button>
                                             {service.is_active ? (
                                                 <button onClick={() => handleDelete(service)}
-                                                    className="w-10 h-10 sm:w-9 sm:h-9 bg-space-card2 sm:bg-transparent border border-space-border sm:border-none shadow-sm sm:shadow-none flex items-center justify-center rounded-xl text-space-muted hover:text-space-danger hover:bg-space-danger/10 transition-all font-bold"
+                                                    className="w-8 h-8 sm:w-9 sm:h-9 bg-space-card2 sm:bg-transparent border border-space-border sm:border-none shadow-sm sm:shadow-none flex items-center justify-center rounded-xl text-space-muted hover:text-space-danger hover:bg-space-danger/10 transition-all font-bold"
                                                     title="Desactivar">
                                                     <Ban size={16} />
                                                 </button>
                                             ) : (
                                                 <button onClick={() => updateService(service.id, { is_active: true })}
-                                                    className="px-4 h-10 sm:h-9 rounded-xl text-xs font-black uppercase tracking-widest text-space-success bg-space-card2 border border-space-success/20 hover:bg-space-success hover:text-white transition-all">
+                                                    className="w-full sm:w-auto px-4 h-10 sm:h-9 rounded-xl text-xs font-black uppercase tracking-widest text-space-success bg-space-card2 border border-space-success/20 hover:bg-space-success hover:text-white transition-all">
                                                     Activar
                                                 </button>
                                             )}
                                         </div>
                                         <button onClick={() => handleHardDelete(service)}
-                                            className="w-10 h-10 sm:w-9 sm:h-9 bg-space-danger/10 sm:bg-transparent border border-space-danger/20 sm:border-none shadow-sm sm:shadow-none flex items-center justify-center rounded-xl text-space-danger hover:bg-space-danger hover:text-white transition-all"
+                                            className="w-8 h-8 sm:w-9 sm:h-9 bg-space-danger/10 sm:bg-transparent border border-space-danger/20 sm:border-none shadow-sm sm:shadow-none flex items-center justify-center rounded-xl text-space-danger hover:bg-space-danger hover:text-white transition-all"
                                             title="Eliminar permanentemente">
                                             <ShieldAlert size={16} />
                                         </button>
@@ -236,7 +236,7 @@ export default function ServicesPage() {
                 {/* Create/Edit Modal */}
                 <Modal isOpen={isModalOpen} onClose={handleCloseModal}
                     title={editingService ? 'Editar Servicio' : 'Nuevo Servicio'} size="lg">
-                    <form onSubmit={handleSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto px-1 pr-3 scrollbar-custom">
+                    <form onSubmit={handleSubmit} className="space-y-6 px-1 pr-3">
                         <div className="space-y-4 pb-24">
                             <Input label="Nombre del Servicio" value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}

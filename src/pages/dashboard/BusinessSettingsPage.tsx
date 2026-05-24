@@ -342,7 +342,7 @@ export default function BusinessSettingsPage() {
 
             {/* Title Section */}
             <div className="flex items-center gap-5 mb-10 pl-2">
-                <div className="w-12 h-12 bg-space-card2 rounded-2xl flex items-center justify-center text-space-primary rotate-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-space-card2 rounded-2xl flex items-center justify-center text-space-primary rotate-3">
                     <Store size={26} className="-rotate-3" />
                 </div>
                 <div>
@@ -372,9 +372,9 @@ export default function BusinessSettingsPage() {
                 {/* Section 1: Visual Identity */}
                 <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)] group">
                     <div className="flex items-center gap-3 mb-10 overflow-hidden">
-                        <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:bg-space-primary group-hover:text-white transition-all duration-500">
-                            <Sparkles size={24} />
-                        </div>
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:bg-space-primary group-hover:text-white transition-all duration-500">
+                                <Sparkles size={24} />
+                            </div>
                         <div>
                             <h2 className="text-lg font-black text-space-text uppercase tracking-tight leading-none">Identidad Visual</h2>
                             <p className="text-[10px] text-space-muted uppercase font-bold tracking-widest mt-1.5 opacity-70">Haz que tu perfil destaque</p>
@@ -400,7 +400,7 @@ export default function BusinessSettingsPage() {
                 {/* Section 2: General Info */}
                 <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)]">
                     <div className="flex items-center gap-3 mb-10">
-                        <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary">
                             <Info size={24} />
                         </div>
                         <div>
@@ -438,7 +438,7 @@ export default function BusinessSettingsPage() {
                 {/* Section 3: Gallery */}
                 <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)] group">
                     <div className="flex items-center gap-3 mb-10 overflow-hidden">
-                        <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:bg-space-primary group-hover:text-white transition-all duration-500">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:bg-space-primary group-hover:text-white transition-all duration-500">
                             <Sparkles size={24} />
                         </div>
                         <div>
@@ -475,7 +475,7 @@ export default function BusinessSettingsPage() {
                 {/* Section 4: Location */}
                 <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)]">
                     <div className="flex items-center gap-3 mb-10">
-                        <div className="w-12 h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary">
                             <MapPin size={24} />
                         </div>
                         <div>
@@ -526,7 +526,7 @@ export default function BusinessSettingsPage() {
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                         <div className="space-y-4 max-w-xl">
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-2xl bg-space-primary/15 text-space-primary border border-space-primary/20 flex items-center justify-center">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-space-primary/15 text-space-primary border border-space-primary/20 flex items-center justify-center">
                                     <Sparkles size={24} className="animate-pulse" />
                                 </div>
                                 <div>

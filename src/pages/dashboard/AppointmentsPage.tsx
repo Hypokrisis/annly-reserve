@@ -296,9 +296,9 @@ export default function AppointmentsPage() {
                             </div>
                         ) : filteredAppointments.length === 0 ? (
                             <div className="bg-white rounded-2xl p-16 text-center border-2 border-dashed border-space-border animate-fade-up">
-                                <div className="w-14 h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <CalendarIcon size={28} className="text-space-muted" />
-                                </div>
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <CalendarIcon size={28} className="text-space-muted" />
+                                    </div>
                                 <h3 className="text-lg font-bold text-space-text mb-1">No hay citas</h3>
                                 <p className="text-space-muted text-sm max-w-xs mx-auto">
                                     {activeTab === 'upcoming' ? 'No hay citas próximas confirmadas.' : 'No hay historial para mostrar.'}
@@ -312,7 +312,7 @@ export default function AppointmentsPage() {
                                         <div className="flex items-center justify-between gap-4">
                                             <div className="flex gap-4 items-center overflow-hidden">
                                                 {/* Time block */}
-                                                <div className="flex flex-col items-center justify-center bg-space-card2 border border-space-border w-14 h-14 rounded-xl shrink-0">
+                                                <div className="flex flex-col items-center justify-center bg-space-card2 border border-space-border w-12 h-12 sm:w-14 sm:h-14 rounded-xl shrink-0">
                                                     <span className="text-[10px] font-bold uppercase text-space-muted">{formatTimeDisplay(appointment.start_time).split(' ')[1]}</span>
                                                     <span className="text-lg font-black text-space-text">{formatTimeDisplay(appointment.start_time).split(' ')[0]}</span>
                                                 </div>

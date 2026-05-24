@@ -89,13 +89,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
             {/* ── Sidebar ───────────────────────────────────────── */}
             <aside className={`
-                fixed lg:sticky top-0 inset-y-0 left-0 w-64 
-                bg-space-card border-r border-space-border z-50 
-                flex flex-col h-screen
-                transform transition-transform duration-300 ease-in-out
-                lg:translate-x-0 overflow-y-auto
-                ${isMobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}
-            `}>
+  fixed inset-y-0 left-0 w-64 bg-space-card border-r border-space-border z-50
+  flex flex-col h-screen overflow-y-auto
+  transform transition-transform duration-300 ease-in-out
+  ${isMobileMenuOpen ? 'block translate-x-0' : 'hidden -translate-x-full'}
+  lg:block lg:translate-x-0
+`}>
                 {/* Logo */}
                 <div className="h-16 px-5 flex items-center border-b border-space-border flex-shrink-0">
                     <div className="flex items-center gap-3">
@@ -179,25 +178,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                     </div>
                 </div>
             </aside>
-
-            {/* ── Mobile Bottom Navigation (Definitive Fix) ───────────────────── */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-space-card/95 backdrop-blur-xl border-t border-space-border px-8 py-3 pb-safe flex items-center justify-between shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
-                <Link to="/dashboard" className={`flex flex-col items-center gap-1 ${location.pathname === '/dashboard' ? 'text-space-primary' : 'text-space-muted'}`}>
-                    <LayoutDashboard size={22} />
-                    <span className="text-[10px] font-black uppercase tracking-tighter">Panel</span>
-                </Link>
-                
-                <div className="relative">
-                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-16 h-16 bg-space-primary rounded-full flex items-center justify-center text-white shadow-xl border-4 border-space-card active:scale-90 transition-transform overflow-hidden">
-                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
-                    </div>
-                </div>
-
-                <button onClick={handleLogout} className="flex flex-col items-center gap-1 text-space-danger animate-pulse">
-                    <LogOut size={22} />
-                    <span className="text-[10px] font-black uppercase tracking-tighter">Salir</span>
-                </button>
-            </div>
 
             {/* ── Main Content ──────────────────────────────────── */}
             <main className="flex-1 min-w-0 overflow-y-auto pt-20 lg:pt-0">

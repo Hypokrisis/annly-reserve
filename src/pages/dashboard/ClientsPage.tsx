@@ -412,7 +412,7 @@ export default function ClientsPage() {
                                             : 'bg-space-card border-space-border/50 hover:border-space-primary/50'
                                     }`}
                                 >
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-space-primary/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-all duration-700 pointer-events-none" />
+                                    <div className="absolute top-0 right-0 w-20 h-20 sm:w-24 sm:h-24 bg-space-primary/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-all duration-700 pointer-events-none" />
                                     
                                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10 pointer-events-none">
                                         <div className="flex items-center gap-5">
@@ -425,7 +425,7 @@ export default function ClientsPage() {
                                                 )}
                                             </div>
                                             
-                                            <div className="w-14 h-14 bg-space-text text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg">
+                                            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-space-text text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg">
                                                 {client.name.charAt(0).toUpperCase()}
                                             </div>
                                             <div>

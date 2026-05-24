@@ -214,7 +214,7 @@ export default function SchedulesPage() {
                     )
                 ) : (
                     <div className="bg-space-card rounded-2xl p-12 text-center border-2 border-dashed border-space-border">
-                        <div className="w-14 h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Calendar size={28} className="text-space-muted" />
                         </div>
                         <p className="text-space-muted text-sm">

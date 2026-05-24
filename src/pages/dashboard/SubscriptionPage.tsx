@@ -227,9 +227,9 @@ export default function SubscriptionPage() {
                     <div className={`p-8 rounded-3xl border-2 ${activePlan.activeBorder} bg-space-card relative overflow-hidden`}>
                         <div className="absolute top-0 right-0 w-64 h-64 bg-space-primary/5 rounded-full -mr-32 -mt-32 pointer-events-none" />
                         <div className="relative flex flex-col md:flex-row md:items-center gap-6">
-                            <div className={`w-16 h-16 rounded-2xl ${activePlan.bg} ${activePlan.color} flex items-center justify-center flex-shrink-0`}>
-                                <activePlan.icon size={32} />
-                            </div>
+                            <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-2xl ${activePlan.bg} ${activePlan.color} flex items-center justify-center flex-shrink-0`}>
+                                    <activePlan.icon size={32} />
+                                </div>
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-1">
                                     <h2 className="text-2xl font-black text-space-text">Spacey {activePlan.name}</h2>
@@ -319,7 +319,7 @@ export default function SubscriptionPage() {
                                         )}
 
                                         <div className="mb-5">
-                                            <div className={`w-12 h-12 rounded-2xl ${plan.bg} ${plan.color} flex items-center justify-center mb-5`}>
+                                            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl ${plan.bg} ${plan.color} flex items-center justify-center mb-5`}>
                                                 <Icon size={24} />
                                             </div>
                                             <h3 className="text-lg font-bold text-space-text mb-1">Spacey {plan.name}</h3>

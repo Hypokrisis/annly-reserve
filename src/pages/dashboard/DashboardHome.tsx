@@ -170,7 +170,7 @@ export default function DashboardHome() {
                 {/* ── 5-SECOND PULSE HEADER ──────────────────── */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
                     <div className="flex items-center gap-5">
-                        <div className="w-16 h-16 rounded-[1.5rem] bg-space-text border-2 border-space-border/20 overflow-hidden shadow-lg flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[1.5rem] bg-space-text border-2 border-space-border/20 overflow-hidden shadow-lg flex items-center justify-center shrink-0">
                             {business?.logo_url ? (
                                 <img src={business.logo_url} alt={business.name} className="w-full h-full object-cover" />
                             ) : (
@@ -244,7 +244,7 @@ export default function DashboardHome() {
                                     {todayApts.map((apt) => (
                                         <div key={apt.id} className="card p-5 group hover:border-space-primary/40 hover:shadow-card-lg transition-all flex items-center justify-between">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-space-card2 rounded-2xl flex flex-col items-center justify-center border border-space-border/20 group-hover:bg-space-primary group-hover:border-space-primary transition-all duration-300">
+                                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-space-card2 rounded-2xl flex flex-col items-center justify-center border border-space-border/20 group-hover:bg-space-primary group-hover:border-space-primary transition-all duration-300">
                                                     <span className="text-[8px] font-black text-space-muted group-hover:text-white/60 tracking-widest mb-0.5">{formatTimeDisplay(apt.start_time).split(' ')[1]}</span>
                                                     <span className="text-base font-black text-space-text group-hover:text-white leading-none">{formatTimeDisplay(apt.start_time).split(':')[0]}</span>
                                                 </div>
@@ -505,7 +505,7 @@ export default function DashboardHome() {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         {quickActions.map(({ to, icon: Icon, label, desc }) => (
                             <Link key={to} to={to} className="card p-6 group transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1">
-                                <div className={`w-12 h-12 bg-space-card2 rounded-2xl flex items-center justify-center mb-4 transition-all group-hover:bg-space-primary group-hover:text-white`}>
+                                <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-space-card2 rounded-2xl flex items-center justify-center mb-4 transition-all group-hover:bg-space-primary group-hover:text-white`}>
                                     <Icon size={24} className="transition-transform group-hover:scale-110" />
                                 </div>
                                 <h3 className="text-sm font-black text-space-text uppercase tracking-tight mb-1">{label}</h3>

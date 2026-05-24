@@ -221,9 +221,9 @@ export default function BarbersPage() {
                     <div className="flex justify-center py-20"><LoadingSpinner /></div>
                 ) : barbers.length === 0 ? (
                     <div className="bg-space-card rounded-2xl p-16 text-center border-2 border-dashed border-space-border animate-fade-up">
-                        <div className="w-14 h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <UsersIcon size={28} className="text-space-muted" />
-                        </div>
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <UsersIcon size={28} className="text-space-muted" />
+                            </div>
                         <h3 className="text-lg font-bold text-space-text mb-2">Equipo vacío</h3>
                         <p className="text-space-muted text-sm mb-6 max-w-xs mx-auto">
                             Agrega tu primer barbero para empezar a recibir citas.
@@ -318,7 +318,7 @@ export default function BarbersPage() {
                 {/* Create/Edit Modal */}
                 <Modal isOpen={isModalOpen} onClose={handleCloseModal}
                     title={editingBarber ? 'Editar Barbero' : 'Nuevo Barbero'} size="lg">
-                    <form onSubmit={handleSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto px-1 pr-3 scrollbar-custom">
+                    <form onSubmit={handleSubmit} className="space-y-6 px-1 pr-3">
                         <div className="space-y-4 pb-24">
                             <Input label="Nombre" value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -379,7 +379,7 @@ export default function BarbersPage() {
                 <Modal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)}
                     title="👑 Plan Superior Requerido" size="md">
                     <div className="p-6 text-center space-y-6">
-                        <div className="w-16 h-16 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto shadow-sm">
                             <ShieldAlert size={32} />
                         </div>
                         <div className="space-y-2">
