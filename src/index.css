@@ -35,6 +35,24 @@
     --space-yellow: 250 204 21;
   }
 
+  .dark .bg-white {
+    background-color: rgb(var(--space-card) / 1) !important;
+  }
+
+  .dark .bg-gray-50 {
+    background-color: rgb(var(--space-card2) / 1) !important;
+  }
+
+  .dark .border-gray-200 {
+    border-color: rgb(var(--space-border) / 1) !important;
+  }
+
+  .dark .text-gray-600,
+  .dark .text-gray-500,
+  .dark .text-gray-400 {
+    color: rgb(var(--space-muted) / 1) !important;
+  }
+
   * {
     box-sizing: border-box;
   }

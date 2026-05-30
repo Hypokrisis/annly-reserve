@@ -46,13 +46,13 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex bg-[#f8faf9] relative overflow-hidden font-sans">
+        <div className="min-h-screen flex bg-[#08150f] text-space-text dark:bg-space-bg relative overflow-hidden font-sans">
             {/* ── Background Elements ───────────────────────── */}
-            <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-space-primary/10 rounded-full blur-[120px] pointer-events-none animate-pulse" />
+            <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-space-primary/15 rounded-full blur-[120px] pointer-events-none animate-pulse" />
             <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-space-purple/10 rounded-full blur-[120px] pointer-events-none" />
             
             {/* ── Left: Branding & Value Props ────────────────── */}
-            <div className="hidden lg:flex lg:w-[45%] bg-space-text flex-col justify-between p-16 relative overflow-hidden">
+            <div className="hidden lg:flex lg:w-[45%] bg-[#0f2416] dark:bg-space-card flex-col justify-between p-16 relative overflow-hidden">
                 {/* Dynamic Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-space-primary/20 via-transparent to-space-purple/20 pointer-events-none" />
                 
@@ -61,7 +61,7 @@ export default function LoginPage() {
 
                 {/* Top logo */}
                 <div className="relative flex items-center gap-4 animate-fade-in">
-                    <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-2xl border border-white/20 overflow-hidden">
+                    <div className="w-14 h-14 bg-space-card2/10 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-2xl border border-space-border/20 overflow-hidden">
                         <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                     </div>
                     <span className="text-white font-black text-3xl tracking-tight">Spacey</span>
@@ -69,8 +69,7 @@ export default function LoginPage() {
 
                 {/* Main Content */}
                 <div className="relative z-10 max-w-md">
-                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 mb-8 animate-fade-in delay-100">
-                        <Sparkles size={14} className="text-space-primary" />
+                        <div className="inline-flex items-center gap-2 bg-space-card2/10 backdrop-blur-md px-4 py-2 rounded-full border border-space-border/20 mb-8 animate-fade-in delay-100">
                         <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Plataforma de Reservas Next-Gen</span>
                     </div>
                     
@@ -85,12 +84,12 @@ export default function LoginPage() {
                             { icon: ShieldCheck, title: 'Control Total', desc: 'Gestiona tu equipo, servicios y finanzas.', color: 'text-sky-400' }
                         ].map((item, idx) => (
                             <div key={idx} className="flex gap-5 group">
-                                <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-white/10 transition-all duration-300 shadow-xl ${item.color}`}>
+                                <div className={`w-12 h-12 rounded-2xl bg-space-card2/10 border border-space-border/20 flex items-center justify-center shrink-0 group-hover:bg-space-card/20 transition-all duration-300 shadow-xl ${item.color}`}>
                                     <item.icon size={22} />
                                 </div>
                                 <div>
                                     <h3 className="text-white font-bold text-lg mb-1">{item.title}</h3>
-                                    <p className="text-white/60 text-sm leading-relaxed">{item.desc}</p>
+                                    <p className="text-space-muted text-sm leading-relaxed">{item.desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -99,33 +98,31 @@ export default function LoginPage() {
 
                 {/* Bottom footer */}
                 <div className="relative z-10 flex items-center justify-between animate-fade-in delay-500">
-                    <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest">© 2026 Spacey · Reservas Brutales</p>
+                    <p className="text-space-muted text-[10px] font-bold uppercase tracking-widest">© 2026 Spacey · Reservas Brutales</p>
                     <div className="flex gap-4">
-                        <div className="w-1 h-1 rounded-full bg-white/20"></div>
-                        <div className="w-1 h-1 rounded-full bg-white/20"></div>
-                        <div className="w-1 h-1 rounded-full bg-white/20"></div>
+                        <div className="w-1 h-1 rounded-full bg-space-border/40"></div>
+                        <div className="w-1 h-1 rounded-full bg-space-border/40"></div>
+                        <div className="w-1 h-1 rounded-full bg-space-border/40"></div>
                     </div>
                 </div>
             </div>
 
             {/* ── Right: Login Form ──────────────────────────── */}
-            <div className="flex-1 flex items-center justify-center p-8 bg-space-bg relative">
+            <div className="flex-1 flex items-center justify-center p-8 bg-[#07160e] dark:bg-space-card relative">
                 <div className="w-full max-w-sm relative z-10">
                     
                     {/* Brand for Mobile */}
-                    <div className="lg:hidden flex items-center gap-4 mb-10 justify-center">
+                    <div className="lg:hidden flex flex-col items-center gap-3 mb-10 justify-center text-center">
                         <div className="w-12 h-12 bg-space-primary rounded-2xl flex items-center justify-center shadow-xl shadow-space-primary/20 overflow-hidden">
                             <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                         </div>
-                        <span className="font-black text-space-text text-3xl tracking-tight">Spacey</span>
+                        <div>
+                            <span className="font-black text-white text-3xl tracking-tight">Spacey</span>
+                            <p className="text-space-muted text-xs font-bold uppercase tracking-widest mt-2">Inicia sesión en tu panel de control</p>
+                        </div>
                     </div>
 
-                    <div className="text-center mb-10">
-                        <h1 className="text-4xl font-black text-space-text mb-2 tracking-tight">Bienvenido</h1>
-                        <p className="text-space-muted text-xs font-bold uppercase tracking-widest">Inicia sesión en tu panel de control</p>
-                    </div>
-
-                    <div className="bg-space-card rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] p-10 border border-space-border">
+                    <div className="bg-[#0d2918] dark:bg-space-card2 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.25)] p-10 border border-space-border/20">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {error && (
                                 <div className="bg-space-danger/10 border border-space-danger/20 text-space-danger px-4 py-3 rounded-2xl text-[11px] font-bold uppercase text-center flex items-center justify-center gap-2">
@@ -139,7 +136,7 @@ export default function LoginPage() {
                                 <input
                                     type="email" id="email" name="email"
                                     value={formData.email} onChange={handleChange}
-                                    className="w-full px-6 py-4 bg-space-card2 border border-space-border rounded-[1.25rem] text-sm font-bold text-space-text focus:bg-space-card focus:ring-2 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-space-muted/40" 
+                                    className="w-full px-6 py-4 bg-[#112d1d] dark:bg-space-card2 border border-space-border/20 rounded-[1.25rem] text-sm font-bold text-space-text focus:bg-[#0f2817] dark:focus:bg-space-card focus:ring-2 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-space-muted/40" 
                                     placeholder="nombre@empresa.com"
                                     disabled={loading} autoComplete="email"
                                 />
@@ -174,7 +171,7 @@ export default function LoginPage() {
                             <button 
                                 type="submit" 
                                 disabled={loading} 
-                                className="w-full bg-space-text hover:bg-space-primary text-white h-16 rounded-[1.25rem] font-black uppercase tracking-[0.2em] text-xs shadow-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group overflow-hidden relative"
+                                className="w-full bg-space-primary hover:bg-space-primary-dark text-white h-16 rounded-[1.25rem] font-black uppercase tracking-[0.2em] text-xs shadow-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group overflow-hidden relative"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                                 {loading ? (
@@ -199,7 +196,7 @@ export default function LoginPage() {
                     </div>
 
                     <div className="mt-8 flex justify-center">
-                        <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-space-card text-space-muted font-black rounded-full hover:text-space-primary transition-all uppercase tracking-widest text-[9px] border border-space-border hover:border-space-primary/10 hover:shadow-lg">
+                        <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-[#112d1d] dark:bg-space-card2 text-space-muted font-black rounded-full hover:text-space-primary transition-all uppercase tracking-widest text-[9px] border border-space-border/20 hover:border-space-primary/10 hover:shadow-lg">
                             ← Volver al inicio
                         </Link>
                     </div>

@@ -344,7 +344,7 @@ function Home() {
       {/* Header Pill */}
       <nav className="fixed w-full z-50 top-4 px-4 sm:top-6">
         <div className="max-w-7xl mx-auto flex justify-center">
-          <div className="pill-nav flex justify-between items-center w-full max-w-[95%] sm:max-w-none px-5 sm:px-6 h-16 sm:h-[4.5rem] rounded-full backdrop-blur-2xl bg-white/80 border-2 border-space-border/40 shadow-xl shadow-space-primary/5 hover:shadow-2xl hover:border-space-primary/20 transition-all duration-500">
+          <div className="pill-nav flex justify-between items-center w-full max-w-[95%] sm:max-w-none px-5 sm:px-6 h-16 sm:h-[4.5rem] rounded-full backdrop-blur-2xl bg-space-card/80 border-2 border-space-border/40 shadow-card hover:shadow-2xl hover:border-space-primary/20 transition-all duration-500">
             {/* Logo */}
             <div className="flex items-center gap-4 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <div className="w-11 h-11 sm:w-[3.2rem] sm:h-[3.2rem] bg-gradient-to-br from-space-primary-light to-space-primary rounded-2xl flex items-center justify-center text-white shadow-xl shadow-space-primary/20 group-hover:scale-110 group-hover:shadow-2xl group-hover:shadow-space-primary/30 transition-all duration-500 overflow-hidden relative">

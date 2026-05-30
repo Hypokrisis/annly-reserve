@@ -170,7 +170,7 @@ export default function DashboardHome() {
                 {/* ── 5-SECOND PULSE HEADER ──────────────────── */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
                     <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[1.5rem] bg-space-text border-2 border-space-border/20 overflow-hidden shadow-lg flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[1.5rem] bg-space-card border-2 border-space-border/20 overflow-hidden shadow-lg flex items-center justify-center shrink-0">
                             {business?.logo_url ? (
                                 <img src={business.logo_url} alt={business.name} className="w-full h-full object-cover" />
                             ) : (
@@ -234,7 +234,7 @@ export default function DashboardHome() {
                             </div>
 
                             {todayApts.length === 0 ? (
-                                <div className="card p-10 text-center border-2 border-dashed border-space-border/60 bg-neutral-50/50">
+                                <div className="card p-10 text-center border-2 border-dashed border-space-border/60 bg-space-card">
                                     <Calendar size={32} className="text-space-muted mx-auto mb-3 opacity-20" />
                                     <p className="text-[11px] font-black text-space-muted uppercase tracking-widest">Sin citas confirmadas para hoy</p>
                                     <p className="text-[9px] text-space-muted/60 mt-2 font-bold uppercase">Tus clientes verán los huecos libres en tu página</p>
@@ -266,23 +266,23 @@ export default function DashboardHome() {
                         </section>
 
                         {/* â”€â”€ Link & Growth â”€â”€ */}
-                        <section className="bg-space-text rounded-[2.5rem] p-8 sm:p-10 relative overflow-hidden shadow-2xl border border-white/5 group">
+                        <section className="bg-space-card rounded-[2.5rem] p-8 sm:p-10 relative overflow-hidden shadow-2xl border border-space-border/20 group">
                             <div className="absolute top-0 right-0 w-80 h-80 bg-space-primary/10 rounded-full blur-[100px] -mr-40 -mt-40 group-hover:bg-space-primary/20 transition-all duration-700" />
                             <div className="relative z-10">
-                                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-xl border border-white/10 mb-6 font-black text-[9px] text-white uppercase tracking-widest">
+                                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-space-card2/10 rounded-xl border border-space-border/20 mb-6 font-black text-[9px] text-white uppercase tracking-widest">
                                     <Sparkles size={12} className="text-space-primary" />
                                     Marketing Kit
                                 </span>
                                 <h2 className="text-3xl font-black text-white mb-4 tracking-tighter uppercase italic">Tu Link de Reservas</h2>
-                                <p className="text-white/60 text-[11px] mb-8 max-w-xl leading-relaxed font-bold uppercase tracking-widest">Comparte tu link profesional y recibe citas 24/7 sin mover un dedo.</p>
+                                <p className="text-space-muted text-[11px] mb-8 max-w-xl leading-relaxed font-bold uppercase tracking-widest">Comparte tu link profesional y recibe citas 24/7 sin mover un dedo.</p>
 
                                 <div className="flex flex-col sm:flex-row gap-3">
-                                    <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-xs text-white/90 font-mono truncate shadow-inner">
+                                    <div className="flex-1 bg-space-card2/20 border border-space-border/20 rounded-2xl px-6 py-4 text-xs text-space-text/80 font-mono truncate shadow-inner">
                                         {window.location.origin}/book/{business?.slug}
                                     </div>
                                     <button
                                         onClick={handleCopyLink}
-                                        className="h-14 px-8 bg-white text-space-text rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-white/5 flex items-center justify-center gap-2 shrink-0 hover:bg-space-primary hover:text-white"
+                                        className="h-14 px-8 bg-space-card text-space-text rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-space-card/10 flex items-center justify-center gap-2 shrink-0 hover:bg-space-primary hover:text-white"
                                     >
                                         {copied ? <Check size={16} /> : <Copy size={16} />}
                                         {copied ? 'Copiado' : 'Copiar Link'}
@@ -294,7 +294,7 @@ export default function DashboardHome() {
                         {/* â”€â”€ Top Performance â”€â”€ */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Top Services */}
-                            <div className="card p-6 bg-white">
+                            <div className="card p-6">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em]">Servicios Top</h3>
                                     <TrendingUp size={14} className="text-space-primary" />
@@ -314,7 +314,7 @@ export default function DashboardHome() {
                                 </div>
                             </div>
                             {/* Top Team */}
-                            <div className="card p-6 bg-white">
+                            <div className="card p-6">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em]">Líderes de Equipo</h3>
                                     <Award size={14} className="text-indigo-600" />
@@ -418,7 +418,7 @@ export default function DashboardHome() {
                         )}
                         
                         {/* ── Retention Pulse ──────────────────── */}
-                        <section className="card p-8 bg-space-text text-white border-none shadow-xl relative overflow-hidden min-h-[300px] flex flex-col justify-between">
+                        <section className="card p-8 bg-space-card text-white border-none shadow-xl relative overflow-hidden min-h-[300px] flex flex-col justify-between">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-space-primary/20 rounded-full blur-3xl -mr-16 -mt-16" />
                             <div>
                                 <div className="flex items-center justify-between mb-8">
@@ -426,11 +426,11 @@ export default function DashboardHome() {
                                         <PieChart size={14} className="text-space-primary" />
                                         Rendimiento
                                     </h2>
-                                    <span className="px-2 py-0.5 bg-white/10 rounded-md text-[8px] font-black text-white/40">ANÁLISIS PRO</span>
+                                    <span className="px-2 py-0.5 bg-space-card2/10 rounded-md text-[8px] font-black text-space-muted">ANÁLISIS PRO</span>
                                 </div>
                                 
                                 <div className="mb-6">
-                                    <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-2">Tasa de Retención</p>
+                                    <p className="text-[9px] font-black text-space-muted/70 uppercase tracking-[0.2em] mb-2">Tasa de Retención</p>
                                     <div className="flex items-baseline gap-2">
                                         <p className="text-5xl font-black text-white tracking-tighter italic">{statsData.returningRate.toFixed(1)}%</p>
                                         <TrendingUp size={20} className="text-space-primary" />
@@ -439,10 +439,10 @@ export default function DashboardHome() {
                             </div>
                             
                             <div className="space-y-4">
-                                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                                <div className="w-full h-2 bg-space-border/20 rounded-full overflow-hidden">
                                     <div className="h-full bg-space-primary shadow-[0_0_15px_rgba(74,132,99,0.5)]" style={{ width: `${statsData.returningRate}%` }} />
                                 </div>
-                                <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest leading-relaxed">
+                                <p className="text-[10px] text-space-muted/70 font-bold uppercase tracking-widest leading-relaxed">
                                     {statsData.returningRate > 50 ? '🎉 Fidelización brutal. Sigue así.' : '⚠️ Enfócate en la experiencia para subir la retención.'}
                                 </p>
                             </div>

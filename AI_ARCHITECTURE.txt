@@ -1,0 +1,230 @@
+═══════════════════════════════════════════════════════════════════════════════════
+                    🤖 ARQUITECTURA IA - DIAGRAMA VISUAL
+═══════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                          🌍 CLIENTE EN WHATSAPP                                  │
+│                                                                                   │
+│    Envía: "¿Cuál es el precio del corte de cabello?"                             │
+└────────────────────┬────────────────────────────────────────────────────────────┘
+                     │
+                     │ Mensaje via Evolution API
+                     ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                        🔌 EVOLUTION API (WhatsApp Gateway)                       │
+│                                                                                   │
+│   • Recibe el mensaje de WhatsApp                                                │
+│   • Envía el mensaje al webhook de Supabase                                      │
+│   • Más tarde: recibe respuesta y envía por WhatsApp                             │
+│                                                                                   │
+│   URL: https://api.evolution-api.com                                             │
+│   Webhook Callback: https://[project].functions.supabase.co/whatsapp-webhook   │
+└────────────────────┬────────────────────────────────────────────────────────────┘
+                     │
+                     │ POST request con mensaje
+                     ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│              🔷 SUPABASE FUNCTION: whatsapp-webhook (index.ts)                   │
+│                                                                                   │
+│   1️⃣  Valida seguridad (HMAC signature)                                          │
+│   2️⃣  Deduplicación (evita procesar dos veces el mismo mensaje)                 │
+│   3️⃣  Busca el negocio por instanceId en tabla businesses                        │
+│   4️⃣  Valida que bot esté activo (whatsapp_bot_active = true)                   │
+│   5️⃣  Valida horario de funcionamiento (si está configurado)                     │
+│   6️⃣  Valida rate limit (máx 100 mensajes/día)                                  │
+│                                                                                   │
+│   ⬇️  RECOPILA DATOS DEL NEGOCIO:                                                │
+│   • Nombre: "Mi Barbería"                                                        │
+│   • Servicios: [nombre, precio, duración]                                        │
+│   • Horarios próximos 3 días: [disponibilidad calculada]                         │
+│   • Oferta activa: "20% descuento primer corte"                                  │
+│                                                                                   │
+└────────────────────┬────────────────────────────────────────────────────────────┘
+                     │
+                     │ Construye prompt dinámico + mensaje del cliente
+                     ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                   🧠 OPENAI GPT-4o-mini (IA Generativa)                          │
+│                                                                                   │
+│   SYSTEM PROMPT (Instrucciones):                                                 │
+│   "Eres un asistente para Mi Barbería. Ayuda a reservar.                         │
+│    Servicios:                                                                    │
+│    • Corte: $20 (30min)                                                          │
+│    • Afeitado: $15 (20min)                                                       │
+│    Disponibilidad:                                                               │
+│    Hoy: 10:00, 10:30, 11:00, 14:00, 14:30...                                   │
+│    Responde en español, sé amigable, convence de reservar."                      │
+│                                                                                   │
+│   USER MESSAGE:                                                                  │
+│   "¿Cuál es el precio del corte de cabello?"                                    │
+│                                                                                   │
+│   OPENAI RESPONDE:                                                               │
+│   "Hola! 💈 El corte de cabello en nuestra barbería cuesta $20 e incluye...      │
+│    ¿Te gustaría conocer nuestros horarios disponibles hoy?"                      │
+│                                                                                   │
+└────────────────────┬────────────────────────────────────────────────────────────┘
+                     │
+                     │ Respuesta de IA
+                     ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│              🛡️  GUARDRAILS (Validación de Hallucinations)                       │
+│                                                                                   │
+│   Si la IA está confirmando un horario:                                          │
+│   ✓ Extrae la hora del mensaje (ej: "10:00")                                    │
+│   ✓ Verifica que esté en lista REAL de disponibles                              │
+│   ✗ Si NO existe → RECHAZA respuesta y ofrece alternativas válidas              │
+│                                                                                   │
+│   Ejemplo:                                                                       │
+│   IA inventó: "Te reservo las 16:00"                                             │
+│   Guardrail: "16:00 no está disponible. Opciones reales: 14:00, 14:30, 15:00"   │
+│                                                                                   │
+└────────────────────┬────────────────────────────────────────────────────────────┘
+                     │
+                     │ Envía respuesta validada
+                     ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│               ➡️  ENVÍA RESPUESTA A EVOLUTION API (sendGatewayMessage)           │
+│                                                                                   │
+│   POST /message/sendText/barberia-ia-test                                        │
+│   {                                                                              │
+│     "number": "5551234567",                                                     │
+│     "textMessage": {                                                            │
+│       "text": "¡Hola! El corte cuesta $20..."                                   │
+│     }                                                                            │
+│   }                                                                              │
+│                                                                                   │
+└────────────────────┬────────────────────────────────────────────────────────────┘
+                     │
+                     │ Envía por WhatsApp
+                     ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                      ✉️  CLIENTE RECIBE EN WHATSAPP                              │
+│                                                                                   │
+│   "¡Hola! 💈 El corte cuesta $20 e incluye lavado.                               │
+│    Tenemos disponibilidad hoy a las 10:00, 10:30, 11:00...                      │
+│    Quisiera ver más horarios? ¿Cuál te queda bien?"                              │
+│                                                                                   │
+└────────────────────┬────────────────────────────────────────────────────────────┘
+                     │
+                     │ Cliente responde nuevamente
+                     ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│              💾 SUPABASE DATABASE - LOGS Y CONFIGURACIÓN                         │
+│                                                                                   │
+│   Tabla: businesses                         Tabla: bot_message_logs              │
+│   ├─ whatsapp_bot_active: true              ├─ from_number: "5551234567"        │
+│   ├─ whatsapp_instance_id: "inst-1"         ├─ user_message: "¿precio corte?"  │
+│   ├─ whatsapp_instance_token: "token..."    ├─ bot_response: "Corte $20..."     │
+│   ├─ whatsapp_bot_prompt: "custom..."       ├─ created_at: 2026-05-27...        │
+│   ├─ whatsapp_booking_link: "link..."       └─ business_id: "uuid..."           │
+│   └─ daily_msg_count: 47                    (Registra cada conversación)         │
+│                                                                                   │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════════
+                      📋 FLUJO DE SETUP EN 5 PASOS
+═══════════════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────┐
+│ PASO 1               │
+│ OpenAI API Key       │ ──► https://platform.openai.com/account/api-keys
+│ sk-proj-xxxxx       │
+└──────────────────────┘
+         │
+         ▼
+┌──────────────────────┐
+│ PASO 2               │
+│ Supabase Secret      │ ──► Settings → Secrets → OPENAI_API_KEY
+│ OPENAI_API_KEY       │
+└──────────────────────┘
+         │
+         ▼
+┌──────────────────────┐
+│ PASO 3               │
+│ Evolution API        │ ──► https://app.evolution-api.com
+│ Instancia + QR       │     Escanear WhatsApp
+└──────────────────────┘
+         │
+         ▼
+┌──────────────────────┐
+│ PASO 4               │
+│ Datos en BD          │ ──► UPDATE businesses SET whatsapp_instance_id...
+│ Webhook URL          │
+└──────────────────────┘
+         │
+         ▼
+┌──────────────────────┐
+│ PASO 5               │
+│ Deploy + Test        │ ──► supabase functions deploy whatsapp-webhook
+│ Enviar mensaje       │     Enviar SMS a WhatsApp
+└──────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════════
+                  💰 COSTOS APROXIMADOS (USD/mes)
+═══════════════════════════════════════════════════════════════════════════════════
+
+OpenAI GPT-4o-mini:
+  • 50 mensajes/día:    ~$1.50/mes
+  • 100 mensajes/día:   ~$3.00/mes
+  • 200 mensajes/día:   ~$6.00/mes
+
+Evolution API:
+  • Test (gratuito):    $0
+  • Producción:         $10-50/mes (según plan)
+
+Supabase:
+  • Free tier:          $0 (si usas menos de 50k calls/mes)
+  • Producción:         $5-100/mes
+
+TOTAL APROXIMADO: $5-15/mes para barbería pequeña
+
+
+═══════════════════════════════════════════════════════════════════════════════════
+                        ✨ CÓMO PERSONALIZAR
+═══════════════════════════════════════════════════════════════════════════════════
+
+1️⃣  Cambiar prompt:
+   Dashboard → Asistente IA → Prompt personalizado
+   (El AI usará EXACTAMENTE el prompt que ingreses)
+
+2️⃣  Cambiar servicios:
+   Dashboard → Servicios → Agregar/Editar
+   (El AI mostrará los precios y duraciones reales)
+
+3️⃣  Cambiar horarios:
+   Dashboard → Horarios → Configura días y horas
+   (El AI calculará disponibilidad en tiempo real)
+
+4️⃣  Cambiar link de reserva:
+   Dashboard → Asistente IA → Enlace de Reservas
+   (Al confirmar cita, enviará TU link personalizado)
+
+5️⃣  Ver conversaciones:
+   Supabase SQL Editor → SELECT * FROM bot_message_logs
+   (Analiza qué preguntan los clientes, mejora prompt)
+
+
+═══════════════════════════════════════════════════════════════════════════════════
+                      🎯 PRÓXIMOS PASOS DESPUÉS
+═══════════════════════════════════════════════════════════════════════════════════
+
+✓ AI funciona básico
+  ↓
+✓ Agregar estadísticas avanzadas (Dashboard → Analytics)
+  ↓
+✓ Integrar Stripe para pagos por WhatsApp
+  ↓
+✓ Entrenar AI con conversaciones reales
+  ↓
+✓ Usar GPT-4 Turbo para respuestas más inteligentes
+  ↓
+✓ Agregar manejo manual de chat en horarios off
+  ↓
+✓ Integrar SMS + Telegram + Messenger
+  ↓
+✓ Machine learning para mejorar conversiones
+
+
+═══════════════════════════════════════════════════════════════════════════════════

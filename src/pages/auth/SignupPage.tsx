@@ -76,8 +76,8 @@ export default function SignupPage() {
     // ── Success Screen
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-space-bg px-4">
-                <div className="max-w-md w-full bg-space-card border border-space-border rounded-[2.5rem] p-10 text-center shadow-[0_20px_50px_rgba(0,0,0,0.05)] animate-fade-up border-2 border-space-primary/20">
+            <div className="min-h-screen flex items-center justify-center bg-[#08150f] px-4">
+                <div className="max-w-md w-full bg-[#0d2918] border border-space-border rounded-[2.5rem] p-10 text-center shadow-[0_20px_50px_rgba(0,0,0,0.25)] animate-fade-up border-2 border-space-primary/20">
                     <div className="relative w-20 h-20 mx-auto mb-6">
                         <div className="absolute inset-0 bg-space-primary/10 rounded-full animate-ping opacity-75"></div>
                         <div className="relative w-full h-full bg-space-primary rounded-full flex items-center justify-center shadow-lg">
@@ -86,13 +86,13 @@ export default function SignupPage() {
                             </svg>
                         </div>
                     </div>
-                    <h2 className="text-2xl font-black text-space-text uppercase tracking-tight mb-2">¡Revisa tu Email!</h2>
+                    <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-2">¡Revisa tu Email!</h2>
                     <p className="text-space-muted mb-2 text-sm">
                         Hemos enviado un enlace de confirmación a{' '}
-                        <strong className="text-space-text">{formData.email}</strong>.
+                        <strong className="text-white">{formData.email}</strong>.
                     </p>
-                    <p className="text-space-muted font-bold text-sm mb-6 mt-4 p-4 bg-space-warning/10 rounded-2xl border border-space-warning/30">
-                        <span className="flex items-center justify-center gap-2 mb-1 text-space-warning">
+                    <p className="text-space-muted font-bold text-sm mb-6 mt-4 p-4 bg-space-primary/10 rounded-2xl border border-space-primary/20">
+                        <span className="flex items-center justify-center gap-2 mb-1 text-space-primary">
                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -101,7 +101,7 @@ export default function SignupPage() {
                         </span>
                         Esta página se actualizará automáticamente en cuanto confirmes tu email.
                     </p>
-                    <Link to="/login" className="text-[10px] uppercase font-black tracking-widest text-space-muted hover:text-space-primary transition-colors">
+                    <Link to="/login" className="text-[10px] uppercase font-black tracking-widest text-space-primary hover:text-space-primary-dark transition-colors">
                         Volver al inicio de sesión
                     </Link>
                 </div>
@@ -110,34 +110,38 @@ export default function SignupPage() {
     }
 
     return (
-        <div className="min-h-screen flex bg-space-bg">
+        <div className="min-h-screen flex flex-col lg:flex-row bg-[#08150f] text-space-text relative overflow-hidden">
+            <div className="absolute top-16 left-1/2 w-[380px] h-[380px] rounded-full bg-space-primary/10 blur-3xl pointer-events-none hidden lg:block" />
+            <div className="absolute bottom-0 right-0 w-[420px] h-[420px] rounded-full bg-space-primary/5 blur-3xl pointer-events-none hidden lg:block" />
+            <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: 'radial-gradient(circle, rgba(165,204,144,0.12) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
 
             {/* ── Left Branding ──────────────────────────────── */}
-            <div className="hidden lg:flex lg:w-5/12 bg-space-primary flex-col justify-between p-12 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full -mr-20 -mt-20" />
-                <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full -ml-24 -mb-24" />
+            <div className="hidden lg:flex lg:w-5/12 bg-[#0f2416] flex-col justify-between p-12 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-72 h-72 bg-space-primary/10 rounded-full -mr-20 -mt-20" />
+                <div className="absolute bottom-0 left-0 w-80 h-80 bg-space-primary/10 rounded-full -ml-24 -mb-24" />
 
                 <div className="relative flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
+                    <div className="w-12 h-12 bg-space-card2/10 rounded-xl flex items-center justify-center overflow-hidden border border-space-border/20">
                         <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                     </div>
                     <span className="text-white font-bold text-2xl tracking-tight">Spacey</span>
                 </div>
 
                 <div className="relative">
-                    <h2 className="text-3xl font-extrabold text-white leading-snug mb-4">
+                    <p className="text-[10px] uppercase tracking-[0.35em] text-space-primary font-extrabold mb-4">Nuevo en Spacey</p>
+                    <h2 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight mb-4 tracking-tight">
                         {userType === 'owner'
-                            ? 'Haz crecer tu negocio sin esfuerzo'
-                            : 'Reserva tu cita en segundos'}
+                            ? <>Haz crecer tu negocio<br /><span className="bg-gradient-to-r from-space-primary-light to-space-primary bg-clip-text text-transparent">sin esfuerzo</span></>
+                            : <>Reserva tu cita<br /><span className="bg-gradient-to-r from-space-primary-light to-space-primary bg-clip-text text-transparent">en segundos</span></>}
                     </h2>
-                    <p className="text-white/75 leading-relaxed">
+                    <p className="text-white/70 leading-relaxed">
                         {userType === 'owner'
                             ? 'Citas automatizadas, notificaciones por WhatsApp y control total desde tu panel.'
                             : 'Elige tu barbero favorito y recibe confirmación al instante.'}
                     </p>
-                    <div className="flex gap-2 mt-6">
+                    <div className="flex flex-wrap gap-2 mt-6">
                         {['Gratis para empezar', 'Sin tarjeta de crédito'].map(f => (
-                            <span key={f} className="bg-white/15 text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/20">
+                            <span key={f} className="bg-white/10 text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/10">
                                 ✓ {f}
                             </span>
                         ))}
@@ -148,22 +152,27 @@ export default function SignupPage() {
             </div>
 
             {/* ── Right Form ─────────────────────────────────── */}
-            <div className="flex-1 flex items-center justify-center px-6 py-12 bg-space-bg overflow-y-auto">
+            <div className="flex-1 flex items-center justify-center px-6 py-12 bg-[#07160e] overflow-y-auto">
                 <div className="w-full max-w-md animate-fade-up">
 
                     {/* Mobile logo */}
-                    <div className="lg:hidden flex items-center gap-3 mb-8">
+                    <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
                         <div className="w-10 h-10 bg-space-primary rounded-xl flex items-center justify-center shadow-btn overflow-hidden">
                             <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
                         </div>
-                        <span className="font-bold text-space-text text-2xl tracking-tight">Spacey</span>
+                        <span className="font-bold text-white text-2xl tracking-tight">Spacey</span>
                     </div>
 
-                    <h1 className="text-2xl font-bold text-space-text mb-1">Crea tu cuenta</h1>
-                    <p className="text-space-muted text-sm mb-6">Es gratis y solo toma un momento</p>
+                    <div className="mb-4">
+                        <p className="text-[10px] uppercase tracking-[0.25em] text-space-primary font-extrabold mb-2">Regístrate rápido</p>
+                        <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white">
+                            Crea tu <span className="bg-gradient-to-r from-space-primary-light to-space-primary bg-clip-text text-transparent">cuenta</span>
+                        </h1>
+                    </div>
+                    <p className="text-space-muted text-sm mb-6 max-w-lg">Es gratis y solo toma un momento para empezar a gestionar tus reservas con estilo.</p>
 
                     {/* Role toggle */}
-                    <div className="flex gap-2 p-1 bg-space-card2 rounded-xl mb-6 border border-space-border">
+                    <div className="flex gap-2 p-1 bg-[#08150f] rounded-xl mb-6 border border-space-yellow/25">
                         {[
                             { type: 'client' as const, label: 'Soy Cliente', icon: User },
                             { type: 'owner' as const,  label: 'Soy Dueño',  icon: Scissors }
@@ -171,16 +180,17 @@ export default function SignupPage() {
                             <button
                                 key={type} type="button"
                                 onClick={() => setUserType(type)}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200
-                                    ${userType === type ? 'bg-space-card text-space-primary shadow-sm border border-space-border' : 'text-space-muted hover:text-space-text'}`}
-                            >
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 border
+                                    ${userType === type ? 'bg-space-primary/15 text-white border-space-yellow/25 shadow-xl shadow-space-primary/15' : 'text-space-muted hover:text-space-text hover:bg-white/5 border-transparent'}`}>
                                 <Icon size={15} /> {label}
                             </button>
                         ))}
                     </div>
 
-                    <div className="bg-space-card border border-space-border rounded-[2.5rem] p-7 shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="relative overflow-hidden bg-[#08150f] border border-space-yellow/25 rounded-[2.5rem] p-7 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+                        <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-space-primary/10 blur-2xl pointer-events-none -translate-y-1/4 translate-x-1/4" />
+                        <div className="absolute bottom-0 left-0 w-56 h-56 rounded-full bg-space-card2/10 blur-3xl pointer-events-none -translate-x-1/4 translate-y-8" />
+                        <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
                             {error && (
                                 <div className="bg-space-danger/10 border border-space-danger/20 text-space-danger px-4 py-3 rounded-xl text-sm">
                                     {error}

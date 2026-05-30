@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/supabaseClient';
 import { useToast } from '@/contexts/ToastContext';
 import { useBusiness } from '@/contexts/BusinessContext';
+import GeminiChatWidget from '@/components/GeminiChatWidget';
 import { 
     Sparkles, MessageSquare, Zap, Clock, Calendar, Check,
     TrendingUp, RefreshCw, Smartphone, Send, AlertTriangle, ArrowRight,
@@ -771,58 +772,15 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
                         )}
                     </div>
 
-                    {/* Simulador */}
-                    <div className="p-6 sm:p-8 bg-space-card/70 rounded-3xl border border-space-border shadow-xl space-y-6">
-                        <div className="space-y-1">
+                    {/* Gemini AI Chat */}
+                    <div className="p-6 sm:p-8 bg-space-card/70 rounded-3xl border border-space-border shadow-xl">
+                        <div className="space-y-1 mb-4">
                             <h2 className="text-base font-black text-space-text uppercase tracking-tight flex items-center gap-2">
-                                <Smartphone size={18} /> Simulador Copiloto en Vivo
+                                <Smartphone size={18} /> Gemini AI Chat
                             </h2>
-                            <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Chatea con tu bot y prueba tu prompt al instante</p>
+                            <p className="text-[10px] text-space-muted font-bold uppercase tracking-wider">Chatea en vivo con Google AI y prueba tu asistente con historial guardado</p>
                         </div>
-
-                        <div className="w-full max-w-[320px] mx-auto bg-[#0a0f18] rounded-[36px] p-3.5 border-4 border-[#1f293d] shadow-2xl relative flex flex-col h-[520px]">
-                            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-5 bg-[#1f293d] rounded-full z-30 flex items-center justify-center">
-                                <div className="w-2.5 h-2.5 bg-black rounded-full ml-auto mr-4" />
-                            </div>
-                            <div className="bg-[#0f172a] rounded-t-[26px] p-3.5 border-b border-white/5 flex items-center justify-between pt-7">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-full bg-space-primary/15 text-space-primary border border-space-primary/25 flex items-center justify-center text-[10px] font-black">🤖</div>
-                                    <div>
-                                        <p className="text-[10px] font-black text-white uppercase tracking-wide leading-none">{currentBusiness?.name || 'Copiloto Spacey'}</p>
-                                        <span className="text-[7px] text-space-primary font-bold uppercase tracking-widest">● asistente online</span>
-                                    </div>
-                                </div>
-                                <span className="bg-white/5 text-white/50 text-[6px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-white/10">PRUEBA</span>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto p-3 space-y-3 flex flex-col justify-end">
-                                {simulatorMessages.map((msg, idx) => (
-                                    <div key={idx} className={`flex flex-col max-w-[85%] ${msg.sender === 'user' ? 'ml-auto items-end' : 'items-start'}`}>
-                                        <div className={`p-3 rounded-2xl text-[10px] font-medium leading-relaxed ${msg.sender === 'user' ? 'bg-space-primary text-white rounded-tr-none' : 'bg-white/5 text-white/90 border border-white/5 rounded-tl-none whitespace-pre-line'}`}>
-                                            {msg.text}
-                                        </div>
-                                        <span className="text-[6px] text-white/30 font-semibold mt-1 uppercase">{msg.time}</span>
-                                    </div>
-                                ))}
-                                {isBotTyping && (
-                                    <div className="flex items-center gap-1.5 p-2.5 bg-white/5 rounded-xl border border-white/5 max-w-[60px] animate-pulse">
-                                        <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                        <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                        <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                                    </div>
-                                )}
-                            </div>
-
-                            <form onSubmit={handleSendSimulatorMsg} className="p-2 border-t border-white/5 bg-[#0f172a] rounded-b-[26px] flex items-center gap-2">
-                                <input type="text" value={simInput} onChange={(e) => setSimInput(e.target.value)}
-                                    placeholder="Escribe tu mensaje..."
-                                    className="flex-1 bg-black/40 border border-white/10 rounded-full px-4 py-2.5 text-[10px] text-white placeholder-white/20 focus:outline-none focus:border-space-primary/45 transition-all" />
-                                <button type="submit" disabled={!simInput.trim() || isBotTyping}
-                                    className="w-8 h-8 rounded-full bg-space-primary hover:bg-space-primary-dark disabled:opacity-50 text-white flex items-center justify-center transition-all shadow-md flex-shrink-0">
-                                    <Send size={12} />
-                                </button>
-                            </form>
-                        </div>
+                        <GeminiChatWidget />
                     </div>
                 </div>
             </div>
@@ -853,7 +811,7 @@ Proporciona la lista de servicios principales de inmediato, responde dudas puntu
 
                         {qrScanStep === 2 && (
                             <div className="flex flex-col items-center justify-center p-4 space-y-6">
-                                <div className="p-4 bg-white rounded-2xl shadow-inner">
+                                <div className="p-4 bg-space-card rounded-2xl shadow-inner border border-space-border">
                                     <img src={qrImageUrl || `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=SpaceyFallback`}
                                         alt="WhatsApp QR Code" className="w-40 h-40 opacity-90" />
                                 </div>

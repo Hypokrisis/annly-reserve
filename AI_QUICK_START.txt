@@ -1,0 +1,130 @@
+════════════════════════════════════════════════════════════════════════════════
+   🤖 ACTIVAR IA EN 10 MINUTOS - CHECKLIST RÁPIDO
+════════════════════════════════════════════════════════════════════════════════
+
+⏱️  TIEMPO TOTAL: ~30 minutos (primera vez)
+💰 COSTO: $0 (test) o $3-10/mes (producción pequeña)
+
+
+═══ PASO 1: OPENAI API KEY (3 minutos) ═══
+
+[ ] 1. Ve a: https://platform.openai.com/account/api-keys
+[ ] 2. Click: "Create new secret key"
+[ ] 3. Copia la clave: sk-proj-xxxxxxx...
+[ ] 4. Guárdala en un lugar seguro
+
+
+═══ PASO 2: AGREGAR A SUPABASE (2 minutos) ═══
+
+[ ] 1. Ve a: https://app.supabase.com
+[ ] 2. Tu proyecto → Settings → Secrets
+[ ] 3. Click: "New secret"
+[ ] 4. Name: OPENAI_API_KEY
+[ ] 5. Value: (pega la clave de arriba)
+[ ] 6. Save ✓
+
+
+═══ PASO 3: EVOLUTION API - WHATSAPP (5 minutos) ═══
+
+[ ] 1. Ve a: https://app.evolution-api.com
+[ ] 2. Crea instancia: "barberia-ia-test"
+[ ] 3. Escanea QR con WhatsApp (Settings → Dispositivos conectados → Conectar)
+[ ] 4. Copia los datos:
+      - Instance ID: ________________
+      - API Token: ________________
+      - API URL: ________________
+
+
+═══ PASO 4: GUARDAR EN SUPABASE (2 minutos) ═══
+
+SQL a ejecutar en Supabase → SQL Editor:
+
+UPDATE businesses
+SET 
+  whatsapp_instance_id = 'barberia-ia-test',
+  whatsapp_gateway_url = 'https://api.evolution-api.com',
+  whatsapp_instance_token = 'eyJ...',
+  whatsapp_bot_active = true
+WHERE slug = 'tu-slug-barberia';
+
+[ ] Ejecuta el SQL ✓
+
+
+═══ PASO 5: CONFIGURAR DASHBOARD (2 minutos) ═══
+
+[ ] 1. Abre Dashboard → Asistente IA
+[ ] 2. Rellena campos:
+      - Link de Reservas: https://annly-reserve.netlify.app/book/tu-slug
+      - Prompt: (dejar por defecto o personalizar)
+      - Personalidad: quick
+      - Horario: 09:00 - 18:00
+[ ] 3. Click: Guardar ✓
+
+
+═══ PASO 6: DESPLEGAR FUNCIÓN (2 minutos) ═══
+
+En terminal (Windows PowerShell):
+
+cd c:\Users\loann\annly-reserve
+supabase functions deploy whatsapp-webhook --no-verify-jwt
+
+[ ] Espera confirmación: "Successfully deployed" ✓
+[ ] Copia la URL de la función (para el siguiente paso)
+
+
+═══ PASO 7: WEBHOOK EN EVOLUTION API (2 minutos) ═══
+
+[ ] 1. Ve a Evolution API → tu instancia
+[ ] 2. Webhooks → Add Webhook
+[ ] 3. URL: (pega la URL de arriba)
+[ ] 4. Events: ✓ messages
+[ ] 5. Save ✓
+
+
+═══ PASO 8: PROBAR (5 minutos) ═══
+
+[ ] 1. Abre WhatsApp (el conectado en PASO 3)
+[ ] 2. Envía: "Hola, ¿cuál es el precio del corte?"
+[ ] 3. Espera respuesta de la IA
+[ ] 4. Verifica logs en Supabase → SQL Editor:
+      SELECT * FROM bot_message_logs ORDER BY created_at DESC LIMIT 5;
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            ✅ ¡LISTO!
+════════════════════════════════════════════════════════════════════════════════
+
+Si funciona correctamente, tu IA:
+✓ Responde preguntas sobre servicios
+✓ Muestra disponibilidad
+✓ Envía link de reserva personalizado
+✓ Registra conversaciones
+
+════════════════════════════════════════════════════════════════════════════════
+                         🆘 TROUBLESHOOTING
+════════════════════════════════════════════════════════════════════════════════
+
+"No aparece respuesta"
+→ Verifica que whatsapp_bot_active = true en la BD
+→ Revisa logs en Supabase → Functions → whatsapp-webhook
+
+"Error: OPENAI_API_KEY not found"
+→ En PowerShell ejecuta:
+  supabase secrets set OPENAI_API_KEY=sk-proj-xxxxx
+  supabase functions deploy whatsapp-webhook --no-verify-jwt
+
+"Webhook no recibe mensajes"
+→ Verifica que el QR está escaneado en WhatsApp
+→ Verifica que Evolution API webhook está activo
+→ Prueba el webhook manualmente en Evolution API
+
+"Respuestas incorrectas/horarios inventados"
+→ Actualiza servicios en Dashboard
+→ Actualiza horarios en Dashboard
+→ El guardrail debería prevenir alucinaciones
+
+════════════════════════════════════════════════════════════════════════════════
+
+Para más detalles, lee: AI_SETUP_GUIDE.md
+
+═════════════════════════════════════════════════════════════════════════════════
