@@ -170,6 +170,19 @@ export default function AppointmentsPage() {
         }
     };
 
+    const getClientBadge = (appointment: Appointment) => {
+        const isRegistered = !!(appointment.client_id || appointment.customer_user_id);
+        return isRegistered ? (
+            <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-extrabold tracking-widest bg-space-primary/10 border border-space-primary/20 text-space-primary flex items-center gap-1">
+                <User size={9} />Registrado
+            </span>
+        ) : (
+            <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-extrabold tracking-widest bg-space-muted/10 border border-space-muted/20 text-space-muted">
+                Invitado
+            </span>
+        );
+    };
+
     const getStatusBadge = (status: string) => {
         const badges = {
             confirmed: { bg: 'bg-space-success/10 border-space-success/20', text: 'text-space-success', label: 'Confirmada' },
@@ -317,9 +330,12 @@ export default function AppointmentsPage() {
                                                     <span className="text-lg font-black text-space-text">{formatTimeDisplay(appointment.start_time).split(' ')[0]}</span>
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <h4 className="font-bold text-space-text truncate group-hover:text-space-primary transition-colors">
-                                                        {appointment.customer_name}
-                                                    </h4>
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <h4 className="font-bold text-space-text truncate group-hover:text-space-primary transition-colors">
+                                                            {appointment.customer_name}
+                                                        </h4>
+                                                        {getClientBadge(appointment)}
+                                                    </div>
                                                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-space-muted mt-1">
                                                         <span className="flex items-center gap-1">
                                                             <User size={12} className="text-space-primary" />
@@ -351,7 +367,10 @@ export default function AppointmentsPage() {
                         <div className="space-y-5">
                             <div className="flex justify-between items-start pb-4 border-b border-space-border">
                                 <div>
-                                    <h3 className="text-xl font-bold text-space-text">{selectedAppointment.customer_name}</h3>
+                                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                                        <h3 className="text-xl font-bold text-space-text">{selectedAppointment.customer_name}</h3>
+                                        {getClientBadge(selectedAppointment)}
+                                    </div>
                                     <div className="flex items-center gap-2 text-space-muted text-sm mt-1">
                                         <CalendarIcon size={13} />{formatDateDisplay(selectedAppointment.appointment_date)}
                                         <span>·</span><Clock size={13} />{formatTimeDisplay(selectedAppointment.start_time)}
