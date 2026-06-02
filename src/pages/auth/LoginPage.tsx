@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { isValidEmail } from '@/utils';
-import { Eye, EyeOff, ArrowRight, Zap, MessageSquare, ShieldCheck, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
-
-    const from = location.state?.from?.pathname || '/dashboard';
+    const from = (location.state as any)?.from?.pathname || '/dashboard';
 
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
@@ -23,184 +22,136 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-
-        if (!formData.email || !formData.password) {
-            setError('Por favor completa todos los campos.');
-            return;
-        }
-        if (!isValidEmail(formData.email)) {
-            setError('Por favor ingresa un email válido.');
-            return;
-        }
-
+        if (!formData.email || !formData.password) { setError('Completa todos los campos.'); return; }
+        if (!isValidEmail(formData.email)) { setError('Email inválido.'); return; }
         setLoading(true);
         try {
             await login(formData.email, formData.password);
             navigate(from, { replace: true });
         } catch (err: any) {
-            setError(err.message || 'Error al iniciar sesión. Verifica tus credenciales.');
+            setError(err.message || 'Credenciales incorrectas.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex bg-[#08150f] text-space-text dark:bg-space-bg relative overflow-hidden font-sans">
-            {/* ── Background Elements ───────────────────────── */}
-            <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-space-primary/15 rounded-full blur-[120px] pointer-events-none animate-pulse" />
-            <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-space-purple/10 rounded-full blur-[120px] pointer-events-none" />
-            
-            {/* ── Left: Branding & Value Props ────────────────── */}
-            <div className="hidden lg:flex lg:w-[45%] bg-[#0f2416] dark:bg-space-card flex-col justify-between p-16 relative overflow-hidden">
-                {/* Dynamic Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-space-primary/20 via-transparent to-space-purple/20 pointer-events-none" />
-                
-                {/* Visual Patterns */}
-                <div className="absolute top-0 right-0 w-full h-full opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
-
-                {/* Top logo */}
-                <div className="relative flex items-center gap-4 animate-fade-in">
-                    <div className="w-14 h-14 bg-space-card2/10 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-2xl border border-space-border/20 overflow-hidden">
-                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
-                    </div>
-                    <span className="text-white font-black text-3xl tracking-tight">Spacey</span>
-                </div>
-
-                {/* Main Content */}
-                <div className="relative z-10 max-w-md">
-                        <div className="inline-flex items-center gap-2 bg-space-card2/10 backdrop-blur-md px-4 py-2 rounded-full border border-space-border/20 mb-8 animate-fade-in delay-100">
-                        <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Plataforma de Reservas Next-Gen</span>
-                    </div>
-                    
-                    <h2 className="text-5xl font-black text-white leading-[1.1] mb-8 tracking-tighter uppercase italic animate-fade-in delay-200">
-                        Eleva tu Negocio al <span className="text-space-primary">Máximo Nivel</span>
-                    </h2>
-                    
-                    <div className="space-y-8 animate-fade-in delay-300">
-                        {[
-                            { icon: Zap, title: 'Reservas 24/7', desc: 'No pierdas ni una cita más. Automatización total.', color: 'text-amber-400' },
-                            { icon: MessageSquare, title: 'WhatsApp Automático', desc: 'Confirmaciones y recordatorios por WhatsApp.', color: 'text-emerald-400' },
-                            { icon: ShieldCheck, title: 'Control Total', desc: 'Gestiona tu equipo, servicios y finanzas.', color: 'text-sky-400' }
-                        ].map((item, idx) => (
-                            <div key={idx} className="flex gap-5 group">
-                                <div className={`w-12 h-12 rounded-2xl bg-space-card2/10 border border-space-border/20 flex items-center justify-center shrink-0 group-hover:bg-space-card/20 transition-all duration-300 shadow-xl ${item.color}`}>
-                                    <item.icon size={22} />
-                                </div>
-                                <div>
-                                    <h3 className="text-white font-bold text-lg mb-1">{item.title}</h3>
-                                    <p className="text-space-muted text-sm leading-relaxed">{item.desc}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Bottom footer */}
-                <div className="relative z-10 flex items-center justify-between animate-fade-in delay-500">
-                    <p className="text-space-muted text-[10px] font-bold uppercase tracking-widest">© 2026 Spacey · Reservas Brutales</p>
-                    <div className="flex gap-4">
-                        <div className="w-1 h-1 rounded-full bg-space-border/40"></div>
-                        <div className="w-1 h-1 rounded-full bg-space-border/40"></div>
-                        <div className="w-1 h-1 rounded-full bg-space-border/40"></div>
-                    </div>
-                </div>
+        <div
+            className="min-h-screen flex items-center justify-center px-4 py-12 font-sans"
+            style={{ background: `rgb(var(--space-bg))` }}
+        >
+            {/* Ambient orbs */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full blur-[120px]" style={{ background: `rgba(var(--space-primary-light), 0.1)` }} />
+                <div className="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full blur-[100px]" style={{ background: `rgba(var(--space-primary), 0.06)` }} />
             </div>
 
-            {/* ── Right: Login Form ──────────────────────────── */}
-            <div className="flex-1 flex items-center justify-center p-8 bg-[#07160e] dark:bg-space-card relative">
-                <div className="w-full max-w-sm relative z-10">
-                    
-                    {/* Brand for Mobile */}
-                    <div className="lg:hidden flex flex-col items-center gap-3 mb-10 justify-center text-center">
-                        <div className="w-12 h-12 bg-space-primary rounded-2xl flex items-center justify-center shadow-xl shadow-space-primary/20 overflow-hidden">
-                            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
+            <div className="relative w-full max-w-[400px]">
+                {/* Logo */}
+                <div className="flex justify-center mb-8">
+                    <Link to="/" className="flex items-center gap-3 group">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg" style={{ background: `linear-gradient(135deg, rgb(var(--space-primary-light)), rgb(var(--space-primary)))` }}>
+                            <img src="/logo.png" alt="Spacey" className="w-full h-full object-cover object-top scale-110" />
                         </div>
-                        <div>
-                            <span className="font-black text-white text-3xl tracking-tight">Spacey</span>
-                            <p className="text-space-muted text-xs font-bold uppercase tracking-widest mt-2">Inicia sesión en tu panel de control</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-[#0d2918] dark:bg-space-card2 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.25)] p-10 border border-space-border/20">
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {error && (
-                                <div className="bg-space-danger/10 border border-space-danger/20 text-space-danger px-4 py-3 rounded-2xl text-[11px] font-bold uppercase text-center flex items-center justify-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-space-danger"></span>
-                                    {error}
-                                </div>
-                            )}
-
-                            <div className="space-y-1.5">
-                                <label htmlFor="email" className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2">Email Empresarial</label>
-                                <input
-                                    type="email" id="email" name="email"
-                                    value={formData.email} onChange={handleChange}
-                                    className="w-full px-6 py-4 bg-[#112d1d] dark:bg-space-card2 border border-space-border/20 rounded-[1.25rem] text-sm font-bold text-space-text focus:bg-[#0f2817] dark:focus:bg-space-card focus:ring-2 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-space-muted/40" 
-                                    placeholder="nombre@empresa.com"
-                                    disabled={loading} autoComplete="email"
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <div className="flex items-center justify-between px-2">
-                                    <label htmlFor="password" className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em]">Contraseña</label>
-                                    <Link to="/forgot-password" title="password line" className="text-[9px] text-space-primary font-black uppercase tracking-widest hover:underline transition">
-                                        ¿Olvidaste?
-                                    </Link>
-                                </div>
-                                <div className="relative group">
-                                    <input
-                                        type={showPwd ? 'text' : 'password'}
-                                        id="password" name="password"
-                                        value={formData.password} onChange={handleChange}
-                                        className="w-full px-6 py-4 bg-space-card2 border border-space-border rounded-[1.25rem] text-sm font-bold text-space-text focus:bg-space-card focus:ring-2 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-space-muted/40"
-                                        placeholder="••••••••"
-                                        disabled={loading} autoComplete="current-password"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPwd(!showPwd)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-space-muted hover:text-space-primary transition-colors"
-                                    >
-                                        {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <button 
-                                type="submit" 
-                                disabled={loading} 
-                                className="w-full bg-space-primary hover:bg-space-primary-dark text-white h-16 rounded-[1.25rem] font-black uppercase tracking-[0.2em] text-xs shadow-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group overflow-hidden relative"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                                {loading ? (
-                                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                                    </svg>
-                                ) : (
-                                    <>Aceder al Dashboard <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
-                                )}
-                            </button>
-                        </form>
-
-                        <div className="mt-8 pt-8 border-t border-space-border text-center">
-                            <p className="text-[10px] font-bold text-space-muted uppercase tracking-widest">
-                                ¿Nuevo en Spacey?{' '}
-                                <Link to="/signup" className="text-space-primary hover:text-space-primary-dark font-black transition underline decoration-2 underline-offset-4">
-                                    Crea tu cuenta gratis
-                                </Link>
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="mt-8 flex justify-center">
-                        <Link to="/" className="inline-flex items-center gap-2 px-6 py-3 bg-[#112d1d] dark:bg-space-card2 text-space-muted font-black rounded-full hover:text-space-primary transition-all uppercase tracking-widest text-[9px] border border-space-border/20 hover:border-space-primary/10 hover:shadow-lg">
-                            ← Volver al inicio
-                        </Link>
-                    </div>
+                        <span className="text-xl font-extrabold tracking-tight" style={{ color: `rgb(var(--space-text))` }}>Spacey</span>
+                    </Link>
                 </div>
+
+                {/* Card */}
+                <div
+                    className="rounded-2xl p-8 shadow-xl"
+                    style={{
+                        background: `rgb(var(--space-card))`,
+                        border: `1px solid rgb(var(--space-border))`,
+                    }}
+                >
+                    <div className="mb-7">
+                        <h1 className="text-xl font-extrabold tracking-tight mb-1" style={{ color: `rgb(var(--space-text))` }}>
+                            Bienvenido de vuelta
+                        </h1>
+                        <p className="text-sm font-medium" style={{ color: `rgb(var(--space-muted))` }}>
+                            Inicia sesión en tu cuenta de Spacey
+                        </p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="input-label">Email</label>
+                            <input
+                                name="email"
+                                type="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className="input-field"
+                                placeholder="tu@email.com"
+                                autoComplete="email"
+                                autoFocus
+                            />
+                        </div>
+
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label className="input-label mb-0">Contraseña</label>
+                                <Link to="/forgot-password" className="text-[11px] font-semibold transition-colors hover:opacity-80" style={{ color: `rgb(var(--space-primary))` }}>
+                                    ¿Olvidaste tu contraseña?
+                                </Link>
+                            </div>
+                            <div className="relative">
+                                <input
+                                    name="password"
+                                    type={showPwd ? 'text' : 'password'}
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className="input-field pr-11"
+                                    placeholder="••••••••"
+                                    autoComplete="current-password"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPwd(!showPwd)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-opacity hover:opacity-70"
+                                    style={{ color: `rgb(var(--space-muted))` }}
+                                >
+                                    {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="px-4 py-3 rounded-xl text-sm font-medium" style={{ background: `rgba(var(--space-danger), 0.1)`, color: `rgb(var(--space-danger))`, border: `1px solid rgba(var(--space-danger), 0.2)` }}>
+                                {error}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="btn-primary w-full h-11 mt-2"
+                        >
+                            {loading ? (
+                                <span className="flex items-center gap-2">
+                                    <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                                    Entrando...
+                                </span>
+                            ) : (
+                                <span className="flex items-center gap-2">
+                                    Iniciar sesión <ArrowRight size={15} />
+                                </span>
+                            )}
+                        </button>
+                    </form>
+
+                    <p className="mt-6 text-center text-sm font-medium" style={{ color: `rgb(var(--space-muted))` }}>
+                        ¿No tienes cuenta?{' '}
+                        <Link to="/signup" className="font-bold transition-colors hover:opacity-80" style={{ color: `rgb(var(--space-primary))` }}>
+                            Crear cuenta gratis
+                        </Link>
+                    </p>
+                </div>
+
+                <p className="mt-6 text-center text-xs font-medium" style={{ color: `rgba(var(--space-muted), 0.6)` }}>
+                    © {new Date().getFullYear()} Spacey · Hecho en Puerto Rico
+                </p>
             </div>
         </div>
     );

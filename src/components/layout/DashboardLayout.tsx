@@ -3,185 +3,168 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
-    LayoutDashboard,
-    Scissors,
-    Users,
-    Calendar,
-    LogOut,
-    Menu,
-    X,
-    Settings,
-    Globe,
-    Clock,
-    CreditCard,
-    Zap,
-    Moon,
-    Sun,
-    Sparkles
+    LayoutDashboard, Scissors, Users, Calendar, LogOut, Menu, X,
+    Settings, Globe, Clock, CreditCard, Zap, Moon, Sun, Sparkles, ChevronRight
 } from 'lucide-react';
 
-interface DashboardLayoutProps {
-    children: React.ReactNode;
-}
+interface DashboardLayoutProps { children: React.ReactNode; }
+
+const NAV_ITEMS = [
+    { name: 'Inicio',         href: '/dashboard',              icon: LayoutDashboard, roles: ['owner','admin','staff'] },
+    { name: 'Citas',          href: '/dashboard/appointments', icon: Calendar,        roles: ['owner','admin','staff'] },
+    { name: 'Clientes',       href: '/dashboard/clients',      icon: Users,           roles: ['owner','admin'] },
+    { name: 'Servicios',      href: '/dashboard/services',     icon: Scissors,        roles: ['owner','admin'] },
+    { name: 'Equipo',         href: '/dashboard/barbers',      icon: Users,           roles: ['owner','admin'] },
+    { name: 'Horarios',       href: '/dashboard/schedules',    icon: Clock,           roles: ['owner','admin'] },
+    { name: 'Marketing',      href: '/dashboard/campaigns',    icon: Zap,             roles: ['owner','admin'] },
+    { name: 'Asistente IA',   href: '/dashboard/ai-assistant', icon: Sparkles,        roles: ['owner','admin'] },
+    { name: 'Suscripción',    href: '/dashboard/billing',      icon: CreditCard,      roles: ['owner','admin'] },
+    { name: 'Configuración',  href: '/dashboard/settings',     icon: Settings,        roles: ['owner','admin'] },
+];
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, currentBusiness, logout, role } = useAuth();
     const { theme, toggleTheme } = useTheme();
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+    const [mobileOpen, setMobileOpen] = React.useState(false);
 
-    const allNavigation = [
-        { name: 'Dashboard',      href: '/dashboard',              icon: LayoutDashboard, roles: ['owner', 'admin', 'staff'] },
-        { name: 'Servicios',      href: '/dashboard/services',     icon: Scissors,        roles: ['owner', 'admin'] },
-        { name: 'Equipo',         href: '/dashboard/barbers',      icon: Users,           roles: ['owner', 'admin'] },
-        { name: 'Horarios',       href: '/dashboard/schedules',    icon: Clock,           roles: ['owner', 'admin'] },
-        { name: 'Asistente IA',   href: '/dashboard/ai-assistant', icon: Sparkles,        roles: ['owner', 'admin'] },
-        { name: 'Citas',          href: '/dashboard/appointments', icon: Calendar,        roles: ['owner', 'admin', 'staff'] },
-        { name: 'Clientes',       href: '/dashboard/clients',      icon: Users,           roles: ['owner', 'admin'] },
-        { name: 'Marketing',      href: '/dashboard/campaigns',    icon: Zap,             roles: ['owner', 'admin'] },
-        { name: 'Suscripción',    href: '/dashboard/billing',      icon: CreditCard,      roles: ['owner', 'admin'] },
-        { name: 'Configuración',  href: '/dashboard/settings',     icon: Settings,        roles: ['owner', 'admin'] },
-        { name: 'Ver Página',     href: '/',                       icon: Globe,           roles: ['owner', 'admin', 'staff'] },
-    ];
-
-    const navigation = allNavigation.filter(item => item.roles.includes(role || 'staff'));
+    const nav = NAV_ITEMS.filter(i => i.roles.includes(role || 'staff'));
 
     const handleLogout = async () => {
-        try {
-            await logout();
-            setIsMobileMenuOpen(false);
-            navigate('/login');
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
+        try { await logout(); navigate('/login'); } catch {}
+        setMobileOpen(false);
     };
 
-    const initials = currentBusiness?.name?.substring(0, 2).toUpperCase() || 'SP';
+    const initials = currentBusiness?.name?.slice(0, 2).toUpperCase() || 'SP';
+
+    const SidebarContent = () => (
+        <div className="flex flex-col h-full">
+            {/* Logo */}
+            <div className="flex items-center gap-3 px-5 h-16 border-b border-space-border flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0" style={{ background: `rgb(var(--space-primary))` }}>
+                    <img src="/logo.png" alt="Spacey" className="w-full h-full object-cover object-top scale-110" />
+                </div>
+                <span className="font-bold text-space-text text-base tracking-tight">Spacey</span>
+                <button className="lg:hidden ml-auto p-1 text-space-muted hover:text-space-text transition" onClick={() => setMobileOpen(false)}>
+                    <X size={18} />
+                </button>
+            </div>
+
+            {/* Business */}
+            {currentBusiness && (
+                <div className="mx-3 mt-4 mb-1 px-3 py-2.5 rounded-xl flex items-center gap-2.5 flex-shrink-0" style={{ background: `rgb(var(--space-card2))`, border: `1px solid rgb(var(--space-border))` }}>
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0" style={{ background: `linear-gradient(135deg, rgb(var(--space-primary-light)), rgb(var(--space-primary)))` }}>
+                        {initials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <p className="text-[11px] font-bold truncate" style={{ color: `rgb(var(--space-text))` }}>{currentBusiness.name}</p>
+                        <p className="text-[9px] uppercase tracking-widest font-medium" style={{ color: `rgb(var(--space-muted))` }}>{role}</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Nav */}
+            <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto scrollbar-hide">
+                <p className="px-2 py-1.5 text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: `rgba(var(--space-muted), 0.6)` }}>Navegación</p>
+                {nav.map(item => {
+                    const active = location.pathname === item.href;
+                    const Icon = item.icon;
+                    return (
+                        <Link
+                            key={item.name}
+                            to={item.href}
+                            onClick={() => setMobileOpen(false)}
+                            className={`nav-item ${active ? 'active' : ''}`}
+                        >
+                            <Icon size={16} className="flex-shrink-0" />
+                            <span className="flex-1">{item.name}</span>
+                            {active && <ChevronRight size={12} className="opacity-60 flex-shrink-0" />}
+                        </Link>
+                    );
+                })}
+
+                <div className="pt-2 mt-2" style={{ borderTop: `1px solid rgb(var(--space-border))` }}>
+                    <Link to="/" onClick={() => setMobileOpen(false)} className="nav-item">
+                        <Globe size={16} className="flex-shrink-0" />
+                        <span>Ver Página</span>
+                    </Link>
+                </div>
+            </nav>
+
+            {/* User footer */}
+            <div className="px-3 py-4 flex-shrink-0" style={{ borderTop: `1px solid rgb(var(--space-border))` }}>
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl" style={{ background: `rgb(var(--space-card2))` }}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold flex-shrink-0" style={{ background: `rgba(var(--space-primary), 0.15)`, color: `rgb(var(--space-primary))` }}>
+                        {user?.email?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-semibold truncate" style={{ color: `rgb(var(--space-text))` }}>{user?.email}</p>
+                    </div>
+                    <button
+                        onClick={toggleTheme}
+                        title="Cambiar tema"
+                        className="p-1.5 rounded-lg transition-all hover:opacity-80"
+                        style={{ color: `rgb(var(--space-muted))` }}
+                    >
+                        {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+                    </button>
+                    <button
+                        onClick={handleLogout}
+                        title="Cerrar sesión"
+                        className="p-1.5 rounded-lg transition-all hover:opacity-80"
+                        style={{ color: `rgb(var(--space-danger))` }}
+                    >
+                        <LogOut size={15} />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="min-h-screen bg-space-bg text-space-text flex">
+        <div className="min-h-screen flex" style={{ background: `rgb(var(--space-bg))`, color: `rgb(var(--space-text))` }}>
 
-            {/* ── Mobile Header (Pill Bar) ───────────────────── */}
-            <header className="lg:hidden fixed top-4 left-4 right-4 z-40 h-16 bg-space-card/95 backdrop-blur-md rounded-full border border-space-border shadow-lg flex items-center justify-between px-6">
+            {/* Mobile top bar */}
+            <header
+                className="lg:hidden fixed top-3 left-3 right-3 z-40 h-14 rounded-2xl flex items-center justify-between px-4 shadow-lg"
+                style={{ background: `rgba(var(--space-card), 0.95)`, backdropFilter: 'blur(20px)', border: `1px solid rgb(var(--space-border))` }}
+            >
                 <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 bg-space-primary rounded-xl flex items-center justify-center shadow-btn overflow-hidden">
-                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
+                    <div className="w-7 h-7 rounded-lg overflow-hidden flex-shrink-0" style={{ background: `rgb(var(--space-primary))` }}>
+                        <img src="/logo.png" alt="Spacey" className="w-full h-full object-cover object-top scale-110" />
                     </div>
-                    <span className="font-bold text-space-text text-lg tracking-tight uppercase">Spacey</span>
+                    <span className="font-bold text-space-text text-sm">Spacey</span>
                 </div>
                 <button
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="p-2.5 text-space-muted hover:text-space-primary hover:bg-space-card2 rounded-full transition"
-                    aria-label="Toggle menu"
+                    onClick={() => setMobileOpen(!mobileOpen)}
+                    className="p-2 rounded-lg transition-all hover:opacity-80"
+                    style={{ color: `rgb(var(--space-muted))` }}
                 >
-                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    {mobileOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
             </header>
 
-            {/* ── Mobile Backdrop ───────────────────────────────── */}
-            {isMobileMenuOpen && (
+            {/* Mobile backdrop */}
+            {mobileOpen && (
                 <div
-                    className="fixed inset-0 bg-space-text/30 backdrop-blur-sm z-40 lg:hidden"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="fixed inset-0 z-40 lg:hidden"
+                    style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
+                    onClick={() => setMobileOpen(false)}
                 />
             )}
 
-            {/* ── Sidebar ───────────────────────────────────────── */}
-            <aside className={`
-  fixed inset-y-0 left-0 w-64 bg-space-card border-r border-space-border z-50
-  flex flex-col h-screen overflow-y-auto
-  transform transition-transform duration-300 ease-in-out
-  ${isMobileMenuOpen ? 'block translate-x-0' : 'hidden -translate-x-full'}
-  lg:block lg:translate-x-0
-`}>
-                {/* Logo */}
-                <div className="h-16 px-5 flex items-center border-b border-space-border flex-shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-space-primary rounded-xl flex items-center justify-center shadow-btn overflow-hidden flex-shrink-0">
-                            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
-                        </div>
-                        <div>
-                            <p className="font-bold text-space-text leading-tight">Spacey</p>
-                            <p className="text-[10px] text-space-muted font-medium tracking-widest uppercase">Dashboard</p>
-                        </div>
-                    </div>
-                    <button className="lg:hidden ml-auto p-1 text-space-muted hover:text-space-primary" onClick={() => setIsMobileMenuOpen(false)}>
-                        <X size={18} />
-                    </button>
-                </div>
-
-                {/* Business Badge */}
-                {currentBusiness && (
-                    <div className="mx-4 mt-4 p-3 bg-space-card2 rounded-xl border border-space-border flex items-center gap-3 flex-shrink-0">
-                        <div className="w-8 h-8 rounded-full bg-space-primary flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-                            {initials}
-                        </div>
-                        <div className="min-w-0">
-                            <p className="text-[10px] text-space-muted font-semibold uppercase tracking-wider">Negocio</p>
-                            <p className="text-sm font-semibold text-space-text truncate">{currentBusiness.name}</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Navigation */}
-                <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-                    <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-widest text-space-muted/70">Menú</p>
-                    {navigation.map((item) => {
-                        const isActive = location.pathname === item.href;
-                        const Icon = item.icon;
-                        return (
-                            <Link
-                                key={item.name}
-                                to={item.href}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className={`
-                                    flex items-center gap-3 px-3 py-2.5 rounded-xl 
-                                    text-sm font-medium transition-all duration-150
-                                    ${isActive
-                                        ? 'bg-space-primary text-white shadow-btn'
-                                        : 'text-space-muted hover:text-space-primary hover:bg-space-card2'
-                                    }
-                                `}
-                            >
-                                <Icon size={18} className="flex-shrink-0" />
-                                {item.name}
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                {/* User Footer (Desktop only) */}
-                <div className="hidden lg:block px-3 py-4 border-t border-space-border flex-shrink-0 mb-6 font-bold">
-                    <div className="flex items-center gap-3 bg-space-card2 p-3 rounded-2xl border border-space-border/50">
-                        <div className="w-10 h-10 rounded-full bg-space-primary-light flex items-center justify-center text-space-primary font-black text-sm flex-shrink-0 shadow-sm border border-space-primary/10">
-                            {user?.email?.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-space-text truncate">{user?.email}</p>
-                            <p className="text-[10px] text-space-muted font-bold uppercase tracking-widest">{role}</p>
-                        </div>
-                        <button
-                            onClick={toggleTheme}
-                            className="p-3 bg-space-card text-space-muted hover:text-space-primary hover:bg-space-card rounded-xl transition flex-shrink-0 shadow-sm border border-space-border/50"
-                            title="Cambiar Tema"
-                        >
-                            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                        </button>
-                        <button
-                            onClick={handleLogout}
-                            className="p-3 bg-space-card text-space-danger hover:text-white hover:bg-space-danger rounded-xl transition flex-shrink-0 shadow-sm border border-space-border/50"
-                            title="Cerrar sesión"
-                        >
-                            <LogOut size={18} />
-                        </button>
-                    </div>
-                </div>
+            {/* Sidebar */}
+            <aside
+                className={`fixed inset-y-0 left-0 w-56 z-50 flex flex-col h-screen transform transition-transform duration-250 ease-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:block`}
+                style={{ background: `rgb(var(--sidebar-bg))`, borderRight: `1px solid rgb(var(--space-border))` }}
+            >
+                <SidebarContent />
             </aside>
 
-            {/* ── Main Content ──────────────────────────────────── */}
-            <main className="flex-1 min-w-0 overflow-y-auto pt-20 lg:pt-0">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+            {/* Main */}
+            <main className="flex-1 min-w-0 overflow-y-auto lg:ml-56 pt-20 lg:pt-0">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
                     {children}
                 </div>
             </main>
