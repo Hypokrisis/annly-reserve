@@ -85,8 +85,8 @@ export const calculateAvailability = async (params: AvailabilityParams): Promise
         return [];
     }
 
-    // 5. Get day of week
-    const dayOfWeek = new Date(date + 'T00:00:00').getDay();
+    // 5. Get day of week — use noon to avoid timezone midnight-rollover errors
+    const dayOfWeek = new Date(date + 'T12:00:00').getDay();
 
     // 6. Calculate availability for each barber
     const allSlots: AvailableSlot[] = [];
@@ -112,7 +112,7 @@ export const calculateAvailability = async (params: AvailabilityParams): Promise
 
     // 8. Filter out past times if date is today
     const now = new Date();
-    const isToday = new Date(date + 'T00:00:00').toDateString() === now.toDateString();
+    const isToday = new Date(date + 'T12:00:00').toDateString() === now.toDateString();
 
     if (isToday) {
         return allSlots.filter(slot => {
@@ -178,7 +178,13 @@ async function calculateBarberAvailability(
         // Check if this slot overlaps with any existing appointment
         const hasConflict = existingAppointments.some(apt => {
             const aptStart = parseTime(apt.start_time);
-            const aptEnd = parseTime(apt.end_time);
+            // Fallback: compute end_time from start_time if missing (legacy data)
+            let aptEnd: Date;
+            if (apt.end_time) {
+                aptEnd = parseTime(apt.end_time);
+            } else {
+                aptEnd = addMinutes(aptStart, service.duration_minutes);
+            }
 
             // Add buffer to appointment end time
             const aptEndWithBuffer = addMinutes(aptEnd, bufferMinutes);
@@ -230,10 +236,12 @@ export const isSlotAvailable = async (
     const slotStart = parseTime(time);
     const slotEnd = addMinutes(slotStart, service.duration_minutes);
 
-    // Check for conflicts
+    // Check for conflicts (guard against legacy rows with null end_time)
     const hasConflict = appointments.some(apt => {
         const aptStart = parseTime(apt.start_time);
-        const aptEnd = parseTime(apt.end_time);
+        const aptEnd = apt.end_time
+            ? parseTime(apt.end_time)
+            : addMinutes(aptStart, service.duration_minutes);
 
         return slotStart < aptEnd && slotEnd > aptStart;
     });

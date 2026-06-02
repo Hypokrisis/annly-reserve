@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { MonthGridCalendar } from '@/components/calendar/MonthGridCalendar';
 import { useAvailability } from '@/hooks/useAvailability';
 import { formatCurrency, formatDate, parseDate, formatTimeDisplay, isValidEmail, isValidPhone } from '@/utils';
+import { isSlotAvailable } from '@/services/availability.service';
 import { supabase } from '@/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Business, Service, Barber } from '@/types';
@@ -39,7 +40,7 @@ export default function PublicBookingPage() {
     const [, setLoadingProfile] = useState(false);
 
     // Load availability when service, barber, and date are selected
-    const { availableSlots, loading: loadingSlots } = useAvailability(
+    const { availableSlots, loading: loadingSlots, error: availabilityError } = useAvailability(
         selectedService && selectedDate
             ? {
                 businessId: business?.id || '',
@@ -143,6 +144,17 @@ export default function PublicBookingPage() {
     };
 
     const handleDateSelect = (date: string) => {
+        if (business?.max_days_advance) {
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selected = new Date(date + 'T12:00:00');
+            const daysAhead = Math.round((selected.getTime() - today.getTime()) / msPerDay);
+            if (daysAhead > business.max_days_advance) {
+                alert(`Solo puedes reservar hasta ${business.max_days_advance} días en adelanto.`);
+                return;
+            }
+        }
         setSelectedDate(date);
         setSelectedSlot(null);
         setStep(4);
@@ -221,6 +233,21 @@ export default function PublicBookingPage() {
         setSubmitting(true);
 
         try {
+            // Re-validate the slot hasn't been taken since step 4
+            const stillAvailable = await isSlotAvailable(
+                selectedSlot.barber_id,
+                selectedService.id,
+                selectedDate,
+                selectedSlot.time
+            );
+            if (!stillAvailable) {
+                alert('Este horario acaba de ser reservado. Por favor escoge otro.');
+                setSelectedSlot(null);
+                setStep(4);
+                setSubmitting(false);
+                return;
+            }
+
             // Check for existing active appointments (only if we have email)
             if (customerInfo.email) {
                 const { data: existingActive } = await supabase
@@ -243,6 +270,11 @@ export default function PublicBookingPage() {
             const { data: sessionData } = await supabase.auth.getSession();
             const session = sessionData?.session;
 
+            // Calculate end_time from service duration
+            const [startH, startM] = selectedSlot.time.split(':').map(Number);
+            const endTotalMin = startH * 60 + startM + selectedService.duration_minutes;
+            const end_time = `${String(Math.floor(endTotalMin / 60)).padStart(2, '0')}:${String(endTotalMin % 60).padStart(2, '0')}`;
+
             // Build appointment payload — works for both guests and logged-in users
             const appointmentPayload: Record<string, any> = {
                 business_id: business.id,
@@ -250,6 +282,7 @@ export default function PublicBookingPage() {
                 service_id: selectedService.id,
                 appointment_date: selectedDate,
                 start_time: selectedSlot.time,
+                end_time,
                 customer_name: customerInfo.name.trim(),
                 customer_email: customerInfo.email.toLowerCase().trim(),
                 customer_phone: customerInfo.phone.trim(),
@@ -603,6 +636,16 @@ export default function PublicBookingPage() {
 
                             {loadingSlots ? (
                                 <div className="py-20 flex justify-center"><LoadingSpinner /></div>
+                            ) : availabilityError ? (
+                                <div className="text-center py-12">
+                                    <p className="text-sm font-bold text-space-danger uppercase tracking-widest mb-6 border border-space-danger/20 bg-space-danger/5 p-4 rounded-xl">Error cargando horarios. Intenta de nuevo.</p>
+                                    <button
+                                        onClick={() => setStep(3)}
+                                        className="btn-secondary rounded-full px-8 uppercase tracking-widest shadow-none"
+                                    >
+                                        Cambiar Fecha
+                                    </button>
+                                </div>
                             ) : availableSlots.length === 0 ? (
                                 <div className="text-center py-12">
                                     <p className="text-sm font-bold text-space-danger uppercase tracking-widest mb-6 border border-space-danger/20 bg-space-danger/5 p-4 rounded-xl">No hay horarios disponibles para esta fecha</p>
