@@ -141,7 +141,7 @@ async function calculateBarberAvailability(
         .eq('barber_id', barber.id)
         .eq('day_of_week', dayOfWeek)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
     if (!schedule) {
         return []; // Barber doesn't work this day

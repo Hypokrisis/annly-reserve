@@ -23,46 +23,23 @@ export const upsertSchedule = async (
     dayOfWeek: number,
     scheduleData: Omit<UpdateScheduleData, 'day_of_week'>
 ): Promise<Schedule> => {
-    // Check if schedule exists
-    const { data: existing } = await supabase
+    const { data, error } = await supabase
         .from('schedules')
-        .select('*')
-        .eq('barber_id', barberId)
-        .eq('day_of_week', dayOfWeek)
-        .single();
-
-    if (existing) {
-        // Update existing
-        const { data, error } = await supabase
-            .from('schedules')
-            .update({
-                start_time: scheduleData.start_time,
-                end_time: scheduleData.end_time,
-                is_active: scheduleData.is_active ?? true,
-            })
-            .eq('id', existing.id)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
-    } else {
-        // Create new
-        const { data, error } = await supabase
-            .from('schedules')
-            .insert({
+        .upsert(
+            {
                 barber_id: barberId,
                 day_of_week: dayOfWeek,
                 start_time: scheduleData.start_time,
                 end_time: scheduleData.end_time,
                 is_active: scheduleData.is_active ?? true,
-            })
-            .select()
-            .single();
+            },
+            { onConflict: 'barber_id,day_of_week' }
+        )
+        .select()
+        .single();
 
-        if (error) throw error;
-        return data;
-    }
+    if (error) throw error;
+    return data;
 };
 
 /**
