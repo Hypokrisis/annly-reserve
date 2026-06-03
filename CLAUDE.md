@@ -1,238 +1,101 @@
-# CLAUDE.md - Guía Completa para Trabajar en Annly Reserve
+# CLAUDE.md
 
-## 🎯 ¿Qué es Annly Reserve?
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Annly Reserve** es una plataforma SaaS de reservas para barberías y salones de belleza. Es una Progressive Web App (PWA) que permite:
-
-- **Para Dueños/Admins**: Gestionar servicios, barberos, horarios, citas y notificaciones
-- **Para Clientes**: Reservar citas online de forma fácil a través de un link público
-
-Es un **MVP (Mínimo Producto Viable)** con funcionalidades core implementadas y listo para monetizar.
-
----
-
-## 🏗️ Stack Tecnológico
-
-| Aspecto | Tecnología |
-|--------|-----------|
-| **Frontend** | React 18 + TypeScript + Vite |
-| **Estilos** | TailwindCSS |
-| **Backend** | Netlify Functions (Serverless) |
-| **Base de Datos** | Supabase (PostgreSQL) |
-| **Autenticación** | Supabase Auth |
-| **Hosting** | Netlify + Supabase |
-| **PWA** | Service Workers + Web App Manifest |
-| **Otras** | React Router, Lucide Icons, date-fns |
-
----
-
-## 📊 Estructura Base de Datos
-
-8 tablas principales en PostgreSQL (Supabase):
-
-1. **businesses** - Información de negocios
-2. **users_businesses** - Usuarios con roles (owner/admin/staff)
-3. **barbers** - Barberos registrados
-4. **services** - Servicios ofrecidos
-5. **barbers_services** - Relación muchos-a-muchos
-6. **schedules** - Horarios de trabajo semanal
-7. **appointments** - Citas reservadas
-8. **notifications** - Log de notificaciones (email, SMS, etc.)
-
-**Todas tienen Row Level Security (RLS) configurado para filtrar por business_id y roles.**
-
----
-
-## 📁 Estructura de Carpetas
-
-```
-src/
-├── components/
-│   ├── common/              # Button, Input, Modal, ImageUploadWithCrop, etc.
-│   ├── layout/              # DashboardLayout, Navbar, Sidebar
-│   ├── booking/             # Flujo de reserva (5 pasos)
-│   ├── dashboard/           # Dashboard home, stats
-│   ├── barbers/             # CRUD de barberos
-│   ├── services/            # CRUD de servicios
-│   ├── appointments/        # Gestión de citas
-│   ├── settings/            # Configuración del negocio
-│   └── GeminiChatWidget.tsx # Widget de AI (Gemini)
-├── pages/
-│   ├── Home.tsx             # Página de inicio
-│   ├── auth/                # LoginPage.tsx, SignupPage.tsx
-│   └── dashboard/           # DashboardHome.tsx, AIAssistantPage.tsx
-├── contexts/                # AuthContext, BusinessContext
-├── hooks/
-│   ├── useChatHistory.ts    # Gestión de historial de chat
-│   ├── useAppointments.ts   # CRUD de citas
-│   ├── useAvailability.ts   # Algoritmo de disponibilidad
-│   ├── useBarbers.ts        # CRUD de barberos
-│   ├── useServices.ts       # CRUD de servicios
-│   └── useSchedule.ts       # Gestión de horarios
-├── services/                # Lógica de API
-│   ├── appointments.service.ts
-│   ├── availability.service.ts
-│   ├── barbers.service.ts
-│   ├── business.service.ts
-│   ├── notifications.service.ts
-│   ├── schedules.service.ts
-│   └── services.service.ts
-├── types/                   # TypeScript interfaces
-├── utils/                   # Helpers y utilidades
-├── index.css                # Estilos globales (Tailwind + custom CSS variables)
-└── supabaseClient.ts        # Instancia de Supabase
-
-netlify/
-└── functions/
-    └── chat.ts              # Endpoint serverless para AI (Gemini)
-
-public/
-├── manifest.json            # PWA manifest
-└── service-worker.js        # Service worker para offline
-```
-
----
-
-## 🔑 Características Implementadas
-
-### ✅ Autenticación & Autorización
-- Login/Signup con Supabase
-- AuthContext centralizado
-- Roles: owner, admin, staff
-- Rutas protegidas
-- Recuperación de contraseña
-
-### ✅ Gestión del Negocio (Dashboard)
-- Crear/editar información del negocio
-- CRUD de Servicios
-- CRUD de Barberos + asignación de servicios
-- Editor visual de horarios semanales
-- Sidebar con navegación
-
-### ✅ Sistema de Reservas
-- Página pública `/book/:slug`
-- Flujo de 5 pasos intuitivo
-- Algoritmo inteligente de disponibilidad
-- Validaciones de conflictos
-- Dashboard de citas del admin
-
-### ✅ Notificaciones
-- Sistema preparado para email/SMS
-- Log de notificaciones en BD
-- Recordatorios (ready to implement)
-
-### ✅ PWA
-- Web App Manifest
-- Service Worker
-- Instalable en móvil
-- Funciona offline (parcialmente)
-
-### ✅ Integración AI (Nueva)
-- **GeminiChatWidget.tsx** - Widget de chat con Gemini
-- **chat.ts** (Netlify Function) - Endpoint serverless para procesar prompts
-- **useChatHistory.ts** - Hook para gestionar historial de conversaciones
-
----
-
-## 🚀 Comandos Esenciales
+## Commands
 
 ```bash
-# Instalar dependencias
-npm install
-
-# Desarrollo local (hot reload)
-npm run dev
-
-# Build para producción
-npm run build
-
-# Preview de build
-npm run preview
-
-# Linting y type check
-npm run lint
-npm typecheck
+npm run dev        # Dev server at http://localhost:5173 (hot reload)
+npm run build      # Production build → dist/
+npm run typecheck  # TypeScript check without emit
+npm run lint       # ESLint
+npm run preview    # Serve the production build locally
 ```
 
----
+No test suite. Verify behavior by running `npm run dev` and testing in browser.
 
-## 🌐 Variables de Entorno
+## Architecture
 
-Crear `.env` (o `.env.local`):
+**Stack:** Vite + React 18 + TypeScript + Tailwind CSS 3 + Supabase — deployed on Netlify.
 
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_GEMINI_API_KEY=your-gemini-key  # Para AI
+**Companion project:** `C:\Users\loann\barberbot` — a separate Express/Node.js WhatsApp bot (Twilio + Groq), deployed on Railway. Both share the same Supabase instance (project ref `cqszqdgoteagffdnecju`). Changes to schema affect both.
+
+### Path alias
+
+`@/` → `src/`. Always use it for internal imports.
+
+### Context / Provider tree (App.tsx)
+
+```
+ToastProvider → ThemeProvider → AuthProvider → BusinessProvider → Router
 ```
 
----
+- **AuthContext** — Supabase session, `user`, `currentBusiness` (Business object), `role` (`owner | admin | staff`). Call `useAuth()` to access.
+- **BusinessContext** — active `business`, `barbers[]`, `services[]`, `subscription` (with `subscription_tiers`), `monthlyAppointmentsCount`. Loaded reactively from `currentBusiness`. Dashboard pages should consume this instead of fetching separately.
+- **ThemeContext** — `theme` (`light | dark`), `toggleTheme`. Dark mode uses the `class` strategy on `<html>`.
+- **ToastContext** — `toast.success()`, `toast.error()`, `toast.info()`.
 
-## 🎯 Próximas Tareas Típicas
+### Route guards
 
-1. **Agregar nuevas funcionalidades al dashboard** → Buscar en `src/pages/dashboard/`
-2. **Mejorar el flujo de reserva** → Modificar `src/components/booking/`
-3. **Agregar campos a la BD** → Crear migrations en Supabase
-4. **Implementar nuevas API endpoints** → Crear en `netlify/functions/`
-5. **Mejorar UI/UX** → Editar componentes con Tailwind
-6. **Trabajar con el AI Widget** → Editar `GeminiChatWidget.tsx`
+Routes are composed by stacking guard components:
+- `AuthGuard` — redirects to `/login` if no session
+- `RequireBusiness` — redirects to `/create-business` if no business
+- `RequireOwner` — owner-only pages
+- `RequireRole` — accepts `requiredRole: string[]` prop
 
----
+### Layout rule
 
-## 💡 Reglas y Mejores Prácticas
+Every dashboard page **must** be wrapped in `<DashboardLayout>`. It renders the sidebar and mobile nav — pages rendered outside it will have no navigation.
 
-### Código
-- ✅ Usar TypeScript (siempre tipado)
-- ✅ Nombrar componentes en PascalCase
-- ✅ Nombrar funciones/variables en camelCase
-- ✅ Funciones pequeñas y reutilizables
-- ✅ Evitar archivos > 300 líneas
+### Design system — dark mode rule
 
-### Componentes
-- ✅ Componentes funcionales con hooks
-- ✅ Props bien tipados
-- ✅ Usar componentes de `common/` cuando sea posible
-- ✅ Estilos con Tailwind
-- ✅ Accesibilidad: `aria-label`, roles correctos
+All colors must use CSS variables via Tailwind semantic classes (`bg-space-card`, `text-space-text`, `text-space-muted`, `border-space-border`, `bg-space-card2`, etc.). **Never use** `bg-white`, `text-gray-*`, `bg-indigo-*` — they break dark mode.
 
-### Base de Datos
-- ✅ Siempre incluir RLS policies
-- ✅ Usar tipos correctos (uuid, jsonb, timestamps)
-- ✅ Nombrar columnas en snake_case
-- ✅ Documentar cambios en migrations
+Key CSS classes in `src/index.css`:
 
-### Git
-- ✅ Commits descriptivos: "Add feature", "Fix bug"
-- ✅ Hacer push regularmente
-- ✅ Revisar `git diff` antes de commitear
+| Class | Purpose |
+|---|---|
+| `.card` / `.card-hover` / `.dash-card` | Card containers (different radius/shadow) |
+| `.btn-primary` / `.btn-secondary` / `.btn-danger` / `.btn-ghost` | Buttons |
+| `.input-field` / `.input-label` | Form inputs |
+| `.badge-green/red/amber/gray` | Status badges |
+| `.nav-item` / `.nav-item.active` | Sidebar links |
+| `.text-gradient` / `.dot-pattern` / `.glass-effect` | Decorative |
 
----
+### Supabase schema (tables used)
 
-## 🎓 Cómo Ayudarte
+| Table | Key fields / notes |
+|---|---|
+| `businesses` | `plan_status` (`basic/pro/premium`), `whatsapp_bot_active`, `whatsapp_booking_link`, `whatsapp_offer`, `whatsapp_marketing_active`, `reminder_inactive_days`, `slug` |
+| `barbers` | Active barbers per business; linked to services via `barbers_services` junction |
+| `services` | `price`, `duration_minutes`, `is_active`, `display_order` |
+| `schedules` | Work hours by `day_of_week` (0=Sun). **UNIQUE constraint on `(barber_id, day_of_week)`** — use `upsert` with `onConflict: 'barber_id,day_of_week'`, never raw insert |
+| `appointments` | `client_id`/`customer_user_id` = null → guest; non-null → registered user. **`end_time` is required** — omitting it causes `parseTime(null)` crashes in availability logic |
+| `profiles` | `id` matches Supabase auth UID, `full_name`, `phone` |
 
-Como Claude AI, puedo:
+### Availability calculation
 
-✅ Crear nuevos componentes y páginas  
-✅ Implementar nuevas funcionalidades  
-✅ Debuggear problemas  
-✅ Mejorar código existente  
-✅ Escribir migraciones de BD  
-✅ Optimizar performance  
-✅ Revisar código (code review)  
+`src/services/availability.service.ts` — `calculateAvailability()` fetches barber schedules and existing appointments, generates 15-min slots, and filters conflicts. Key invariants:
+- Uses `.maybeSingle()` on the schedules query (not `.single()`) — duplicate schedules crash `.single()`
+- `end_time` must be present on all appointments for conflict detection to work
 
-**Para ser más efectivo, dame contexto claro:**
-- ¿Qué quieres lograr exactamente?
-- ¿Qué error específico ves?
-- ¿En qué archivo está el problema?
+### Guest vs. Registered clients
 
----
+`appointments.client_id` null = guest (bot or web without login). Non-null = Supabase auth user. The barberbot also links by phone number via `profiles`. `AppointmentsPage` shows "Invitado" / "Registrado" badges using `getClientBadge(appointment)`.
 
-## 📞 Recursos Útiles
+### Services layer pattern
 
-- Docs oficiales: React, Supabase, Vite, TailwindCSS
-- Archivos del repo: `README.md`, `QUICKSTART.md`, `DEPLOYMENT.md`
-- Base datos: `supabase/migrations/001_initial_schema.sql`
+Service functions in `src/services/` call Supabase directly. Hooks in `src/hooks/` wrap services with React state. Pages call hooks or services — not Supabase directly in most cases. Exception: dashboard pages sometimes query Supabase directly for page-specific analytics.
 
----
+### Environment variables
 
-**Estado actual:** Annly Reserve MVP con Auth, Dashboard, Reservas, PWA e Integración AI activos
+```
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+```
+
+Note: `.env.example` uses the wrong key name `VITE_SUPABASE_PUBLIC_KEY` — the actual variable read by `supabaseClient.ts` is `VITE_SUPABASE_ANON_KEY`.
+
+### Deployment
+
+Netlify auto-deploys `master`. Config in `netlify.toml`: publishes `dist/`, adds `/*` → `/index.html` SPA redirect.
