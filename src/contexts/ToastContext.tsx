@@ -28,26 +28,26 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
     const config = {
         success: {
             icon: CheckCircle,
-            bg: 'bg-white border-l-4 border-l-emerald-500',
-            iconColor: 'text-emerald-500',
+            bg: 'bg-space-card border-l-4 border-l-space-success',
+            iconColor: 'text-space-success',
             title: '¡Listo!',
         },
         error: {
             icon: XCircle,
-            bg: 'bg-white border-l-4 border-l-red-500',
-            iconColor: 'text-red-500',
+            bg: 'bg-space-card border-l-4 border-l-space-danger',
+            iconColor: 'text-space-danger',
             title: 'Error',
         },
         warning: {
             icon: AlertTriangle,
-            bg: 'bg-white border-l-4 border-l-amber-500',
-            iconColor: 'text-amber-500',
+            bg: 'bg-space-card border-l-4 border-l-space-yellow',
+            iconColor: 'text-space-yellow',
             title: 'Atención',
         },
         info: {
             icon: Info,
-            bg: 'bg-white border-l-4 border-l-blue-500',
-            iconColor: 'text-blue-500',
+            bg: 'bg-space-card border-l-4 border-l-space-primary',
+            iconColor: 'text-space-primary',
             title: 'Info',
         },
     };
@@ -57,7 +57,7 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
 
     return (
         <div
-            className={`${c.bg} rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] p-4 flex items-start gap-3 min-w-[300px] max-w-[380px] animate-slide-in-right border border-space-border`}
+            className={`${c.bg} rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] p-4 flex items-start gap-3 w-full max-w-[380px] animate-slide-in-right border border-space-border`}
             role="alert"
         >
             <Icon size={20} className={`${c.iconColor} flex-shrink-0 mt-0.5`} />

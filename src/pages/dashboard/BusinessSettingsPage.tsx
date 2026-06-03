@@ -323,21 +323,11 @@ export default function BusinessSettingsPage() {
         <DashboardLayout>
         <div className="max-w-4xl mx-auto animate-fade-up pb-20">
             {/* Action Bar */}
-            <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-4 z-40">
-                <button
-                    onClick={() => navigate('/dashboard')}
-                    className="group w-full sm:w-auto flex items-center gap-3 bg-space-card border-2 border-space-border/40 hover:border-space-primary/40 px-6 py-4 rounded-2xl transition-all shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 group"
-                >
-                    <div className="w-8 h-8 rounded-xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:scale-110 transition-transform">
-                        <ChevronLeft size={20} />
-                    </div>
-                    <span className="font-black uppercase tracking-widest text-[11px] text-space-text">Volver al Dashboard</span>
-                </button>
-
+            <div className="mb-8 flex justify-end sticky top-4 z-40">
                 <button
                     onClick={() => handleSubmit()}
                     disabled={loading}
-                    className="w-full sm:w-auto flex btn-primary h-16 px-10 items-center justify-center gap-3 shadow-xl shadow-space-primary/25 active:scale-95 disabled:opacity-50 transition-all font-black uppercase tracking-[0.2em] text-xs"
+                    className="flex btn-primary h-14 px-8 items-center justify-center gap-3 shadow-xl shadow-space-primary/25 active:scale-95 disabled:opacity-50 transition-all font-black uppercase tracking-[0.2em] text-xs"
                 >
                     {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
                     {loading ? 'Guardando...' : 'Guardar Todo'}

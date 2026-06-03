@@ -148,7 +148,7 @@ export default function DashboardHome() {
                 </div>
 
                 {/* ── KPI Cards ────────────────────────────── */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {KPI_ITEMS.map(({ label, value, trend, icon: Icon }) => (
                         <div key={label} className="dash-card flex flex-col gap-3">
                             <div className="flex items-center justify-between">

@@ -88,7 +88,7 @@ export function TimelineCalendar({
     <div className="bg-space-card rounded-3xl shadow-sm border border-space-border overflow-hidden flex flex-col">
       {/* Header Controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between p-5 border-b border-space-border gap-4 bg-space-card2/50">
-        <div className="flex items-center gap-2 bg-white rounded-full p-1 border border-space-border shadow-sm">
+        <div className="flex items-center gap-2 bg-space-card rounded-full p-1 border border-space-border shadow-sm">
           <button 
             onClick={() => onDateChange(subDays(selectedDate, 1))}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-space-bg text-space-text transition"
@@ -116,13 +116,13 @@ export function TimelineCalendar({
       {/* Timeline Grid */}
       <div className="flex flex-1 overflow-hidden min-h-[400px]">
         {/* Y-Axis (Barbers) */}
-        <div className="w-20 sm:w-32 border-r border-space-border bg-white shrink-0 z-30 flex flex-col sticky left-0 shadow-[4px_0_12px_-4px_rgba(34,50,28,0.05)]">
-          <div className="h-10 sm:h-12 border-b border-space-border flex items-center justify-center bg-white">
+        <div className="w-20 sm:w-32 border-r border-space-border bg-space-card shrink-0 z-30 flex flex-col sticky left-0 shadow-[4px_0_12px_-4px_rgba(34,50,28,0.05)]">
+          <div className="h-10 sm:h-12 border-b border-space-border flex items-center justify-center bg-space-card">
             <span className="text-[9px] font-black uppercase tracking-tight text-space-muted">Equipo</span>
           </div>
           <div className="flex-1 overflow-y-auto hidden-scrollbar">
             {activeBarbers.length > 0 ? activeBarbers.map(barber => (
-              <div key={barber.id} className="h-20 sm:h-24 border-b border-space-border flex flex-col items-center justify-center gap-1 sm:gap-2 bg-white px-2">
+              <div key={barber.id} className="h-20 sm:h-24 border-b border-space-border flex flex-col items-center justify-center gap-1 sm:gap-2 bg-space-card px-2">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-space-card2 flex items-center justify-center text-space-primary font-bold text-xs sm:text-sm shrink-0 border border-space-primary/10">
                   {barber.name.charAt(0)}
                 </div>
@@ -145,7 +145,7 @@ export function TimelineCalendar({
         >
           <div style={{ width: `${hoursCount * hourWidth}px` }} className="min-h-full flex flex-col">
             {/* Hours Header */}
-            <div className="h-10 sm:h-12 border-b border-space-border flex relative bg-white/90 backdrop-blur-sm sticky top-0 z-20">
+            <div className="h-10 sm:h-12 border-b border-space-border flex relative bg-space-card/90 backdrop-blur-sm sticky top-0 z-20">
               {hours.map((hour) => (
                 <div 
                   key={hour} 

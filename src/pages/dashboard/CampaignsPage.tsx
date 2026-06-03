@@ -228,17 +228,17 @@ export default function CampaignsPage() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto text-left">
-                            <div className="p-5 bg-white border border-space-border/40 rounded-2xl">
+                            <div className="p-5 bg-space-card border border-space-border/40 rounded-2xl">
                                 <p className="text-2xl mb-2">💬</p>
                                 <h3 className="text-xs font-black text-space-text uppercase tracking-wider mb-1">WhatsApp Masivo</h3>
                                 <p className="text-[10px] text-space-muted leading-relaxed font-semibold uppercase">Envía ofertas a todos tus clientes con un solo clic.</p>
                             </div>
-                            <div className="p-5 bg-white border border-space-border/40 rounded-2xl">
+                            <div className="p-5 bg-space-card border border-space-border/40 rounded-2xl">
                                 <p className="text-2xl mb-2">⏰</p>
                                 <h3 className="text-xs font-black text-space-text uppercase tracking-wider mb-1">Automatizado</h3>
                                 <p className="text-[10px] text-space-muted leading-relaxed font-semibold uppercase">El sistema detecta clientes inactivos y los reactiva solo.</p>
                             </div>
-                            <div className="p-5 bg-white border border-space-border/40 rounded-2xl">
+                            <div className="p-5 bg-space-card border border-space-border/40 rounded-2xl">
                                 <p className="text-2xl mb-2">📊</p>
                                 <h3 className="text-xs font-black text-space-text uppercase tracking-wider mb-1">Costo Protegido</h3>
                                 <p className="text-[10px] text-space-muted leading-relaxed font-semibold uppercase">Hasta 400 o 1,200 mensajes incluidos según tu plan.</p>
@@ -288,7 +288,7 @@ export default function CampaignsPage() {
 
                 {/* ── STATS & LIMITS ────────────────────────────────── */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white border-2 border-space-border p-6 rounded-[2rem] shadow-sm relative overflow-hidden group">
+                    <div className="bg-space-card border-2 border-space-border p-6 rounded-[2rem] shadow-sm relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                             <Users size={80} strokeWidth={3} />
                         </div>
@@ -301,7 +301,7 @@ export default function CampaignsPage() {
                         </p>
                     </div>
 
-                    <div className="bg-white border-2 border-space-border p-6 rounded-[2rem] shadow-sm relative overflow-hidden group">
+                    <div className="bg-space-card border-2 border-space-border p-6 rounded-[2rem] shadow-sm relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                             <Clock size={80} strokeWidth={3} />
                         </div>
@@ -332,7 +332,7 @@ export default function CampaignsPage() {
                 </div>
 
                 {/* ── CAMPAIGN LIST ─────────────────────────────────── */}
-                <div className="bg-white border-2 border-space-border rounded-[2.5rem] overflow-hidden shadow-sm">
+                <div className="bg-space-card border-2 border-space-border rounded-[2.5rem] overflow-hidden shadow-sm">
                     <div className="px-8 py-6 border-b-2 border-space-border flex items-center justify-between bg-space-card2/50">
                         <h2 className="text-sm font-black text-space-text uppercase tracking-widest flex items-center gap-2">
                             <History size={18} className="text-space-primary" /> Historial de Campañas
@@ -469,7 +469,7 @@ export default function CampaignsPage() {
                     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-6 lg:p-8">
                         <div className="absolute inset-0 bg-space-text/40 backdrop-blur-md" onClick={() => setIsModalOpen(false)} />
                         
-                        <div className="relative w-full max-w-4xl bg-white border-4 border-space-border rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="relative w-full max-w-4xl bg-space-card border-4 border-space-border rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
                             {/* Modal Header */}
                             <div className="px-10 py-8 border-b-2 border-space-border flex items-center justify-between bg-space-card2/50">
                                 <div className="flex items-center gap-4">
@@ -481,7 +481,7 @@ export default function CampaignsPage() {
                                         <p className="text-[10px] text-space-muted font-bold uppercase tracking-widest">Paso {step} de 3</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setIsModalOpen(false)} className="w-8 h-8 sm:w-10 sm:h-10 bg-white border-2 border-space-border rounded-xl flex items-center justify-center text-space-muted hover:text-space-danger transition-colors">
+                                <button onClick={() => setIsModalOpen(false)} className="w-10 h-10 bg-space-card2 border-2 border-space-border rounded-xl flex items-center justify-center text-space-muted hover:text-space-danger transition-colors min-w-[40px]">
                                     <X size={20} />
                                 </button>
                             </div>
