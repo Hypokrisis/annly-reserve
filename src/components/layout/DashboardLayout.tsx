@@ -104,7 +104,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                     <button
                         onClick={toggleTheme}
                         title="Cambiar tema"
-                        className="p-1.5 rounded-lg transition-all hover:opacity-80"
+                        className="p-1.5 rounded-lg transition-all hover:opacity-80 flex-shrink-0"
                         style={{ color: `rgb(var(--space-muted))` }}
                     >
                         {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
@@ -112,7 +112,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                     <button
                         onClick={handleLogout}
                         title="Cerrar sesión"
-                        className="p-1.5 rounded-lg transition-all hover:opacity-80"
+                        className="p-1.5 rounded-lg transition-all hover:opacity-80 flex-shrink-0"
                         style={{ color: `rgb(var(--space-danger))` }}
                     >
                         <LogOut size={15} />

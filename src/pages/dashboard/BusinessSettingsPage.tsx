@@ -45,6 +45,7 @@ export default function BusinessSettingsPage() {
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [activeTab, setActiveTab] = useState<'profile' | 'gallery' | 'location' | 'bot'>('profile');
 
     // QR connection states
     const [qrModalOpen, setQrModalOpen] = useState(false);
@@ -319,229 +320,182 @@ export default function BusinessSettingsPage() {
         </DashboardLayout>
     );
 
+    const TABS = [
+        { id: 'profile',  label: 'Perfil',    icon: Store },
+        { id: 'gallery',  label: 'Galería',   icon: Sparkles },
+        { id: 'location', label: 'Ubicación', icon: MapPin },
+        { id: 'bot',      label: 'Bot IA',    icon: Zap },
+    ] as const;
+
     return (
         <DashboardLayout>
-        <div className="max-w-4xl mx-auto animate-fade-up pb-20">
-            {/* Action Bar */}
-            <div className="mb-8 flex justify-end sticky top-4 z-40">
+        <div className="max-w-3xl mx-auto animate-fade-up pb-20">
+
+            {/* ── Page header ─────────────────────────── */}
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-space-card2 rounded-2xl flex items-center justify-center text-space-primary flex-shrink-0">
+                        <Store size={20} />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-black text-space-text tracking-tight">Mi Negocio</h1>
+                        <p className="text-space-muted text-[10px] font-bold uppercase tracking-widest">{currentBusiness?.name}</p>
+                    </div>
+                </div>
                 <button
                     onClick={() => handleSubmit()}
                     disabled={loading}
-                    className="flex btn-primary h-14 px-8 items-center justify-center gap-3 shadow-xl shadow-space-primary/25 active:scale-95 disabled:opacity-50 transition-all font-black uppercase tracking-[0.2em] text-xs"
+                    className="btn-primary h-11 px-6 gap-2 shadow-md shadow-space-primary/20 disabled:opacity-50"
                 >
-                    {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
-                    {loading ? 'Guardando...' : 'Guardar Todo'}
+                    {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                    {loading ? 'Guardando...' : 'Guardar'}
                 </button>
             </div>
 
-            {/* Title Section */}
-            <div className="flex items-center gap-5 mb-10 pl-2">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-space-card2 rounded-2xl flex items-center justify-center text-space-primary rotate-3">
-                    <Store size={26} className="-rotate-3" />
+            {/* ── Status message ──────────────────────── */}
+            {message && (
+                <div className={`mb-5 p-4 rounded-2xl flex items-center gap-3 animate-fade-in text-sm font-bold ${
+                    message.type === 'success'
+                    ? 'bg-space-success/10 border border-space-success/25 text-space-success'
+                    : 'bg-space-danger/10 border border-space-danger/25 text-space-danger'
+                }`}>
+                    {message.type === 'success' ? <Check size={16} /> : <Info size={16} />}
+                    {message.text}
                 </div>
-                <div>
-                    <h1 className="text-2xl font-black text-space-text tracking-tight uppercase">Mi Negocio</h1>
-                    <p className="text-space-muted text-[10px] font-bold uppercase tracking-widest mt-0.5">Configuración y presencia pública</p>
-                </div>
+            )}
+
+            {/* ── Tabs ────────────────────────────────── */}
+            <div className="flex gap-1 p-1 bg-space-card2/60 rounded-2xl mb-7 overflow-x-auto scrollbar-hide">
+                {TABS.map(({ id, label, icon: Icon }) => (
+                    <button
+                        key={id}
+                        onClick={() => setActiveTab(id)}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-200 flex-shrink-0 ${
+                            activeTab === id
+                            ? 'bg-space-card text-space-text shadow-sm'
+                            : 'text-space-muted hover:text-space-text'
+                        }`}
+                    >
+                        <Icon size={13} className={activeTab === id ? 'text-space-primary' : ''} />
+                        {label}
+                    </button>
+                ))}
             </div>
 
-            {/* Main Form Content */}
-            <div className="space-y-8">
-                {/* Status Message */}
-                {message && (
-                    <div className={`p-5 rounded-3xl flex items-center gap-4 animate-fade-in shadow-sm ${
-                        message.type === 'success' 
-                        ? 'bg-space-success/10 border border-space-success/30 text-space-success' 
-                        : 'bg-space-danger/10 border border-space-danger/30 text-space-danger'
-                    }`}>
-                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
-                            message.type === 'success' ? 'bg-space-success text-white' : 'bg-space-danger text-white'
-                        }`}>
-                            {message.type === 'success' ? <Check size={20} /> : <Info size={20} />}
-                        </div>
-                        <p className="text-xs font-black uppercase tracking-tight leading-relaxed">{message.text}</p>
-                    </div>
-                )}
+            {/* ── Tab content ─────────────────────────── */}
 
-                {/* Section 1: Visual Identity */}
-                <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)] group">
-                    <div className="flex items-center gap-3 mb-10 overflow-hidden">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:bg-space-primary group-hover:text-white transition-all duration-500">
-                                <Sparkles size={24} />
-                            </div>
-                        <div>
-                            <h2 className="text-lg font-black text-space-text uppercase tracking-tight leading-none">Identidad Visual</h2>
-                            <p className="text-[10px] text-space-muted uppercase font-bold tracking-widest mt-1.5 opacity-70">Haz que tu perfil destaque</p>
-                        </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        <ImageUploadWithCrop 
-                            label="Logo Principal (1:1)"
-                            value={formData.logo_url}
-                            onUploadComplete={(url) => setFormData(p => ({ ...p, logo_url: url }))}
-                            aspect={1}
-                        />
-                        <ImageUploadWithCrop 
-                            label="Banner de Portada (21:9)"
-                            value={formData.banner_url}
-                            onUploadComplete={(url) => setFormData(p => ({ ...p, banner_url: url }))}
-                            aspect={21 / 9}
-                        />
-                    </div>
-                </section>
-
-                {/* Section 2: General Info */}
-                <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)]">
-                    <div className="flex items-center gap-3 mb-10">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary">
-                            <Info size={24} />
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-black text-space-text uppercase tracking-tight leading-none">Información General</h2>
-                            <p className="text-[10px] text-space-muted uppercase font-bold tracking-widest mt-1.5 opacity-70">Detalles básicos del negocio</p>
-                        </div>
-                    </div>
-
-                    <div className="space-y-8">
+            {/* PERFIL */}
+            {activeTab === 'profile' && (
+                <div className="space-y-6 animate-fade-in">
+                    {/* Images */}
+                    <div className="bg-space-card rounded-2xl p-6 border border-space-border">
+                        <h2 className="text-sm font-black text-space-text uppercase tracking-wide mb-5 flex items-center gap-2">
+                            <Sparkles size={14} className="text-space-primary" />Identidad Visual
+                        </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <ImageUploadWithCrop label="Logo (1:1)" value={formData.logo_url}
+                                onUploadComplete={(url) => setFormData(p => ({ ...p, logo_url: url }))} aspect={1} />
+                            <ImageUploadWithCrop label="Banner (21:9)" value={formData.banner_url}
+                                onUploadComplete={(url) => setFormData(p => ({ ...p, banner_url: url }))} aspect={21/9} />
+                        </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="bg-space-card rounded-2xl p-6 border border-space-border space-y-5">
+                        <h2 className="text-sm font-black text-space-text uppercase tracking-wide flex items-center gap-2">
+                            <Info size={14} className="text-space-primary" />Información General
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Input label="Nombre del Negocio" name="name" value={formData.name} onChange={handleChange} required placeholder="Ej: Barbería El Jefe" />
-                            <Input label="URL de Reserva (Slug)" name="slug" value={formData.slug} onChange={handleChange} required placeholder="ej-barberia" />
+                            <Input label="URL de Reserva (slug)" name="slug" value={formData.slug} onChange={handleChange} required placeholder="ej-barberia" />
                         </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                             <Input label="Teléfono de contacto" name="phone" value={formData.phone} onChange={handleChange} placeholder="(809) 555-5555" />
-                             <Input label="Instagram (URL)" name="instagram_url" value={formData.instagram_url} onChange={handleChange} placeholder="https://instagram.com/tu_barberia" />
-                             <Input label="Sitio Web" name="website_url" value={formData.website_url} onChange={handleChange} placeholder="https://www.tuweb.com" />
-                        </div>
-
-                        <div>
-                            <label className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2 mb-2 block">Descripción</label>
-                            <textarea
-                                name="description"
-                                value={formData.description}
-                                onChange={handleChange}
-                                rows={4}
-                                className="w-full px-6 py-4 bg-space-card2 border-2 border-transparent rounded-[1.5rem] text-sm font-medium text-space-text focus:bg-space-card focus:ring-4 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-space-muted/40 resize-none min-h-[120px]"
-                                placeholder="Cuéntanos un poco sobre tu barbería y lo que la hace especial..."
-                            />
-                        </div>
-                    </div>
-                </section>
-
-                {/* Section 3: Gallery */}
-                <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)] group">
-                    <div className="flex items-center gap-3 mb-10 overflow-hidden">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary group-hover:bg-space-primary group-hover:text-white transition-all duration-500">
-                            <Sparkles size={24} />
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <Input label="Teléfono" name="phone" value={formData.phone} onChange={handleChange} placeholder="(809) 555-5555" />
+                            <Input label="Instagram (URL)" name="instagram_url" value={formData.instagram_url} onChange={handleChange} placeholder="https://instagram.com/..." />
+                            <Input label="Sitio Web" name="website_url" value={formData.website_url} onChange={handleChange} placeholder="https://..." />
                         </div>
                         <div>
-                            <h2 className="text-lg font-black text-space-text uppercase tracking-tight leading-none">Trabajos Reales (Galería)</h2>
-                            <p className="text-[10px] text-space-muted uppercase font-bold tracking-widest mt-1.5 opacity-70">Muestra lo que sabes hacer</p>
+                            <label className="input-label">Descripción</label>
+                            <textarea name="description" value={formData.description} onChange={handleChange} rows={3}
+                                className="input-field resize-none min-h-[90px]"
+                                placeholder="Cuéntanos sobre tu barbería..." />
                         </div>
                     </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                </div>
+            )}
+
+            {/* GALERÍA */}
+            {activeTab === 'gallery' && (
+                <div className="bg-space-card rounded-2xl p-6 border border-space-border animate-fade-in">
+                    <h2 className="text-sm font-black text-space-text uppercase tracking-wide mb-5 flex items-center gap-2">
+                        <Sparkles size={14} className="text-space-primary" />Galería de Trabajos
+                    </h2>
+                    <p className="text-space-muted text-xs mb-5">Sube hasta 8 fotos de tus mejores trabajos. Se muestran en tu perfil público.</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {formData.gallery.map((url, idx) => (
-                            <div key={idx} className="relative group/item aspect-[3/4] rounded-2xl overflow-hidden border-2 border-space-border/20">
-                                <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center">
-                                    <button 
-                                        onClick={() => setFormData(p => ({ ...p, gallery: p.gallery.filter((_, i) => i !== idx) }))}
-                                        className="bg-space-danger/20 text-space-danger p-2 rounded-xl hover:bg-space-danger hover:text-white transition-colors"
-                                    >
-                                        <Info size={16} /> {/* Using Info as a placeholder for trash icon if not imported, but let's assume X is better */}
+                            <div key={idx} className="relative group/item aspect-square rounded-xl overflow-hidden border border-space-border/30">
+                                <img src={url} alt="" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button onClick={() => setFormData(p => ({ ...p, gallery: p.gallery.filter((_, i) => i !== idx) }))}
+                                        className="w-9 h-9 bg-space-danger rounded-xl flex items-center justify-center text-white hover:bg-red-600 transition-colors">
+                                        <ChevronLeft size={14} className="rotate-[-45deg]" />
                                     </button>
                                 </div>
                             </div>
                         ))}
                         {formData.gallery.length < 8 && (
-                            <ImageUploadWithCrop 
-                                label="Añadir Foto"
-                                value=""
+                            <ImageUploadWithCrop label="Añadir" value=""
                                 onUploadComplete={(url) => setFormData(p => ({ ...p, gallery: [...p.gallery, url] }))}
-                                aspect={3 / 4}
-                            />
+                                aspect={1} />
                         )}
                     </div>
-                </section>
+                </div>
+            )}
 
-                {/* Section 4: Location */}
-                <section className="bg-space-card rounded-[2.5rem] p-6 sm:p-10 border border-space-border shadow-[0_20px_60px_rgba(0,0,0,0.035)]">
-                    <div className="flex items-center gap-3 mb-10">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-space-card2 flex items-center justify-center text-space-primary">
-                            <MapPin size={24} />
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-black text-space-text uppercase tracking-tight leading-none">Ubicación & GPS</h2>
-                            <p className="text-[10px] text-space-muted uppercase font-bold tracking-widest mt-1.5 opacity-70">Ayuda a tus clientes a llegarte</p>
-                        </div>
+            {/* UBICACIÓN */}
+            {activeTab === 'location' && (
+                <div className="bg-space-card rounded-2xl p-6 border border-space-border animate-fade-in space-y-5">
+                    <h2 className="text-sm font-black text-space-text uppercase tracking-wide flex items-center gap-2">
+                        <MapPin size={14} className="text-space-primary" />Ubicación & GPS
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Input label="Dirección Física" name="address" value={formData.address} onChange={handleChange} placeholder="Calle Principal #123" />
+                        <Input label="Ciudad" name="city" value={formData.city} onChange={handleChange} placeholder="Santo Domingo" />
                     </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input label="Latitud" name="latitude" type="number" step="any" value={formData.latitude} onChange={handleChange} placeholder="18.4861" />
+                        <Input label="Longitud" name="longitude" type="number" step="any" value={formData.longitude} onChange={handleChange} placeholder="-69.9312" />
+                    </div>
+                    <button onClick={handleDetectLocation}
+                        className="w-full h-12 bg-space-card2 border border-space-primary/30 text-space-primary hover:bg-space-primary hover:text-space-card transition-all rounded-xl font-extrabold uppercase tracking-widest text-[10px] flex items-center justify-center gap-2">
+                        <MapPin size={14} /> Detectar mi ubicación (GPS)
+                    </button>
+                    <p className="text-[10px] text-space-muted text-center">Las coordenadas GPS activan el filtro "Cerca de mí" en el directorio público.</p>
+                </div>
+            )}
 
-                    <div className="space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Input label="Dirección Física" name="address" value={formData.address} onChange={handleChange} placeholder="Calle Principal #123" />
-                            <Input label="Ciudad" name="city" value={formData.city} onChange={handleChange} placeholder="Santo Domingo" />
-                        </div>
-
-                        <div className="p-8 bg-space-card2/50 rounded-[2rem] border border-space-border flex flex-col items-center">
-                            <div className="w-full flex flex-col md:flex-row gap-8 items-center mb-6">
-                                <div className="md:w-1/3">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Map size={18} className="text-space-primary" />
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-space-text">GPS Coordenadas</h3>
-                                    </div>
-                                    <p className="text-[10px] text-space-muted leading-relaxed font-bold">
-                                        Esencial para el filtro de "Cerca de mí" y el mapa interactivo. 
-                                    </p>
-                                </div>
-                                
-                                <div className="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                                    <Input label="Latitud" name="latitude" type="number" step="any" value={formData.latitude} onChange={handleChange} placeholder="18.4861" />
-                                    <Input label="Longitud" name="longitude" type="number" step="any" value={formData.longitude} onChange={handleChange} placeholder="-69.9312" />
-                                </div>
+            {/* BOT IA */}
+            {activeTab === 'bot' && (
+                <div className="animate-fade-in">
+                    <div className="rounded-2xl p-8 relative overflow-hidden text-center" style={{ background: '#1a2e28' }}>
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-space-primary/10 rounded-full blur-3xl -mr-20 -mt-20" />
+                        <div className="relative z-10">
+                            <div className="w-14 h-14 rounded-2xl bg-space-primary/20 border border-space-primary/30 flex items-center justify-center mx-auto mb-4">
+                                <Zap size={24} className="text-space-primary-light animate-pulse" />
                             </div>
-                            
-                            <button
-                                onClick={handleDetectLocation}
-                                className="w-full py-4 bg-space-card2 border-2 border-space-primary/30 text-space-primary hover:bg-space-primary hover:text-white transition-all rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-sm"
-                            >
-                                <MapPin size={16} />
-                                Detectar mi ubicación actual (GPS)
+                            <span className="text-[9px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full border border-space-primary/25 text-space-primary mb-3 inline-block" style={{ background: 'rgba(var(--space-primary), 0.1)' }}>Panel dedicado</span>
+                            <h2 className="text-xl font-black uppercase tracking-tight mt-3 mb-2" style={{ color: '#e8f4e0' }}>Asistente de IA WhatsApp</h2>
+                            <p className="text-xs font-semibold leading-relaxed mb-6 max-w-sm mx-auto" style={{ color: 'rgba(232,244,224,0.5)' }}>
+                                Configura el bot, prueba respuestas en vivo, activa/desactiva el asistente y revisa el historial de conversaciones.
+                            </p>
+                            <button onClick={() => navigate('/dashboard/ai-assistant')}
+                                className="btn-primary px-8 py-3 shadow-xl shadow-space-primary/20">
+                                🤖 Ir al Panel de IA <ChevronLeft size={15} className="rotate-180" />
                             </button>
                         </div>
                     </div>
-                </section>
-
-                {/* Section 5: WhatsApp & Automation Redirect */}
-                <section className="bg-space-text rounded-[2.5rem] p-6 sm:p-10 border border-white/5 shadow-2xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-space-primary/10 rounded-full blur-[80px] -mr-32 -mt-32 group-hover:bg-space-primary/20 transition-all duration-700" />
-                    
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="space-y-4 max-w-xl">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-space-primary/15 text-space-primary border border-space-primary/20 flex items-center justify-center">
-                                    <Sparkles size={24} className="animate-pulse" />
-                                </div>
-                                <div>
-                                    <span className="bg-space-primary/10 text-space-primary text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border border-space-primary/25">¡Se mudó a su propia sección!</span>
-                                    <h2 className="text-lg font-black text-white uppercase tracking-tight mt-2">Copiloto de Inteligencia Artificial</h2>
-                                </div>
-                            </div>
-                            <p className="text-white/60 text-xs font-semibold leading-relaxed uppercase tracking-wider">
-                                Hemos creado un panel interactivo exclusivo dedicado 100% a tu Asistente de IA en WhatsApp. Desde allí podrás vincular tu celular con QR real, chatear con el simulador de pruebas en vivo, medir tus estadísticas de conversión y auditar el historial de chats en tiempo real.
-                            </p>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => navigate('/dashboard/ai-assistant')}
-                            className="px-8 py-4 bg-space-primary hover:bg-space-primary-dark text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-space-primary/20 flex items-center gap-2 shrink-0 border border-white/5 active:scale-95 duration-150"
-                        >
-                            <span>🤖</span> Ir al Panel de IA <ChevronLeft size={16} className="rotate-180" />
-                        </button>
-                    </div>
-                </section>
-            </div>
+                </div>
+            )}
         </div>
         </DashboardLayout>
     );
