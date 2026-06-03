@@ -6,6 +6,7 @@ import { Input } from '@/components/common/Input';
 import { ImageUploadWithCrop } from '@/components/common/ImageUploadWithCrop';
 import { useToast } from '@/contexts/ToastContext';
 import { useBusiness } from '@/contexts/BusinessContext';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Store, Check, Info, Save, MapPin, Sparkles, Map, Loader2, ChevronLeft, Eye, Gift, Zap, Crown, MessageSquare, Send } from 'lucide-react';
 
 export default function BusinessSettingsPage() {
@@ -311,13 +312,16 @@ export default function BusinessSettingsPage() {
     };
 
     if (!currentBusiness) return (
-        <div className="flex justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-space-primary" />
-        </div>
+        <DashboardLayout>
+            <div className="flex justify-center py-20">
+                <Loader2 className="w-8 h-8 animate-spin text-space-primary" />
+            </div>
+        </DashboardLayout>
     );
 
     return (
-        <div className="max-w-4xl mx-auto animate-fade-up px-4 sm:px-6 lg:px-8 pb-20">
+        <DashboardLayout>
+        <div className="max-w-4xl mx-auto animate-fade-up pb-20">
             {/* Action Bar */}
             <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-4 z-40">
                 <button
@@ -549,5 +553,6 @@ export default function BusinessSettingsPage() {
                 </section>
             </div>
         </div>
+        </DashboardLayout>
     );
 }

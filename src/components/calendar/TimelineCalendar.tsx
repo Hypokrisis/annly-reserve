@@ -141,7 +141,7 @@ export function TimelineCalendar({
         {/* X-Axis & Scrollable Grid */}
         <div 
           ref={scrollContainerRef}
-          className="flex-1 overflow-x-auto overflow-y-auto relative bg-[#fdfdfc] scroll-smooth"
+          className="flex-1 overflow-x-auto overflow-y-auto relative bg-space-bg scroll-smooth"
         >
           <div style={{ width: `${hoursCount * hourWidth}px` }} className="min-h-full flex flex-col">
             {/* Hours Header */}
@@ -172,7 +172,7 @@ export function TimelineCalendar({
                 const barberApts = appointments.filter(a => a.barber_id === barber.id);
                 
                 return (
-                  <div key={`row-${barber.id}`} className="h-20 sm:h-24 border-b border-space-border/30 relative hover:bg-space-card2/20 transition-colors">
+                  <div key={`row-${barber.id}`} className="h-20 sm:h-24 border-b border-space-border/50 relative hover:bg-space-card2/20 transition-colors">
                     {barberApts.map(apt => {
                       const { style, classes } = getAppointmentStyle(apt);
                       

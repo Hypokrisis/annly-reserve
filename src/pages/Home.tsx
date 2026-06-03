@@ -109,7 +109,7 @@ const STEPS = [
 
 function Home() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, currentBusiness } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [allBusinesses, setAllBusinesses] = useState<BusinessResult[]>([]);
   const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
@@ -147,6 +147,12 @@ function Home() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  useEffect(() => {
+    if (user && currentBusiness) {
+      navigate('/dashboard');
+    }
+  }, [user, currentBusiness]);
 
   useEffect(() => {
     if (user) { loadData(); loadFavorites(); }
@@ -266,9 +272,9 @@ function Home() {
   };
 
   const energyFilters = [
-    { id: 'saving', label: 'Modo Ahorro', emoji: '🪫', color: 'bg-white', text: 'text-space-text', border: 'border-space-border', description: 'Rápido + Barato' },
-    { id: 'premium', label: 'Modo Premium', emoji: '⚡', color: 'bg-space-text', text: 'text-white', border: 'border-space-text', description: 'Calidad + Top' },
-    { id: 'flash', label: 'Modo Flash', emoji: '🚀', color: 'bg-space-primary', text: 'text-white', border: 'border-space-primary', description: 'Disponible YA' },
+    { id: 'saving', label: 'Modo Ahorro', emoji: '🪫', color: 'bg-space-card', text: 'text-space-text', border: 'border-space-border', description: 'Rápido + Barato' },
+    { id: 'premium', label: 'Modo Premium', emoji: '⚡', color: 'bg-space-text', text: 'text-space-card', border: 'border-space-text', description: 'Calidad + Top' },
+    { id: 'flash', label: 'Modo Flash', emoji: '🚀', color: 'bg-space-primary', text: 'text-space-card', border: 'border-space-primary', description: 'Disponible YA' },
   ];
 
   const filteredBusinesses = activeMood
@@ -328,7 +334,7 @@ function Home() {
   const MoodCard = ({ mood }: { mood: typeof energyFilters[0] }) => (
     <button
       onClick={() => { setActiveMood(activeMood === mood.id ? null : mood.id); if (activeMood !== mood.id) document.getElementById('directory')?.scrollIntoView({ behavior: 'smooth' }); }}
-      className={`relative flex-shrink-0 w-full sm:w-auto flex-1 min-w-[200px] rounded-[2.5rem] overflow-hidden p-7 flex flex-col items-start justify-between transition-all duration-500 hover:scale-[1.03] border-2 ${activeMood === mood.id ? 'border-space-primary shadow-2xl shadow-space-primary/15 bg-gradient-to-br from-space-card2 to-white ring-4 ring-space-primary/10' : 'border-space-border/60 bg-white shadow-sm hover:shadow-xl hover:border-space-primary/20'}`}
+      className={`relative flex-shrink-0 w-full sm:w-auto flex-1 min-w-[200px] rounded-[2.5rem] overflow-hidden p-7 flex flex-col items-start justify-between transition-all duration-500 hover:scale-[1.03] border-2 ${activeMood === mood.id ? 'border-space-primary shadow-2xl shadow-space-primary/15 bg-gradient-to-br from-space-card2 to-space-card ring-4 ring-space-primary/10' : 'border-space-border/60 bg-space-card shadow-sm hover:shadow-xl hover:border-space-primary/20'}`}
     >
       <div className="flex items-center justify-between w-full mb-5">
         <span className="text-4xl">{mood.emoji}</span>

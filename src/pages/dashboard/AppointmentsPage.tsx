@@ -391,7 +391,7 @@ export default function AppointmentsPage() {
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="bg-space-bg p-4 rounded-xl border border-space-border">
                                     <p className="text-[10px] font-bold uppercase text-space-muted tracking-widest mb-1">Servicio</p>
                                     <p className="font-bold text-space-text">{getServicesName(selectedAppointment.service_id!)}</p>
@@ -429,13 +429,13 @@ export default function AppointmentsPage() {
                                         <Bell size={15} /> Enviar Recordatorio Manual
                                     </button>
 
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <button onClick={() => handleMarkCompleted(selectedAppointment.id)}
-                                            className="w-full py-2.5 rounded-xl text-sm font-semibold bg-green-50 text-space-success hover:bg-space-success hover:text-white border border-green-200 transition flex items-center justify-center gap-2">
+                                            className="w-full py-2.5 rounded-xl text-sm font-semibold bg-green-50 text-space-success hover:bg-space-success hover:text-white border border-green-200 transition flex items-center justify-center gap-2 min-h-[44px]">
                                             <Check size={15} />Completar
                                         </button>
                                         <button onClick={() => handleCancel(selectedAppointment.id)}
-                                            className="w-full py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-space-danger hover:bg-space-danger hover:text-white border border-red-200 transition flex items-center justify-center gap-2">
+                                            className="w-full py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-space-danger hover:bg-space-danger hover:text-white border border-red-200 transition flex items-center justify-center gap-2 min-h-[44px]">
                                             <X size={15} />Cancelar
                                         </button>
                                     </div>
