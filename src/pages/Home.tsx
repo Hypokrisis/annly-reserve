@@ -64,7 +64,7 @@ const STEPS = [
 
 function Home() {
   const navigate = useNavigate();
-  const { user, logout, currentBusiness } = useAuth();
+  const { user, logout, currentBusiness, role, barberProfile } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   // Directory state
@@ -279,14 +279,22 @@ function Home() {
                 </button>
                 {isAccountMenuOpen && (
                   <div className="absolute right-0 mt-2.5 w-64 bg-space-card rounded-[2rem] shadow-2xl border border-space-border/30 overflow-hidden py-1 z-50 animate-scale-in">
-                    {/* Header */}
+                    {/* Header with role badge */}
                     <div className="px-5 py-4 border-b border-space-border/30 bg-space-bg flex justify-between items-center">
                       <div>
-                        <p className="text-[9px] text-space-muted font-extrabold uppercase tracking-widest">
-                          {currentBusiness ? 'Mi negocio' : 'Mi cuenta'}
-                        </p>
-                        <p className="text-xs font-bold text-space-text truncate mt-0.5 max-w-[155px]">
-                          {currentBusiness ? currentBusiness.name : user.email}
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[8px] font-extrabold uppercase tracking-widest mb-1 ${
+                          role === 'owner' || role === 'admin' ? 'bg-space-primary/15 text-space-primary' :
+                          role === 'barber' ? 'bg-space-yellow/15 text-space-yellow' :
+                          'bg-space-card2 text-space-muted'
+                        }`}>
+                          {role === 'owner' || role === 'admin' ? 'Owner' :
+                           role === 'barber' ? `Staff · ${barberProfile?.businessName || currentBusiness?.name || ''}` :
+                           'Cliente'}
+                        </span>
+                        <p className="text-xs font-bold text-space-text truncate max-w-[155px]">
+                          {role === 'owner' || role === 'admin' ? currentBusiness?.name :
+                           role === 'barber' ? (barberProfile?.name || user.email) :
+                           user.email}
                         </p>
                       </div>
                       <button onClick={() => setIsAccountMenuOpen(false)} className="p-1 text-space-muted hover:text-space-text">
@@ -294,30 +302,39 @@ function Home() {
                       </button>
                     </div>
                     <div className="p-2 space-y-0.5">
-                      {currentBusiness ? (
-                        /* Owner options */
-                        <>
-                          <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                            <LayoutDashboard size={15} className="text-space-primary" />Dashboard
-                          </Link>
-                          <Link to={`/book/${currentBusiness.slug}`} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                            <Scissors size={15} className="text-space-muted" />Ver mi página pública
-                          </Link>
-                          <Link to="/dashboard/settings" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                            <Info size={15} className="text-space-muted" />Configuración
-                          </Link>
-                        </>
-                      ) : (
-                        /* Client options */
-                        <>
-                          <a href="#mis-citas" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                            <Calendar size={15} className="text-space-primary" />Mis citas
-                          </a>
-                          <Link to="/signup" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-primary hover:bg-space-primary/5 rounded-xl transition-all border border-space-primary/20 mx-1 my-1" onClick={() => setIsAccountMenuOpen(false)}>
-                            <LayoutDashboard size={15} />Registrar mi barbería
-                          </Link>
-                        </>
-                      )}
+                      {/* OWNER menu */}
+                      {(role === 'owner' || role === 'admin') && <>
+                        <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <LayoutDashboard size={15} className="text-space-primary" />Dashboard
+                        </Link>
+                        {currentBusiness && <Link to={`/book/${currentBusiness.slug}`} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Scissors size={15} className="text-space-muted" />Ver mi página pública
+                        </Link>}
+                        <Link to="/dashboard/settings" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Info size={15} className="text-space-muted" />Configuración
+                        </Link>
+                      </>}
+                      {/* STAFF menu */}
+                      {role === 'barber' && <>
+                        <Link to="/staff" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Calendar size={15} className="text-space-primary" />Mis citas de hoy
+                        </Link>
+                        <Link to="/staff" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Clock size={15} className="text-space-muted" />Mi horario
+                        </Link>
+                      </>}
+                      {/* CLIENT menu */}
+                      {!currentBusiness && role !== 'barber' && <>
+                        <a href="#mis-citas" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Calendar size={15} className="text-space-primary" />Mis citas
+                        </a>
+                        <a href="#explore" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Heart size={15} className="text-space-muted" />Mis favoritos
+                        </a>
+                        <Link to="/create-business" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-primary hover:bg-space-primary/5 rounded-xl transition-all border border-space-primary/20 mx-1 my-1" onClick={() => setIsAccountMenuOpen(false)}>
+                          <LayoutDashboard size={15} />Crear mi negocio →
+                        </Link>
+                      </>}
                       <div className="border-t border-space-border/30 mt-1 pt-1">
                         <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-danger hover:bg-space-danger/5 rounded-xl transition-all">
                           <LogOut size={15} />Cerrar Sesión
@@ -332,7 +349,7 @@ function Home() {
                 <Link to="/login" className="text-[10px] font-extrabold text-space-text hover:text-space-primary px-3.5 py-2 rounded-full border border-space-border hover:border-space-primary uppercase tracking-widest transition-all">
                   Entrar
                 </Link>
-                <Link to="/signup" className="hidden sm:inline-flex btn-primary py-2 px-4 text-[10px] uppercase tracking-widest shadow-lg shadow-space-primary/20">
+                <Link to="/register" className="hidden sm:inline-flex btn-primary py-2 px-4 text-[10px] uppercase tracking-widest shadow-lg shadow-space-primary/20">
                   Registrar barbería
                 </Link>
               </div>
@@ -381,7 +398,7 @@ function Home() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 mb-8 animate-fade-up" style={{ animationDelay: '180ms' }}>
             {/* CTA principal: para negocios si no hay sesión, explorar si hay sesión de cliente */}
             {!user || !currentBusiness ? (
-              <Link to="/signup" className="btn-primary text-sm px-8 py-4 shadow-2xl shadow-space-primary/30">
+              <Link to="/register" className="btn-primary text-sm px-8 py-4 shadow-2xl shadow-space-primary/30">
                 Registra tu barbería <ArrowRight size={16} />
               </Link>
             ) : null}
@@ -575,7 +592,7 @@ function Home() {
                     </li>
                   ))}
                 </ul>
-                <Link to="/signup" className="inline-flex items-center gap-2 btn-primary shadow-xl shadow-space-primary/30">
+                <Link to="/register" className="inline-flex items-center gap-2 btn-primary shadow-xl shadow-space-primary/30">
                   Registrar mi barbería gratis <ArrowRight size={14} />
                 </Link>
               </div>
@@ -636,7 +653,7 @@ function Home() {
                       </li>
                     ))}
                   </ul>
-                  <Link to="/signup" className="inline-flex items-center gap-2 btn-primary shadow-xl shadow-space-primary/30">
+                  <Link to="/register" className="inline-flex items-center gap-2 btn-primary shadow-xl shadow-space-primary/30">
                     Crear cuenta gratis <ArrowRight size={14} />
                   </Link>
                 </div>
@@ -732,7 +749,7 @@ function Home() {
                         </li>
                       ))}
                     </ul>
-                    <Link to="/signup"
+                    <Link to="/register"
                       className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-widest transition-all ${tier.recommended ? '' : 'border border-space-border text-space-text hover:border-space-primary hover:bg-space-bg'}`}
                       style={tier.recommended ? { background: 'linear-gradient(to right, rgb(var(--space-primary-light)), rgb(var(--space-primary)))', color: '#1a2e28' } : {}}>
                       Empezar <ArrowRight size={14} />
@@ -754,7 +771,7 @@ function Home() {
               </h2>
               <p className="font-semibold mb-10 text-base" style={{ color: 'rgba(var(--space-card), 0.5)' }}>30 días gratis · Sin tarjeta · Sin compromisos</p>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4">
-                <Link to="/signup" className="btn-primary text-sm px-10 py-4 shadow-2xl shadow-space-primary/30">
+                <Link to="/register" className="btn-primary text-sm px-10 py-4 shadow-2xl shadow-space-primary/30">
                   Registra tu barbería <ArrowRight size={16} />
                 </Link>
                 <a href="#explore" className="inline-flex items-center justify-center px-8 py-4 rounded-xl text-sm font-extrabold uppercase tracking-widest transition-all"
@@ -793,7 +810,7 @@ function Home() {
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-widest mb-3" style={{ color: 'rgba(var(--space-card), 0.25)' }}>Cuenta</p>
               <ul className="space-y-2">
-                {[['Entrar', '/login'], ['Registrarse', '/signup'], ['Dashboard', '/dashboard']].map(([l, h]) => (
+                {[['Entrar', '/login'], ['Registrarse', '/register'], ['Dashboard', '/dashboard']].map(([l, h]) => (
                   <li key={l}><Link to={h} className="text-sm hover:text-space-primary-light transition-colors" style={{ color: 'rgba(var(--space-card), 0.5)' }}>{l}</Link></li>
                 ))}
               </ul>

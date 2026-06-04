@@ -37,7 +37,22 @@ export default function PublicBookingPage() {
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
+    const [confirmedAptId, setConfirmedAptId] = useState<string | null>(null);
     const [, setLoadingProfile] = useState(false);
+
+    // Guest save modal state
+    const [showGuestModal, setShowGuestModal] = useState(false);
+    const [cancelLink, setCancelLink] = useState('');
+    const [guestSaving, setGuestSaving] = useState(false);
+
+    // Panel login modal state
+    const [showPanelModal, setShowPanelModal] = useState(false);
+    const [panelLoginAs, setPanelLoginAs] = useState<'owner' | 'staff'>('owner');
+    const [panelEmail, setPanelEmail] = useState('');
+    const [panelPassword, setPanelPassword] = useState('');
+    const [panelShowPwd, setPanelShowPwd] = useState(false);
+    const [panelError, setPanelError] = useState('');
+    const [panelLoading, setPanelLoading] = useState(false);
 
     // Load availability when service, barber, and date are selected
     const { availableSlots, loading: loadingSlots, error: availabilityError } = useAvailability(
@@ -296,9 +311,11 @@ export default function PublicBookingPage() {
                 appointmentPayload.client_id = session.user.id;
             }
 
-            const { error } = await supabase
+            const { data: aptData, error } = await supabase
                 .from('appointments')
-                .insert([appointmentPayload]);
+                .insert([appointmentPayload])
+                .select('id')
+                .single();
 
             if (error) throw error;
 
@@ -308,7 +325,13 @@ export default function PublicBookingPage() {
                 phone: customerInfo.phone
             }));
 
+            setConfirmedAptId(aptData?.id || null);
             setConfirmed(true);
+
+            // Show guest save modal only for unauthenticated users
+            if (!user) {
+                setShowGuestModal(true);
+            }
         } catch (error: any) {
             console.error('Error creating appointment:', error);
             alert(error.message || 'Error al crear la cita.');
@@ -329,14 +352,28 @@ export default function PublicBookingPage() {
         </div>
     );
 
-    // Panel login modal state
-    const [showPanelModal, setShowPanelModal] = useState(false);
-    const [panelLoginAs, setPanelLoginAs] = useState<'owner' | 'staff'>('owner');
-    const [panelEmail, setPanelEmail] = useState('');
-    const [panelPassword, setPanelPassword] = useState('');
-    const [panelShowPwd, setPanelShowPwd] = useState(false);
-    const [panelError, setPanelError] = useState('');
-    const [panelLoading, setPanelLoading] = useState(false);
+    const handleGuestSaveLink = async () => {
+        if (!confirmedAptId) return;
+        setGuestSaving(true);
+        try {
+            const token = Date.now().toString(36) + Math.random().toString(36).substr(2, 10);
+            const { error } = await supabase
+                .from('appointments')
+                .update({ is_guest: true, cancel_token: token })
+                .eq('id', confirmedAptId);
+            if (error) throw error;
+            const link = `${window.location.origin}/cancel/${token}`;
+            setCancelLink(link);
+        } catch {
+            alert('Error generando el link. Intenta de nuevo.');
+        } finally {
+            setGuestSaving(false);
+        }
+    };
+
+    const handleGuestCreateAccount = () => {
+        navigate('/register', { state: { prefill: { name: customerInfo.name, email: customerInfo.email } } });
+    };
 
     const handlePanelLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -383,43 +420,47 @@ export default function PublicBookingPage() {
     if (confirmed) return (
         <div className="min-h-screen flex items-center justify-center bg-space-bg p-4 relative">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-space-success/10 via-space-bg to-space-bg pointer-events-none"></div>
-            <div className="max-w-md w-full glass-effect rounded-[2.5rem] shadow-2xl p-10 text-center border border-space-border relative z-10 animate-fade-in">
-                <div className="w-24 h-24 bg-gradient-to-br from-space-success to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl shadow-space-success/20">
-                    <Check size={48} className="text-white" />
+            <div className="max-w-md w-full glass-effect rounded-[2.5rem] shadow-2xl p-8 text-center border border-space-border relative z-10 animate-fade-in">
+                <div className="w-20 h-20 bg-gradient-to-br from-space-success to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-space-success/20">
+                    <Check size={40} className="text-white" />
                 </div>
-                <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-space-primary to-space-text mb-4 tracking-tight">¡LISTO!</h1>
-                <p className="text-space-muted mb-8 font-medium">
-                    Tu cita ha sido reservada con éxito.
+                <h1 className="text-3xl font-black text-space-text mb-2 tracking-tight">¡Cita confirmada!</h1>
+                <p className="text-space-muted mb-6 font-medium text-sm">
+                    {selectedService?.name} · {selectedSlot && formatTimeDisplay(selectedSlot.time)} · {selectedDate && formatDate(parseDate(selectedDate))}
                 </p>
 
-                <div className="card p-6 mb-8 text-left space-y-4">
-                    <div className="flex items-center gap-4 text-sm">
-                        <div className="w-8 h-8 rounded-full bg-space-bg flex items-center justify-center border border-space-border text-space-primary">
-                            <Scissors size={14} />
+                {/* Guest save modal — only for unauthenticated users */}
+                {showGuestModal && !cancelLink && (
+                    <div className="bg-space-bg rounded-2xl p-6 mb-6 border border-space-border text-left">
+                        <h3 className="font-extrabold text-space-text text-sm mb-1">¿Quieres guardar tu cita?</h3>
+                        <p className="text-space-muted text-xs mb-4">Crea una cuenta gratis para ver tu historial y cancelar desde la web.</p>
+                        <div className="flex flex-col gap-2">
+                            <button onClick={handleGuestCreateAccount} className="btn-primary text-xs py-3 w-full">
+                                Crear cuenta gratis
+                            </button>
+                            <button onClick={handleGuestSaveLink} disabled={guestSaving}
+                                className="btn-secondary text-xs py-3 w-full disabled:opacity-50">
+                                {guestSaving ? 'Generando...' : 'No gracias, solo dame el link'}
+                            </button>
                         </div>
-                        <span className="font-bold text-space-text">{selectedService?.name}</span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm">
-                        <div className="w-8 h-8 rounded-full bg-space-bg flex items-center justify-center border border-space-border text-space-primary">
-                            <UserIcon size={14} />
-                        </div>
-                        <span className="font-bold text-space-text">{selectedSlot?.barber_name}</span>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm">
-                        <div className="w-8 h-8 rounded-full bg-space-bg flex items-center justify-center border border-space-border text-space-primary">
-                            <CalendarIcon size={14} />
-                        </div>
-                        <span className="font-bold text-space-text">{selectedDate && formatDate(parseDate(selectedDate))}</span>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm">
-                        <div className="w-8 h-8 rounded-full bg-space-bg flex items-center justify-center border border-space-border text-space-primary">
-                            <Clock size={14} />
-                        </div>
-                        <span className="font-bold text-space-text">{selectedSlot && formatTimeDisplay(selectedSlot.time)}</span>
-                    </div>
-                </div>
+                )}
 
-                <Link to="/" className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-white border-2 border-space-primary text-space-primary font-black rounded-full hover:bg-space-primary hover:text-white transition-all shadow-md uppercase tracking-widest text-sm w-full">
+                {/* Cancel link for guests who chose "no gracias" */}
+                {cancelLink && (
+                    <div className="bg-space-bg rounded-2xl p-5 mb-6 border border-space-border text-left">
+                        <p className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted mb-2">Guarda este link para cancelar:</p>
+                        <div className="flex items-center gap-2 bg-space-card2/50 rounded-xl p-3 border border-space-border/40">
+                            <span className="text-xs font-mono text-space-text break-all flex-1">{cancelLink}</span>
+                            <button onClick={() => navigator.clipboard.writeText(cancelLink)}
+                                className="text-space-primary hover:opacity-70 flex-shrink-0 text-[10px] font-bold uppercase tracking-wider">
+                                Copiar
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <Link to="/" className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-space-card border border-space-border text-space-text font-black rounded-2xl hover:border-space-primary hover:text-space-primary transition-all text-sm w-full">
                     Volver al Inicio
                 </Link>
             </div>

@@ -1,24 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { isValidEmail } from '@/utils';
 import { Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react';
 
-const LS_LAST_EMAIL = 'spacey_last_email';
-
-export default function LoginPage() {
+export default function RegisterPage() {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const location = useLocation();
+    const { signup } = useAuth();
 
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    // Pre-fill data if coming from guest booking flow
+    const prefill = (location.state as any)?.prefill || {};
+
+    const [formData, setFormData] = useState({
+        full_name: prefill.name || '',
+        email: prefill.email || '',
+        password: '',
+    });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPwd, setShowPwd] = useState(false);
-
-    useEffect(() => {
-        const saved = localStorage.getItem(LS_LAST_EMAIL);
-        if (saved) setFormData(p => ({ ...p, email: saved }));
-    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -27,15 +28,21 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.email || !formData.password) { setError('Completa todos los campos.'); return; }
-        if (!isValidEmail(formData.email)) { setError('Email inválido.'); return; }
+        if (!formData.full_name.trim()) { setError('El nombre es requerido.'); return; }
+        if (!formData.email || !isValidEmail(formData.email)) { setError('Email inválido.'); return; }
+        if (formData.password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); return; }
+
         setLoading(true);
         try {
-            await login(formData.email, formData.password);
-            localStorage.setItem(LS_LAST_EMAIL, formData.email);
-            navigate('/auth-redirect', { replace: true });
+            await signup({ email: formData.email, password: formData.password, full_name: formData.full_name });
+            navigate('/', { replace: true });
         } catch (err: any) {
-            setError(err.message || 'Credenciales incorrectas.');
+            // Block staff self-registration
+            if (err.message?.includes('already registered')) {
+                setError('Este email ya tiene una cuenta. Inicia sesión.');
+            } else {
+                setError(err.message || 'No se pudo crear la cuenta.');
+            }
         } finally {
             setLoading(false);
         }
@@ -66,27 +73,29 @@ export default function LoginPage() {
 
                 <div className="bg-space-card rounded-2xl p-7 shadow-xl border border-space-border">
                     <div className="mb-6">
-                        <h1 className="text-xl font-extrabold tracking-tight text-space-text mb-1">Bienvenido de vuelta</h1>
-                        <p className="text-sm font-medium text-space-muted">El sistema detecta tu rol automáticamente.</p>
+                        <h1 className="text-xl font-extrabold tracking-tight text-space-text mb-1">Crea tu cuenta</h1>
+                        <p className="text-sm font-medium text-space-muted">
+                            {prefill.name ? 'Guarda tus citas y lleva tu historial.' : 'Reserva barberías y lleva tu historial.'}
+                        </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="input-label">Email</label>
-                            <input name="email" type="email" value={formData.email} onChange={handleChange}
-                                className="input-field" placeholder="tu@email.com" autoComplete="email" autoFocus />
+                            <label className="input-label">Nombre completo</label>
+                            <input name="full_name" type="text" value={formData.full_name} onChange={handleChange}
+                                className="input-field" placeholder="Juan Pérez" autoComplete="name" autoFocus={!prefill.name} />
                         </div>
                         <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                                <label className="input-label mb-0">Contraseña</label>
-                                <Link to="/forgot-password" className="text-[11px] font-semibold text-space-primary hover:opacity-80 transition-opacity">
-                                    ¿Olvidaste tu contraseña?
-                                </Link>
-                            </div>
+                            <label className="input-label">Email</label>
+                            <input name="email" type="email" value={formData.email} onChange={handleChange}
+                                className="input-field" placeholder="tu@email.com" autoComplete="email" />
+                        </div>
+                        <div>
+                            <label className="input-label">Contraseña</label>
                             <div className="relative">
                                 <input name="password" type={showPwd ? 'text' : 'password'} value={formData.password}
-                                    onChange={handleChange} className="input-field pr-11" placeholder="••••••••"
-                                    autoComplete="current-password" />
+                                    onChange={handleChange} className="input-field pr-11" placeholder="Mínimo 6 caracteres"
+                                    autoComplete="new-password" />
                                 <button type="button" onClick={() => setShowPwd(!showPwd)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-space-muted hover:opacity-70 transition-opacity">
                                     {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -104,25 +113,30 @@ export default function LoginPage() {
                             {loading ? (
                                 <span className="flex items-center gap-2">
                                     <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                                    Entrando...
+                                    Creando cuenta...
                                 </span>
                             ) : (
                                 <span className="flex items-center gap-2">
-                                    Iniciar sesión <ArrowRight size={15} />
+                                    Crear cuenta gratis <ArrowRight size={15} />
                                 </span>
                             )}
                         </button>
                     </form>
 
                     <p className="mt-5 text-center text-sm font-medium text-space-muted">
-                        ¿No tienes cuenta?{' '}
-                        <Link to="/register" className="font-bold text-space-primary hover:opacity-80 transition-opacity">
-                            Crear cuenta gratis
+                        ¿Ya tienes cuenta?{' '}
+                        <Link to="/login" className="font-bold text-space-primary hover:opacity-80 transition-opacity">
+                            Iniciar sesión
                         </Link>
                     </p>
                 </div>
 
-                <p className="mt-5 text-center text-xs text-space-muted/40">
+                <p className="mt-5 text-center text-[11px] text-space-muted/50">
+                    ¿Eres del equipo de una barbería?{' '}
+                    <span className="font-bold">Necesitas una invitación del dueño.</span>
+                </p>
+
+                <p className="mt-3 text-center text-xs text-space-muted/40">
                     © {new Date().getFullYear()} Spacey · Puerto Rico
                 </p>
             </div>

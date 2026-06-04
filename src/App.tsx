@@ -19,10 +19,13 @@ import HowItWorksPage from './pages/HowItWorksPage';
 
 // Auth pages
 import LoginPage from './pages/auth/LoginPage';
-import SignupPage from './pages/auth/SignupPage';
+import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import AuthCallbackPage from './pages/auth/AuthCallbackPage';
 import AuthRedirectPage from './pages/auth/AuthRedirectPage';
+
+// Public pages
+import CancelPage from './pages/public/CancelPage';
 
 // Owner / Admin dashboard
 import DashboardHome from './pages/dashboard/DashboardHome';
@@ -62,11 +65,11 @@ export default function App() {
 
                                     {/* ── AUTH ───────────────────────────────────── */}
                                     <Route path="/login" element={<LoginPage />} />
-                                    <Route path="/signup" element={<SignupPage />} />
+                                    <Route path="/register" element={<RegisterPage />} />
                                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                                     <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                                    {/* Role-based redirect after login */}
                                     <Route path="/auth-redirect" element={<AuthRedirectPage />} />
+                                    <Route path="/cancel/:token" element={<CancelPage />} />
 
                                     {/* ── OWNER / ADMIN (/dashboard) ─────────────── */}
                                     <Route path="/dashboard" element={<OwnerRoute><DashboardHome /></OwnerRoute>} />

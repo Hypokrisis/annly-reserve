@@ -3,11 +3,18 @@ import type { User, UserBusiness, UserRole, Business } from '@/types';
 import * as authService from '@/services/auth.service';
 import { supabase } from '../supabaseClient';
 
+interface BarberProfile {
+    id: string;
+    name: string;
+    businessName: string;
+}
+
 interface AuthContextType {
     user: User | null;
     businesses: UserBusiness[];
     currentBusiness: Business | null;
     role: UserRole | null;
+    barberProfile: BarberProfile | null;
     loading: boolean;
     loadingMessage: string | null;
     isEmailConfirmed: boolean;
@@ -18,12 +25,10 @@ interface AuthContextType {
         password: string;
         full_name?: string;
         phone?: string;
-        role?: 'client' | 'owner';
     }) => Promise<void>;
     logout: () => Promise<void>;
     switchBusiness: (businessId: string) => Promise<void>;
     createBusiness: (name: string, slug: string) => Promise<void>;
-    updateUserRole: (newRole: 'client' | 'owner') => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [businesses, setBusinesses] = useState<UserBusiness[]>([]);
     const [currentBusiness, setCurrentBusiness] = useState<Business | null>(null);
     const [role, setRole] = useState<UserRole | null>(null);
+    const [barberProfile, setBarberProfile] = useState<BarberProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
@@ -118,6 +124,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 localStorage.setItem(LS_BUSINESS, activeMembership.business_id);
                 setCurrentBusiness(activeMembership.business);
                 setRole(activeMembership.role);
+
+                // Fetch barber record for staff
+                if (activeMembership.role === 'barber') {
+                    const { data: barber } = await supabase
+                        .from('barbers')
+                        .select('id, name')
+                        .eq('user_id', uid)
+                        .eq('business_id', activeMembership.business_id)
+                        .maybeSingle();
+                    if (barber) {
+                        setBarberProfile({
+                            id: barber.id,
+                            name: barber.name,
+                            businessName: activeMembership.business?.name || '',
+                        });
+                    }
+                } else {
+                    setBarberProfile(null);
+                }
             }
 
         } catch (e) {
@@ -125,6 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(null);
             setBusinesses([]);
             setCurrentBusiness(null);
+            setBarberProfile(null);
         } finally {
             setLoading(false);
             setLoadingMessage(null);
@@ -135,12 +161,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         bootstrap();
         const { data: sub } = supabase.auth.onAuthStateChange((event) => {
             if (event === 'SIGNED_OUT') {
-                // Clear all state immediately, don't re-bootstrap
                 hardResetClientState();
                 setUser(null);
                 setBusinesses([]);
                 setCurrentBusiness(null);
                 setRole(null);
+                setBarberProfile(null);
                 setLoading(false);
             } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 bootstrap();
@@ -168,7 +194,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password: string;
         full_name?: string;
         phone?: string;
-        role?: 'client' | 'owner';
     }) => {
         setLoading(true);
         try {
@@ -193,7 +218,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setRole(null);
             console.warn('Logout warning:', error);
         } finally {
-            window.location.href = '/login';
+            window.location.href = '/';
         }
     };
 
@@ -262,6 +287,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         businesses,
         currentBusiness,
         role,
+        barberProfile,
         loading,
         loadingMessage,
         isEmailConfirmed,
@@ -270,7 +296,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         switchBusiness,
         createBusiness,
-        updateUserRole
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
