@@ -4,7 +4,7 @@ import {
   MapPin, Star, Scissors, Calendar, Clock, Heart, XCircle, LogOut,
   LayoutDashboard, ArrowRight, Info, Instagram, Globe, X, Search,
   Moon, Sun, Bell, Users, BarChart3, Zap, Shield, RefreshCw,
-  CheckCircle2, MessageCircle, Bot, ChevronDown, SlidersHorizontal,
+  CheckCircle2, MessageCircle, Bot, ChevronDown,
   ChevronRight
 } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
@@ -22,13 +22,35 @@ interface BusinessResult {
   description?: string;
   address?: string;
   city?: string;
+  zip_code?: string;
+  business_type?: string;
+  is_verified?: boolean;
+  avg_rating?: number;
+  total_reviews?: number;
+  created_at?: string;
   banner_url?: string;
   logo_url?: string;
   latitude?: number;
   longitude?: number;
   instagram_url?: string;
   website_url?: string;
+  services?: { name: string }[];
 }
+
+const BUSINESS_TYPES = [
+  { id: '', label: 'Todos', emoji: '✨' },
+  { id: 'barberia', label: 'Barberías', emoji: '💈' },
+  { id: 'salon', label: 'Salones', emoji: '✂️' },
+  { id: 'nails', label: 'Nail Salons', emoji: '💅' },
+  { id: 'barba', label: 'Barba', emoji: '🧔' },
+];
+
+const TYPE_META: Record<string, { label: string; emoji: string }> = {
+  barberia: { label: 'Barbería', emoji: '💈' },
+  salon: { label: 'Salón', emoji: '✂️' },
+  nails: { label: 'Nail Salon', emoji: '💅' },
+  barba: { label: 'Barbería', emoji: '🧔' },
+};
 
 const PRICING = [
   {
@@ -70,9 +92,15 @@ function Home() {
   // Directory state
   const [allBusinesses, setAllBusinesses] = useState<BusinessResult[]>([]);
   const [loadingBiz, setLoadingBiz] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');           // "¿Qué buscas?" — nombre o servicio
+  const [locationQuery, setLocationQuery] = useState('');       // Ciudad o ZIP
+  const [selectedType, setSelectedType] = useState('');         // business_type filter
   const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
+  const [detectingLocation, setDetectingLocation] = useState(false);
+
+  // Debounced values (300ms)
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [debouncedLocation, setDebouncedLocation] = useState('');
 
   // Customer state
   const [customerAppointments, setCustomerAppointments] = useState<Appointment[]>([]);
@@ -110,12 +138,46 @@ function Home() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Debounce search (300ms)
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedLocation(locationQuery), 300);
+    return () => clearTimeout(t);
+  }, [locationQuery]);
+
+  // Detect user location → reverse geocode to city (Nominatim, free)
+  const detectMyLocation = () => {
+    if (!navigator.geolocation) return;
+    setDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=12`,
+            { headers: { 'Accept-Language': 'es' } }
+          );
+          const data = await res.json();
+          const city = data.address?.city || data.address?.town || data.address?.village || data.address?.municipality || '';
+          if (city) setLocationQuery(city);
+        } catch { /* silent */ }
+        finally { setDetectingLocation(false); }
+      },
+      () => setDetectingLocation(false),
+      { timeout: 8000 }
+    );
+  };
+
   const loadBusinesses = async () => {
     setLoadingBiz(true);
     try {
       const { data } = await supabase
         .from('businesses')
-        .select('id, name, slug, description, address, city, banner_url, logo_url, latitude, longitude')
+        .select('id, name, slug, description, address, city, zip_code, business_type, is_verified, avg_rating, total_reviews, created_at, banner_url, logo_url, latitude, longitude, services(name)')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(40);
@@ -180,14 +242,29 @@ function Home() {
 
   const handleLogout = async () => { await logout(); setIsAccountMenuOpen(false); };
 
-  // Derived: unique cities + filtered businesses
-  const cities = Array.from(new Set(allBusinesses.map(b => b.city).filter(Boolean))) as string[];
+  // Filtered businesses: name/service search + city/zip location + type
   const filteredBusinesses = allBusinesses.filter(b => {
-    const q = searchQuery.toLowerCase();
-    const matchSearch = !q || b.name.toLowerCase().includes(q) || (b.city || '').toLowerCase().includes(q) || (b.description || '').toLowerCase().includes(q);
-    const matchCity = !selectedCity || b.city === selectedCity;
-    return matchSearch && matchCity;
+    const q = debouncedSearch.toLowerCase().trim();
+    const matchSearch = !q
+      || b.name.toLowerCase().includes(q)
+      || (b.description || '').toLowerCase().includes(q)
+      || (b.services || []).some(s => s.name.toLowerCase().includes(q));
+
+    const loc = debouncedLocation.toLowerCase().trim();
+    const matchLocation = !loc
+      || (b.city || '').toLowerCase().includes(loc)
+      || (b.zip_code || '').toLowerCase().includes(loc);
+
+    const matchType = !selectedType || (b.business_type || 'barberia') === selectedType;
+
+    return matchSearch && matchLocation && matchType;
   });
+
+  const hasActiveFilters = searchQuery || locationQuery || selectedType;
+  const isNew = (createdAt?: string) => {
+    if (!createdAt) return false;
+    return Date.now() - new Date(createdAt).getTime() < 30 * 24 * 60 * 60 * 1000;
+  };
 
   // ─── BUSINESS CARD ────────────────────────────────────────────────────────
   const BusinessCard = ({ business }: { business: BusinessResult }) => {
@@ -464,43 +541,76 @@ function Home() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.3em] text-space-primary mb-1">Directorio</p>
-              <h2 className="text-3xl font-extrabold text-space-text tracking-tight">Explorar Barberías</h2>
+              <h2 className="text-3xl font-extrabold text-space-text tracking-tight">Explorar Negocios</h2>
               {!loadingBiz && (
-                <p className="text-sm text-space-muted mt-1">{filteredBusinesses.length} barbería{filteredBusinesses.length !== 1 ? 's' : ''} activa{filteredBusinesses.length !== 1 ? 's' : ''} en Spacey</p>
+                <p className="text-sm text-space-muted mt-1">{filteredBusinesses.length} negocio{filteredBusinesses.length !== 1 ? 's' : ''} activo{filteredBusinesses.length !== 1 ? 's' : ''} en Spacey</p>
               )}
             </div>
           </div>
 
-          {/* Search + Filter bar */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-8">
-            <div className="relative flex-1">
-              <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-space-muted" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Buscar por nombre o ciudad..."
-                className="w-full pl-10 pr-4 h-12 bg-space-card border border-space-border rounded-2xl text-sm font-medium text-space-text placeholder:text-space-muted/50 outline-none focus:border-space-primary focus:ring-2 focus:ring-space-primary/15 transition-all"
-              />
-            </div>
-            {cities.length > 0 && (
-              <div className="relative">
-                <SlidersHorizontal size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-space-muted pointer-events-none" />
-                <select
-                  value={selectedCity}
-                  onChange={e => setSelectedCity(e.target.value)}
-                  className="h-12 pl-9 pr-8 bg-space-card border border-space-border rounded-2xl text-sm font-medium text-space-text outline-none focus:border-space-primary transition-all appearance-none cursor-pointer min-w-[140px]"
-                >
-                  <option value="">Todas las ciudades</option>
-                  {cities.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+          {/* Two-field search bar */}
+          <div className="bg-space-card border border-space-border rounded-[1.75rem] p-2 mb-4 shadow-sm">
+            <div className="flex flex-col md:flex-row gap-2">
+              {/* ¿Qué buscas? */}
+              <div className="relative flex-1">
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-space-muted" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="¿Qué buscas? Corte, barba, nombre..."
+                  className="w-full pl-11 pr-4 h-12 bg-transparent text-sm font-medium text-space-text placeholder:text-space-muted/50 outline-none"
+                />
               </div>
-            )}
-            {(searchQuery || selectedCity) && (
+
+              {/* Divider */}
+              <div className="hidden md:block w-px bg-space-border my-2" />
+
+              {/* Ciudad o ZIP */}
+              <div className="relative flex-1">
+                <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-space-muted" />
+                <input
+                  type="text"
+                  value={locationQuery}
+                  onChange={e => setLocationQuery(e.target.value)}
+                  placeholder="Ciudad o ZIP"
+                  className="w-full pl-11 pr-24 h-12 bg-transparent text-sm font-medium text-space-text placeholder:text-space-muted/50 outline-none"
+                />
+                <button
+                  onClick={detectMyLocation}
+                  disabled={detectingLocation}
+                  title="Detectar mi ubicación"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 px-3 h-9 rounded-xl bg-space-primary text-space-card text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 hover:bg-space-primary-dark transition-all disabled:opacity-50"
+                >
+                  {detectingLocation
+                    ? <span className="w-3 h-3 rounded-full border-2 border-space-card/30 border-t-space-card animate-spin" />
+                    : <MapPin size={12} />}
+                  GPS
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick type filters */}
+          <div className="flex flex-wrap items-center gap-2 mb-8">
+            {BUSINESS_TYPES.map(t => (
               <button
-                onClick={() => { setSearchQuery(''); setSelectedCity(''); }}
-                className="h-12 px-4 rounded-2xl border border-space-border text-sm font-bold text-space-muted hover:text-space-danger hover:border-space-danger transition-all flex items-center gap-2">
-                <X size={14} /> Limpiar
+                key={t.id}
+                onClick={() => setSelectedType(t.id)}
+                className={`px-4 h-9 rounded-full text-xs font-extrabold tracking-wide transition-all flex items-center gap-1.5 border ${
+                  selectedType === t.id
+                    ? 'bg-space-primary text-space-card border-space-primary shadow-sm'
+                    : 'bg-space-card text-space-muted border-space-border hover:border-space-primary/40 hover:text-space-text'
+                }`}
+              >
+                <span>{t.emoji}</span>{t.label}
+              </button>
+            ))}
+            {hasActiveFilters && (
+              <button
+                onClick={() => { setSearchQuery(''); setLocationQuery(''); setSelectedType(''); }}
+                className="px-4 h-9 rounded-full text-xs font-bold text-space-muted hover:text-space-danger transition-all flex items-center gap-1.5 ml-1">
+                <X size={13} /> Limpiar
               </button>
             )}
           </div>
@@ -515,10 +625,10 @@ function Home() {
             <div className="bg-space-card border border-space-border/40 rounded-3xl p-16 text-center">
               <Scissors size={36} className="mx-auto text-space-muted/30 mb-4" />
               <h3 className="text-lg font-extrabold text-space-text mb-2">
-                {searchQuery || selectedCity ? 'Sin resultados' : 'Aún no hay barberías'}
+                {hasActiveFilters ? 'Sin resultados' : 'Aún no hay negocios'}
               </h3>
               <p className="text-space-muted text-sm">
-                {searchQuery || selectedCity ? 'Prueba con otro filtro.' : 'Vuelve más tarde, estamos sumando profesionales.'}
+                {hasActiveFilters ? 'Prueba con otro filtro.' : 'Vuelve más tarde, estamos sumando profesionales.'}
               </p>
             </div>
           ) : (
