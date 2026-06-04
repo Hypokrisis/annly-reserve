@@ -279,7 +279,7 @@ function Home() {
       <div className="group bg-space-card border border-space-border/60 hover:border-space-primary/40 rounded-[2rem] overflow-hidden hover:shadow-xl hover:shadow-space-primary/10 hover:-translate-y-1.5 transition-all duration-400 flex flex-col">
         {/* Banner */}
         <div className="relative">
-          <Link to={`/book/${business.slug}`} className="block h-36 overflow-hidden bg-space-card2">
+          <Link to={`/business/${business.slug}`} className="block h-36 overflow-hidden bg-space-card2">
             <img
               src={business.banner_url || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=600'}
               alt={business.name}
@@ -322,7 +322,7 @@ function Home() {
         <div className="p-4 pt-8 flex flex-col flex-1">
           {/* Name + rating */}
           <div className="flex items-start justify-between gap-2 mb-1">
-            <Link to={`/book/${business.slug}`} className="min-w-0">
+            <Link to={`/business/${business.slug}`} className="min-w-0">
               <h3 className="font-extrabold text-space-text text-sm leading-tight hover:text-space-primary transition-colors truncate">{business.name}</h3>
             </Link>
             {reviews > 0 ? (
@@ -354,7 +354,7 @@ function Home() {
 
           {/* Actions */}
           <div className="flex gap-2 mt-auto">
-            <Link to={`/book/${business.slug}`}
+            <Link to={`/business/${business.slug}`}
               className="flex-1 h-9 flex items-center justify-center text-[10px] font-extrabold uppercase tracking-wider rounded-xl border border-space-border/60 text-space-muted hover:border-space-primary/30 hover:text-space-text transition-all">
               Ver detalles
             </Link>

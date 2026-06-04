@@ -26,6 +26,7 @@ import AuthRedirectPage from './pages/auth/AuthRedirectPage';
 
 // Public pages
 import CancelPage from './pages/public/CancelPage';
+import BusinessProfilePage from './pages/public/BusinessProfilePage';
 
 // Owner / Admin dashboard
 import DashboardHome from './pages/dashboard/DashboardHome';
@@ -59,6 +60,7 @@ export default function App() {
                                     {/* ── PUBLIC ─────────────────────────────────── */}
                                     {/* / NEVER redirects — always shows landing */}
                                     <Route path="/" element={<Home />} />
+                                    <Route path="/business/:slug" element={<BusinessProfilePage />} />
                                     <Route path="/book/:slug" element={<BookingPage />} />
                                     <Route path="/pricing" element={<PricingPage />} />
                                     <Route path="/how-it-works" element={<HowItWorksPage />} />
