@@ -17,7 +17,7 @@ export const usePermissions = (): Permissions => {
 
     const isOwner = role === 'owner';
     const isAdmin = role === 'admin';
-    const isStaff = role === 'staff';
+    const isStaff = role === 'barber'; // DB uses 'barber', UI shows 'staff'
     const isOwnerOrAdmin = isOwner || isAdmin;
 
     return {

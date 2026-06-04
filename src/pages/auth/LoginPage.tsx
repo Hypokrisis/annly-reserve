@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { isValidEmail } from '@/utils';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
     const navigate = useNavigate();
-    const location = useLocation();
     const { login } = useAuth();
-    const from = (location.state as any)?.from?.pathname || '/dashboard';
-
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -27,7 +24,7 @@ export default function LoginPage() {
         setLoading(true);
         try {
             await login(formData.email, formData.password);
-            navigate(from, { replace: true });
+            navigate('/auth-redirect', { replace: true });
         } catch (err: any) {
             setError(err.message || 'Credenciales incorrectas.');
         } finally {

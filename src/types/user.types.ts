@@ -13,7 +13,11 @@ export interface User {
     };
 }
 
-export type UserRole = 'owner' | 'admin' | 'staff';
+// DB values in users_businesses.role
+export type UserRole = 'owner' | 'admin' | 'barber' | 'member';
+
+// Simplified app-level role used for routing decisions
+export type AppRole = 'owner' | 'staff' | 'client';
 
 export interface UserBusiness {
     id: string;

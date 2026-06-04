@@ -5,10 +5,10 @@ import { BusinessProvider } from '@/contexts/BusinessContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 
-import { AuthGuard } from '@/components/auth/AuthGuard';
-import { RequireOwner } from '@/components/auth/RequireOwner';
-import { RequireBusiness } from '@/components/auth/RequireBusiness';
-import { RequireRole } from '@/components/auth/RequireRole';
+// Route guards
+import { OwnerRoute } from '@/components/auth/OwnerRoute';
+import { StaffRoute } from '@/components/auth/StaffRoute';
+import { ClientRoute } from '@/components/auth/ClientRoute';
 
 // Public pages
 import Home from './pages/Home';
@@ -21,8 +21,9 @@ import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import AuthCallbackPage from './pages/auth/AuthCallbackPage';
+import AuthRedirectPage from './pages/auth/AuthRedirectPage';
 
-// Dashboard pages
+// Owner / Admin dashboard
 import DashboardHome from './pages/dashboard/DashboardHome';
 import ServicesPage from './pages/dashboard/ServicesPage';
 import BarbersPage from './pages/dashboard/BarbersPage';
@@ -35,194 +36,67 @@ import AIAssistantPage from './pages/dashboard/AIAssistantPage';
 import CreateBusinessPage from './pages/dashboard/CreateBusinessPage';
 import SubscriptionPage from './pages/dashboard/SubscriptionPage';
 
+// Staff pages (Phase 4)
+import StaffHome from './pages/staff/StaffHome';
+
+// Client pages (Phase 5)
+import ClientHome from './pages/client/ClientHome';
+
 export default function App() {
-  return (
-    <ToastProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <BusinessProvider>
-            <Router>
-            <div className="min-h-screen bg-space-bg text-space-text font-sans">
-              <Routes>
-                {/* PUBLIC */}
-                <Route path="/" element={<Home />} />
-                <Route path="/book/:slug" element={<BookingPage />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/how-it-works" element={<HowItWorksPage />} />
+    return (
+        <ToastProvider>
+            <ThemeProvider>
+                <AuthProvider>
+                    <BusinessProvider>
+                        <Router>
+                            <div className="min-h-screen bg-space-bg text-space-text font-sans">
+                                <Routes>
 
-                {/* AUTH */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                                    {/* ── PUBLIC ─────────────────────────────────── */}
+                                    {/* / NEVER redirects — always shows landing */}
+                                    <Route path="/" element={<Home />} />
+                                    <Route path="/book/:slug" element={<BookingPage />} />
+                                    <Route path="/pricing" element={<PricingPage />} />
+                                    <Route path="/how-it-works" element={<HowItWorksPage />} />
 
-                {/* DASHBOARD */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <AuthGuard>
-                      <RequireBusiness>
-                        <RequireRole requiredRole={['owner', 'admin', 'staff']}>
-                          <DashboardHome />
-                        </RequireRole>
-                      </RequireBusiness>
-                    </AuthGuard>
-                  }
-                />
+                                    {/* ── AUTH ───────────────────────────────────── */}
+                                    <Route path="/login" element={<LoginPage />} />
+                                    <Route path="/signup" element={<SignupPage />} />
+                                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                                    <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                                    {/* Role-based redirect after login */}
+                                    <Route path="/auth-redirect" element={<AuthRedirectPage />} />
 
-                <Route
-                  path="/dashboard/services"
-                  element={
-                    <AuthGuard>
-                      <RequireOwner>
-                        <RequireBusiness>
-                          <RequireRole requiredRole={['owner', 'admin']}>
-                            <ServicesPage />
-                          </RequireRole>
-                        </RequireBusiness>
-                      </RequireOwner>
-                    </AuthGuard>
-                  }
-                />
+                                    {/* ── OWNER / ADMIN (/dashboard) ─────────────── */}
+                                    <Route path="/dashboard" element={<OwnerRoute><DashboardHome /></OwnerRoute>} />
+                                    <Route path="/dashboard/appointments" element={<OwnerRoute><AppointmentsPage /></OwnerRoute>} />
+                                    <Route path="/dashboard/clients" element={<OwnerRoute><ClientsPage /></OwnerRoute>} />
+                                    <Route path="/dashboard/services" element={<OwnerRoute><ServicesPage /></OwnerRoute>} />
+                                    <Route path="/dashboard/barbers" element={<OwnerRoute><BarbersPage /></OwnerRoute>} />
+                                    <Route path="/dashboard/schedules" element={<OwnerRoute><SchedulesPage /></OwnerRoute>} />
+                                    <Route path="/dashboard/campaigns" element={<OwnerRoute><CampaignsPage /></OwnerRoute>} />
+                                    <Route path="/dashboard/ai-assistant" element={<OwnerRoute><AIAssistantPage /></OwnerRoute>} />
+                                    <Route path="/dashboard/billing" element={<OwnerRoute><SubscriptionPage /></OwnerRoute>} />
+                                    <Route path="/dashboard/settings" element={<OwnerRoute><BusinessSettingsPage /></OwnerRoute>} />
+                                    <Route path="/create-business" element={<OwnerRoute><CreateBusinessPage /></OwnerRoute>} />
 
-                <Route
-                  path="/dashboard/barbers"
-                  element={
-                    <AuthGuard>
-                      <RequireOwner>
-                        <RequireBusiness>
-                          <RequireRole requiredRole={['owner', 'admin']}>
-                            <BarbersPage />
-                          </RequireRole>
-                        </RequireBusiness>
-                      </RequireOwner>
-                    </AuthGuard>
-                  }
-                />
+                                    {/* ── STAFF (/staff) — Phase 4 ──────────────── */}
+                                    <Route path="/staff" element={<StaffRoute><StaffHome /></StaffRoute>} />
+                                    <Route path="/staff/*" element={<StaffRoute><StaffHome /></StaffRoute>} />
 
-                <Route
-                  path="/dashboard/schedules"
-                  element={
-                    <AuthGuard>
-                      <RequireOwner>
-                        <RequireBusiness>
-                          <RequireRole requiredRole={['owner', 'admin']}>
-                            <SchedulesPage />
-                          </RequireRole>
-                        </RequireBusiness>
-                      </RequireOwner>
-                    </AuthGuard>
-                  }
-                />
+                                    {/* ── CLIENT (/client) — Phase 5 ────────────── */}
+                                    <Route path="/client" element={<ClientRoute><ClientHome /></ClientRoute>} />
+                                    <Route path="/client/*" element={<ClientRoute><ClientHome /></ClientRoute>} />
 
-                <Route
-                  path="/dashboard/appointments"
-                  element={
-                    <AuthGuard>
-                      <RequireBusiness>
-                        <RequireRole requiredRole={['owner', 'admin', 'staff']}>
-                          <AppointmentsPage />
-                        </RequireRole>
-                      </RequireBusiness>
-                    </AuthGuard>
-                  }
-                />
+                                    {/* ── FALLBACK ───────────────────────────────── */}
+                                    <Route path="*" element={<Navigate to="/" replace />} />
 
-                <Route
-                  path="/dashboard/billing"
-                  element={
-                    <AuthGuard>
-                      <RequireOwner>
-                        <RequireBusiness>
-                          <RequireRole requiredRole={['owner', 'admin']}>
-                            <SubscriptionPage />
-                          </RequireRole>
-                        </RequireBusiness>
-                      </RequireOwner>
-                    </AuthGuard>
-                  }
-                />
-
-                <Route
-                  path="/dashboard/clients"
-                  element={
-                    <AuthGuard>
-                      <RequireOwner>
-                        <RequireBusiness>
-                          <RequireRole requiredRole={['owner', 'admin']}>
-                            <ClientsPage />
-                          </RequireRole>
-                        </RequireBusiness>
-                      </RequireOwner>
-                    </AuthGuard>
-                  }
-                />
-
-                <Route
-                  path="/dashboard/campaigns"
-                  element={
-                    <AuthGuard>
-                      <RequireOwner>
-                        <RequireBusiness>
-                          <RequireRole requiredRole={['owner', 'admin']}>
-                            <CampaignsPage />
-                          </RequireRole>
-                        </RequireBusiness>
-                      </RequireOwner>
-                    </AuthGuard>
-                  }
-                />
-
-                <Route
-                  path="/dashboard/settings"
-                  element={
-                    <AuthGuard>
-                      <RequireOwner>
-                        <RequireBusiness>
-                          <RequireRole requiredRole={['owner', 'admin']}>
-                            <BusinessSettingsPage />
-                          </RequireRole>
-                        </RequireBusiness>
-                      </RequireOwner>
-                    </AuthGuard>
-                  }
-                />
-
-                <Route
-                  path="/dashboard/ai-assistant"
-                  element={
-                    <AuthGuard>
-                      <RequireOwner>
-                        <RequireBusiness>
-                          <RequireRole requiredRole={['owner', 'admin']}>
-                            <AIAssistantPage />
-                          </RequireRole>
-                        </RequireBusiness>
-                      </RequireOwner>
-                    </AuthGuard>
-                  }
-                />
-
-                {/* CREATE BUSINESS */}
-                <Route
-                  path="/create-business"
-                  element={
-                    <AuthGuard>
-                      <RequireOwner>
-                        <CreateBusinessPage />
-                      </RequireOwner>
-                    </AuthGuard>
-                  }
-                />
-
-                {/* FALLBACK */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </div>
-            </Router>
-          </BusinessProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </ToastProvider>
-  );
+                                </Routes>
+                            </div>
+                        </Router>
+                    </BusinessProvider>
+                </AuthProvider>
+            </ThemeProvider>
+        </ToastProvider>
+    );
 }
