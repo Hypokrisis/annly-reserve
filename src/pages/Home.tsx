@@ -278,23 +278,51 @@ function Home() {
                   </div>
                 </button>
                 {isAccountMenuOpen && (
-                  <div className="absolute right-0 mt-2.5 w-60 bg-space-card rounded-[2rem] shadow-2xl border border-space-border/30 overflow-hidden py-1 z-50 animate-scale-in">
+                  <div className="absolute right-0 mt-2.5 w-64 bg-space-card rounded-[2rem] shadow-2xl border border-space-border/30 overflow-hidden py-1 z-50 animate-scale-in">
+                    {/* Header */}
                     <div className="px-5 py-4 border-b border-space-border/30 bg-space-bg flex justify-between items-center">
                       <div>
-                        <p className="text-[9px] text-space-muted font-extrabold uppercase tracking-widest">Cuenta</p>
-                        <p className="text-xs font-bold text-space-text truncate mt-0.5 max-w-[130px]">{user.email}</p>
+                        <p className="text-[9px] text-space-muted font-extrabold uppercase tracking-widest">
+                          {currentBusiness ? 'Mi negocio' : 'Mi cuenta'}
+                        </p>
+                        <p className="text-xs font-bold text-space-text truncate mt-0.5 max-w-[155px]">
+                          {currentBusiness ? currentBusiness.name : user.email}
+                        </p>
                       </div>
-                      <button onClick={() => setIsAccountMenuOpen(false)} className="p-1 text-space-muted hover:text-space-text"><XCircle size={15} /></button>
-                    </div>
-                    <div className="p-2 space-y-1">
-                      {currentBusiness && (
-                        <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                          <LayoutDashboard size={16} className="text-space-primary" />Dashboard
-                        </Link>
-                      )}
-                      <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-danger hover:bg-space-danger/5 rounded-xl transition-all">
-                        <LogOut size={16} />Cerrar Sesión
+                      <button onClick={() => setIsAccountMenuOpen(false)} className="p-1 text-space-muted hover:text-space-text">
+                        <XCircle size={15} />
                       </button>
+                    </div>
+                    <div className="p-2 space-y-0.5">
+                      {currentBusiness ? (
+                        /* Owner options */
+                        <>
+                          <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                            <LayoutDashboard size={15} className="text-space-primary" />Dashboard
+                          </Link>
+                          <Link to={`/book/${currentBusiness.slug}`} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                            <Scissors size={15} className="text-space-muted" />Ver mi página pública
+                          </Link>
+                          <Link to="/dashboard/settings" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                            <Info size={15} className="text-space-muted" />Configuración
+                          </Link>
+                        </>
+                      ) : (
+                        /* Client options */
+                        <>
+                          <a href="#mis-citas" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                            <Calendar size={15} className="text-space-primary" />Mis citas
+                          </a>
+                          <Link to="/signup" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-primary hover:bg-space-primary/5 rounded-xl transition-all border border-space-primary/20 mx-1 my-1" onClick={() => setIsAccountMenuOpen(false)}>
+                            <LayoutDashboard size={15} />Registrar mi barbería
+                          </Link>
+                        </>
+                      )}
+                      <div className="border-t border-space-border/30 mt-1 pt-1">
+                        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-danger hover:bg-space-danger/5 rounded-xl transition-all">
+                          <LogOut size={15} />Cerrar Sesión
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -327,95 +355,57 @@ function Home() {
 
       <NavBar />
 
-      {/* ── DASHBOARD BANNER for business owners ─────────────── */}
-      {user && currentBusiness && (
-        <div className="relative z-10 pt-24 pb-4 px-4">
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-gradient-to-r from-space-primary/15 to-space-primary-light/10 border border-space-primary/25 rounded-2xl px-5 py-4 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-space-primary/20 flex items-center justify-center flex-shrink-0">
-                  <LayoutDashboard size={15} className="text-space-primary" />
-                </div>
-                <p className="text-sm font-bold text-space-text truncate">
-                  Tienes un dashboard activo — <span className="text-space-primary">{currentBusiness.name}</span>
-                </p>
-              </div>
-              <Link to="/dashboard"
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest bg-space-primary text-space-card hover:bg-space-primary-dark transition-all flex-shrink-0">
-                Ir al Dashboard <ChevronRight size={13} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── HERO ──────────────────────────────────────────────── */}
-      <section className={`relative flex flex-col items-center justify-center text-center overflow-hidden px-4 ${user && currentBusiness ? 'pt-8 pb-12 min-h-[40vh]' : 'pt-28 pb-16 min-h-screen'}`}>
+      {/* ── HERO — siempre el mismo para todos ───────────────── */}
+      <section className="relative flex flex-col items-center justify-center text-center overflow-hidden px-4 pt-28 pb-16 min-h-screen">
         <div className="relative z-10 w-full max-w-3xl mx-auto">
 
-          {/* For guests: full marketing hero */}
-          {!user && (
-            <>
-              <div className="w-14 h-14 rounded-2xl mx-auto mb-5 overflow-hidden shadow-xl shadow-space-primary/25 ring-2 ring-space-primary/20 animate-fade-in"
-                style={{ background: 'linear-gradient(135deg, rgb(var(--space-primary-light)), rgb(var(--space-primary)))' }}>
-                <img src="/logo.png" alt="" className="w-full h-full object-cover object-top scale-110" />
-              </div>
+          <div className="w-14 h-14 rounded-2xl mx-auto mb-5 overflow-hidden shadow-xl shadow-space-primary/25 ring-2 ring-space-primary/20 animate-fade-in"
+            style={{ background: 'linear-gradient(135deg, rgb(var(--space-primary-light)), rgb(var(--space-primary)))' }}>
+            <img src="/logo.png" alt="" className="w-full h-full object-cover object-top scale-110" />
+          </div>
 
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-space-primary/25 bg-space-primary/8 mb-6 animate-fade-in">
-                <span className="w-1.5 h-1.5 rounded-full bg-space-success animate-pulse shadow-[0_0_6px_rgba(var(--space-success),0.8)]" />
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.3em] text-space-primary">Bot activo 24/7 · WhatsApp</span>
-              </div>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-space-primary/25 bg-space-primary/8 mb-6 animate-fade-in">
+            <span className="w-1.5 h-1.5 rounded-full bg-space-success animate-pulse" />
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.3em] text-space-primary">Bot activo 24/7 · WhatsApp</span>
+          </div>
 
-              <h1 className="text-[clamp(2.4rem,8vw,5.5rem)] font-extrabold leading-[0.93] tracking-tight text-space-text mb-5 animate-fade-up">
-                El bot que llena<br />tu barbería<br />
-                <span className="bg-gradient-to-r from-space-primary-light to-space-primary bg-clip-text text-transparent">mientras duermes.</span>
-              </h1>
+          <h1 className="text-[clamp(2.4rem,8vw,5.5rem)] font-extrabold leading-[0.93] tracking-tight text-space-text mb-5 animate-fade-up">
+            El bot que llena<br />tu barbería<br />
+            <span className="bg-gradient-to-r from-space-primary-light to-space-primary bg-clip-text text-transparent">mientras duermes.</span>
+          </h1>
 
-              <p className="text-base sm:text-lg text-space-muted font-semibold max-w-md mx-auto mb-9 leading-relaxed animate-fade-up" style={{ animationDelay: '100ms' }}>
-                Tu barbería atendiendo clientes por WhatsApp las 24 horas, haciendo citas sola — tú enfocado en tu arte.
-              </p>
+          <p className="text-base sm:text-lg text-space-muted font-semibold max-w-md mx-auto mb-9 leading-relaxed animate-fade-up" style={{ animationDelay: '100ms' }}>
+            Tu barbería atendiendo clientes por WhatsApp las 24 horas, haciendo citas sola — tú enfocado en tu arte.
+          </p>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 mb-8 animate-fade-up" style={{ animationDelay: '180ms' }}>
-                <Link to="/signup" className="btn-primary text-sm px-8 py-4 shadow-2xl shadow-space-primary/30">
-                  Registra tu barbería <ArrowRight size={16} />
-                </Link>
-                <a href="#explore" className="btn-secondary text-sm px-8 py-4">
-                  Explorar barberías ↓
-                </a>
-              </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 mb-8 animate-fade-up" style={{ animationDelay: '180ms' }}>
+            {/* CTA principal: para negocios si no hay sesión, explorar si hay sesión de cliente */}
+            {!user || !currentBusiness ? (
+              <Link to="/signup" className="btn-primary text-sm px-8 py-4 shadow-2xl shadow-space-primary/30">
+                Registra tu barbería <ArrowRight size={16} />
+              </Link>
+            ) : null}
+            <a href="#explore" className="btn-secondary text-sm px-8 py-4">
+              Explorar barberías ↓
+            </a>
+          </div>
 
-              <p className="text-[11px] text-space-muted/60 font-semibold animate-fade-up" style={{ animationDelay: '250ms' }}>
-                ¿Eres cliente? <a href="#explore" className="text-space-primary font-bold hover:underline">Explora las barberías →</a>
-              </p>
-            </>
-          )}
-
-          {/* For customers (logged in, no business) */}
-          {user && !currentBusiness && (
-            <>
-              <h1 className="text-4xl sm:text-5xl font-extrabold text-space-text tracking-tight mb-3 animate-fade-up">
-                Encuentra tu próxima cita.
-              </h1>
-              <p className="text-base text-space-muted font-semibold mb-6">
-                Explora las barberías disponibles y reserva en segundos.
-              </p>
-              <a href="#explore" className="btn-primary text-sm px-8 py-3.5 shadow-xl shadow-space-primary/25 inline-flex">
-                Explorar barberías <ChevronDown size={16} />
-              </a>
-            </>
-          )}
+          <p className="text-[11px] text-space-muted/60 font-semibold animate-fade-up" style={{ animationDelay: '250ms' }}>
+            ¿Ya tienes cuenta?{' '}
+            <a href="#explore" className="text-space-primary font-bold hover:underline">
+              Explora las barberías →
+            </a>
+          </p>
         </div>
 
-        {!user && (
-          <a href="#explore" className="absolute bottom-6 left-1/2 -translate-x-1/2 text-space-muted/40 hover:text-space-primary transition-colors animate-bounce">
-            <ChevronDown size={22} />
-          </a>
-        )}
+        <a href="#explore" className="absolute bottom-6 left-1/2 -translate-x-1/2 text-space-muted/40 hover:text-space-primary transition-colors animate-bounce">
+          <ChevronDown size={22} />
+        </a>
       </section>
 
       {/* ── MIS CITAS (solo clientes logueados) ─────────────── */}
       {user && !currentBusiness && customerAppointments.length > 0 && (
-        <section className="px-4 pb-14 max-w-7xl mx-auto">
+        <section id="mis-citas" className="px-4 pb-14 max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 rounded-xl bg-space-primary/15 flex items-center justify-center">
               <Calendar size={15} className="text-space-primary" />
@@ -521,6 +511,78 @@ function Home() {
           )}
         </div>
       </section>
+
+      {/* ── UPGRADE CTA para clientes logueados sin negocio ───── */}
+      {user && !currentBusiness && (
+        <section className="relative px-4 py-20 overflow-hidden" style={{ background: 'rgb(var(--space-text))' }}>
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(rgb(var(--space-primary-light)) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+          <div className="absolute top-0 right-0 w-[40vw] h-[40vw] max-w-[400px] rounded-full blur-[120px]" style={{ background: 'rgba(var(--space-primary), 0.08)' }} />
+          <div className="max-w-4xl mx-auto relative z-10">
+            <div className="text-center mb-10">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.4em] text-space-primary-light mb-3">Para negocios</p>
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight" style={{ color: 'rgb(var(--space-card))' }}>
+                ¿Tienes una barbería?<br /><span className="text-space-primary-light">Únela a Spacey gratis.</span>
+              </h2>
+            </div>
+            <div className="grid md:grid-cols-2 gap-5">
+              {/* Card izquierda: estado actual como cliente */}
+              <div className="rounded-[2rem] p-7 border border-space-card/10"
+                style={{ background: 'rgba(var(--space-card), 0.05)' }}>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl border border-space-card/10" style={{ background: 'rgba(var(--space-card), 0.08)' }}>👤</div>
+                  <div>
+                    <p className="text-[9px] font-extrabold uppercase tracking-widest mb-0.5" style={{ color: 'rgba(var(--space-card), 0.35)' }}>Tu estado actual</p>
+                    <h3 className="text-base font-extrabold" style={{ color: 'rgb(var(--space-card))' }}>Cliente activo</h3>
+                  </div>
+                </div>
+                <ul className="space-y-2.5">
+                  {[
+                    'Reservar en cualquier barbería',
+                    'Ver tus próximas citas',
+                    'Historial de visitas',
+                    'Favoritos guardados',
+                  ].map((f, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm font-medium" style={{ color: 'rgba(var(--space-card), 0.6)' }}>
+                      <CheckCircle2 size={13} className="text-space-primary-light flex-shrink-0" />{f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Card derecha: upgrade a dueño */}
+              <div className="rounded-[2rem] p-7 border border-space-primary-light/25 relative overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, rgba(var(--space-primary), 0.18), rgba(var(--space-primary-dark), 0.12))' }}>
+                <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-[8px] font-extrabold uppercase tracking-widest" style={{ background: 'rgba(var(--space-primary), 0.85)', color: 'rgb(var(--space-card))' }}>
+                  🚀 Nivel Pro
+                </div>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-11 h-11 rounded-xl border border-space-primary-light/20 flex items-center justify-center text-xl" style={{ background: 'rgba(var(--space-primary), 0.2)' }}>🏢</div>
+                  <div>
+                    <p className="text-[9px] font-extrabold uppercase tracking-widest text-space-primary-light mb-0.5">Siguiente nivel</p>
+                    <h3 className="text-base font-extrabold" style={{ color: 'rgb(var(--space-card))' }}>Dueño de barbería</h3>
+                  </div>
+                </div>
+                <ul className="space-y-2.5 mb-6">
+                  {[
+                    'Bot WhatsApp que hace citas 24/7',
+                    'Dashboard con KPIs en tiempo real',
+                    'Reservas automáticas sin intervención',
+                    'Reportes al barbero cada 2 horas',
+                    'Gestión de equipo y horarios',
+                  ].map((f, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm font-medium" style={{ color: 'rgba(var(--space-card), 0.8)' }}>
+                      <CheckCircle2 size={13} className="text-space-primary-light flex-shrink-0" />{f}
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/signup" className="inline-flex items-center gap-2 btn-primary shadow-xl shadow-space-primary/30">
+                  Registrar mi barbería gratis <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── MARKETING SECTIONS (solo para no logueados) ───────── */}
       {!user && (
