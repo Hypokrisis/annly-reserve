@@ -9,6 +9,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { OwnerRoute } from '@/components/auth/OwnerRoute';
 import { StaffRoute } from '@/components/auth/StaffRoute';
 import { ClientRoute } from '@/components/auth/ClientRoute';
+import { AuthOnlyRoute } from '@/components/auth/AuthOnlyRoute';
 
 // Public pages
 import Home from './pages/Home';
@@ -78,7 +79,8 @@ export default function App() {
                                     <Route path="/dashboard/ai-assistant" element={<OwnerRoute><AIAssistantPage /></OwnerRoute>} />
                                     <Route path="/dashboard/billing" element={<OwnerRoute><SubscriptionPage /></OwnerRoute>} />
                                     <Route path="/dashboard/settings" element={<OwnerRoute><BusinessSettingsPage /></OwnerRoute>} />
-                                    <Route path="/create-business" element={<OwnerRoute><CreateBusinessPage /></OwnerRoute>} />
+                                    {/* /create-business only needs auth — no business required (new owners) */}
+                                    <Route path="/create-business" element={<AuthOnlyRoute><CreateBusinessPage /></AuthOnlyRoute>} />
 
                                     {/* ── STAFF (/staff) — Phase 4 ──────────────── */}
                                     <Route path="/staff" element={<StaffRoute><StaffHome /></StaffRoute>} />

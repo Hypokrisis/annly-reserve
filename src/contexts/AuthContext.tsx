@@ -41,6 +41,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const LS_BUSINESS = "currentBusinessId";
     const LS_VERSION = "appSchemaVersion";
     const SCHEMA_VERSION = "2025-12-19-STABLE-MVP";
+    const LS_LAST_ACTIVITY = "spacey_last_activity";
+    const LS_LAST_EMAIL = "spacey_last_email";
+    const INACTIVITY_MS = 8 * 60 * 60 * 1000; // 8 hours
 
     const hardResetClientState = () => {
         localStorage.removeItem(LS_BUSINESS);
@@ -64,6 +67,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setRole(null);
                 return;
             }
+
+            // Inactivity timeout: sign out if inactive for 8h
+            const lastActivity = localStorage.getItem(LS_LAST_ACTIVITY);
+            if (lastActivity && Date.now() - parseInt(lastActivity) > INACTIVITY_MS) {
+                localStorage.setItem(LS_LAST_EMAIL, session.user.email || '');
+                await supabase.auth.signOut();
+                setUser(null); setBusinesses([]); setCurrentBusiness(null); setRole(null);
+                return;
+            }
+            localStorage.setItem(LS_LAST_ACTIVITY, Date.now().toString());
 
             const uid = session.user.id;
             setUser(session.user as User);
@@ -140,6 +153,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(true);
         try {
             await authService.login({ email, password });
+            localStorage.setItem(LS_LAST_ACTIVITY, Date.now().toString());
+            localStorage.setItem(LS_LAST_EMAIL, email);
         } catch (error) {
             console.error('Login failed:', error);
             throw error;

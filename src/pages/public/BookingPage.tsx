@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Check, ChevronLeft, Home, Calendar as CalendarIcon, Clock, User as UserIcon, Scissors, Star, Instagram, Globe } from 'lucide-react';
+import { Check, ChevronLeft, Home, Calendar as CalendarIcon, Clock, User as UserIcon, Scissors, Star, Instagram, Globe, Building2, X, Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/common/Input';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { MonthGridCalendar } from '@/components/calendar/MonthGridCalendar';
@@ -14,7 +14,7 @@ import type { Business, Service, Barber } from '@/types';
 export default function PublicBookingPage() {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, login } = useAuth();
 
     const [business, setBusiness] = useState<Business | null>(null);
     const [services, setServices] = useState<Service[]>([]);
@@ -329,6 +329,54 @@ export default function PublicBookingPage() {
         </div>
     );
 
+    // Panel login modal state
+    const [showPanelModal, setShowPanelModal] = useState(false);
+    const [panelLoginAs, setPanelLoginAs] = useState<'owner' | 'staff'>('owner');
+    const [panelEmail, setPanelEmail] = useState('');
+    const [panelPassword, setPanelPassword] = useState('');
+    const [panelShowPwd, setPanelShowPwd] = useState(false);
+    const [panelError, setPanelError] = useState('');
+    const [panelLoading, setPanelLoading] = useState(false);
+
+    const handlePanelLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setPanelError('');
+        if (!panelEmail || !panelPassword) { setPanelError('Completa todos los campos.'); return; }
+        setPanelLoading(true);
+        try {
+            await login(panelEmail, panelPassword);
+            // After login, check if user belongs to this business
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error('No se pudo obtener la sesión.');
+
+            const { data: membership } = await supabase
+                .from('users_businesses')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .eq('business_id', business?.id)
+                .maybeSingle();
+
+            if (!membership) {
+                await supabase.auth.signOut();
+                setPanelError('No tienes acceso a este negocio. Verifica tu cuenta.');
+                return;
+            }
+
+            // Redirect based on role
+            if (membership.role === 'owner' || membership.role === 'admin') {
+                navigate('/dashboard');
+            } else if (membership.role === 'barber') {
+                navigate('/staff');
+            } else {
+                navigate('/dashboard');
+            }
+        } catch (err: any) {
+            setPanelError(err.message || 'Credenciales incorrectas.');
+        } finally {
+            setPanelLoading(false);
+        }
+    };
+
     // Soft login suggestion — no longer a hard block
     const showLoginBanner = !user;
 
@@ -409,17 +457,97 @@ export default function PublicBookingPage() {
 
                     <div className="flex justify-center gap-4">
                         {business.instagram_url && (
-                            <a href={business.instagram_url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-white border border-space-border flex items-center justify-center text-space-text hover:text-space-primary hover:border-space-primary transition-all shadow-sm">
+                            <a href={business.instagram_url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-space-card border border-space-border flex items-center justify-center text-space-text hover:text-space-primary hover:border-space-primary transition-all shadow-sm">
                                 <Instagram size={20} />
                             </a>
                         )}
                         {business.website_url && (
-                            <a href={business.website_url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-white border border-space-border flex items-center justify-center text-space-text hover:text-space-primary hover:border-space-primary transition-all shadow-sm">
+                            <a href={business.website_url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-space-card border border-space-border flex items-center justify-center text-space-text hover:text-space-primary hover:border-space-primary transition-all shadow-sm">
                                 <Globe size={20} />
                             </a>
                         )}
+                        {/* Panel access for owners/staff */}
+                        {!user && (
+                            <button
+                                onClick={() => setShowPanelModal(true)}
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-space-card border border-space-border text-space-muted hover:text-space-primary hover:border-space-primary transition-all shadow-sm text-[10px] font-extrabold uppercase tracking-wider"
+                            >
+                                <Building2 size={14} />
+                                Entrar al panel
+                            </button>
+                        )}
                     </div>
                 </header>
+
+                {/* Panel login modal */}
+                {showPanelModal && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-fade-in">
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowPanelModal(false); setPanelError(''); }} />
+                        <div className="relative w-full max-w-sm bg-space-card rounded-[2rem] shadow-2xl border border-space-border overflow-hidden animate-scale-in">
+                            {/* Modal header */}
+                            <div className="px-6 py-5 border-b border-space-border flex items-center justify-between bg-space-bg">
+                                <div>
+                                    <p className="text-[9px] font-extrabold uppercase tracking-widest text-space-muted mb-0.5">Panel de</p>
+                                    <h3 className="text-base font-extrabold text-space-text">{business?.name}</h3>
+                                </div>
+                                <button onClick={() => { setShowPanelModal(false); setPanelError(''); }} className="w-9 h-9 flex items-center justify-center rounded-xl text-space-muted hover:text-space-danger transition-colors">
+                                    <X size={18} />
+                                </button>
+                            </div>
+
+                            <div className="p-6">
+                                {/* Role selector */}
+                                <div className="flex gap-1.5 p-1 bg-space-card2/60 rounded-xl mb-5">
+                                    <button type="button" onClick={() => setPanelLoginAs('owner')}
+                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all ${panelLoginAs === 'owner' ? 'bg-space-card text-space-text shadow-sm' : 'text-space-muted hover:text-space-text'}`}>
+                                        <Building2 size={11} className={panelLoginAs === 'owner' ? 'text-space-primary' : ''} />
+                                        Dueño / Admin
+                                    </button>
+                                    <button type="button" onClick={() => setPanelLoginAs('staff')}
+                                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all ${panelLoginAs === 'staff' ? 'bg-space-card text-space-text shadow-sm' : 'text-space-muted hover:text-space-text'}`}>
+                                        <Scissors size={11} className={panelLoginAs === 'staff' ? 'text-space-primary' : ''} />
+                                        Staff / Barbero
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handlePanelLogin} className="space-y-3.5">
+                                    <div>
+                                        <label className="input-label">Email</label>
+                                        <input type="email" value={panelEmail} onChange={e => { setPanelEmail(e.target.value); setPanelError(''); }}
+                                            className="input-field" placeholder="tu@email.com" autoComplete="email" autoFocus />
+                                    </div>
+                                    <div>
+                                        <label className="input-label">Contraseña</label>
+                                        <div className="relative">
+                                            <input type={panelShowPwd ? 'text' : 'password'} value={panelPassword}
+                                                onChange={e => { setPanelPassword(e.target.value); setPanelError(''); }}
+                                                className="input-field pr-11" placeholder="••••••••" autoComplete="current-password" />
+                                            <button type="button" onClick={() => setPanelShowPwd(!panelShowPwd)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-space-muted hover:opacity-70">
+                                                {panelShowPwd ? <EyeOff size={15} /> : <Eye size={15} />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {panelError && (
+                                        <div className="px-4 py-3 rounded-xl text-xs font-semibold" style={{ background: `rgba(var(--space-danger), 0.1)`, color: `rgb(var(--space-danger))`, border: `1px solid rgba(var(--space-danger), 0.2)` }}>
+                                            {panelError}
+                                        </div>
+                                    )}
+
+                                    <button type="submit" disabled={panelLoading} className="btn-primary w-full h-11 mt-1">
+                                        {panelLoading ? (
+                                            <span className="flex items-center gap-2">
+                                                <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                                                Verificando...
+                                            </span>
+                                        ) : 'Acceder al panel'}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* BRUTAL FEATURE: Guest Login Banner (soft suggestion, no hard block) */}
                 {showLoginBanner && (
