@@ -43,7 +43,7 @@ export default function TeamPage() {
     const [loading, setLoading] = useState(true);
 
     const [modalOpen, setModalOpen] = useState(false);
-    const [form, setForm] = useState({ name: '', email: '', role: 'barber' });
+    const [form, setForm] = useState({ name: '', email: '', role: 'barber', phone: '' });
     const [submitting, setSubmitting] = useState(false);
     const [createdInvite, setCreatedInvite] = useState<Invitation | null>(null);
     const [copied, setCopied] = useState(false);
@@ -99,6 +99,7 @@ export default function TeamPage() {
                     name: form.name.trim(),
                     email: form.email.trim().toLowerCase(),
                     role: form.role,
+                    phone: form.phone.trim() || null,
                     temp_password: tempPassword,
                     created_by: user?.id,
                 })
@@ -106,6 +107,26 @@ export default function TeamPage() {
                 .single();
 
             if (error) throw error;
+
+            // Auto-create barber record so slot availability works immediately
+            if (form.role === 'barber') {
+                const { data: existing } = await supabase
+                    .from('barbers')
+                    .select('id')
+                    .eq('business_id', currentBusiness.id)
+                    .ilike('email', form.email.trim())
+                    .maybeSingle();
+                if (!existing) {
+                    await supabase.from('barbers').insert({
+                        business_id: currentBusiness.id,
+                        name: form.name.trim(),
+                        email: form.email.trim().toLowerCase(),
+                        phone: form.phone.trim() || null,
+                        is_active: true,
+                    });
+                }
+            }
+
             setCreatedInvite(data);
             await load();
         } catch (e: any) {
@@ -126,7 +147,7 @@ export default function TeamPage() {
     const closeModal = () => {
         setModalOpen(false);
         setCreatedInvite(null);
-        setForm({ name: '', email: '', role: 'barber' });
+        setForm({ name: '', email: '', role: 'barber', phone: '' });
         setCopied(false);
     };
 
@@ -170,7 +191,9 @@ export default function TeamPage() {
                             ) : (
                                 <div className="space-y-2">
                                     {members.map(m => {
-                                        const meta = ROLE_META[m.role] || ROLE_META.member;
+                                        const isOwner = m.user_id === (currentBusiness as any)?.owner_id;
+                                        const displayRole = isOwner ? 'owner' : m.role;
+                                        const meta = ROLE_META[displayRole] || ROLE_META.member;
                                         const Icon = meta.icon;
                                         return (
                                             <div key={m.user_id} className="bg-space-card border border-space-border rounded-2xl p-4 flex items-center gap-3">
@@ -178,7 +201,10 @@ export default function TeamPage() {
                                                     {m.name?.[0]?.toUpperCase() || '?'}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-bold text-space-text text-sm truncate">{m.name}</p>
+                                                    <p className="font-bold text-space-text text-sm truncate">
+                                                        {m.name}
+                                                        {isOwner && <span className="ml-2 text-[9px] font-extrabold uppercase tracking-widest text-space-muted">(tú)</span>}
+                                                    </p>
                                                     <p className="text-[11px] text-space-muted truncate">{m.email}</p>
                                                 </div>
                                                 <span className={`flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider ${meta.color}`}>
@@ -247,6 +273,13 @@ export default function TeamPage() {
                             onChange={(e) => setForm(p => ({ ...p, email: e.target.value }))}
                             placeholder="pacheco@email.com"
                             required
+                        />
+                        <Input
+                            label="Teléfono (opcional)"
+                            type="tel"
+                            value={form.phone}
+                            onChange={(e) => setForm(p => ({ ...p, phone: e.target.value }))}
+                            placeholder="787-555-1234"
                         />
                         <div>
                             <label className="input-label">Rol</label>

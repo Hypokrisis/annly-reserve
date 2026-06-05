@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { Scissors, Calendar, User, Phone, LogOut } from 'lucide-react';
-import { format } from 'date-fns';
+import { Scissors, Calendar, User, Phone, LogOut, ChevronLeft, ChevronRight, CheckCircle2, UserX } from 'lucide-react';
+import { format, addDays, subDays, isToday } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 interface TodayAppointment {
@@ -34,24 +34,26 @@ export default function StaffHome() {
     const { user, barberProfile, currentBusiness, logout } = useAuth();
     const [appointments, setAppointments] = useState<TodayAppointment[]>([]);
     const [loading, setLoading] = useState(true);
-    const today = format(new Date(), 'yyyy-MM-dd');
+    const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [viewDate, setViewDate] = useState(new Date());
+
+    const viewDateStr = format(viewDate, 'yyyy-MM-dd');
+    const isViewToday = isToday(viewDate);
     const nowTime = format(new Date(), 'HH:mm');
 
     useEffect(() => {
-        if (barberProfile?.id) {
-            loadAppointments();
-        } else {
-            setLoading(false);
-        }
-    }, [barberProfile?.id]);
+        if (barberProfile?.id) loadAppointments();
+        else setLoading(false);
+    }, [barberProfile?.id, viewDateStr]);
 
     const loadAppointments = async () => {
+        setLoading(true);
         try {
             const { data } = await supabase
                 .from('appointments')
                 .select('id, customer_name, customer_phone, start_time, end_time, status, services(name, price)')
                 .eq('barber_id', barberProfile!.id)
-                .eq('appointment_date', today)
+                .eq('appointment_date', viewDateStr)
                 .order('start_time', { ascending: true });
             setAppointments(data || []);
         } catch (e) {
@@ -61,8 +63,20 @@ export default function StaffHome() {
         }
     };
 
+    const updateStatus = async (id: string, status: 'completed' | 'no_show') => {
+        setUpdatingId(id);
+        try {
+            await supabase.from('appointments').update({ status }).eq('id', id);
+            setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
     const confirmed = appointments.filter(a => a.status === 'confirmed');
-    const nextAppt = confirmed.find(a => a.start_time >= nowTime);
+    const nextAppt = isViewToday ? confirmed.find(a => a.start_time >= nowTime) : confirmed[0];
     const displayName = barberProfile?.name || user?.email?.split('@')[0] || 'Staff';
 
     return (
@@ -90,20 +104,44 @@ export default function StaffHome() {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-space-muted mb-0.5">
                         {format(new Date(), "EEEE, d 'de' MMMM", { locale: es })}
                     </p>
-                    <h1 className="text-2xl font-black text-space-text">
-                        Hola, {displayName}
-                    </h1>
+                    <h1 className="text-2xl font-black text-space-text">Hola, {displayName}</h1>
+                </div>
+
+                {/* Date navigator */}
+                <div className="flex items-center justify-between bg-space-card border border-space-border rounded-2xl px-4 py-3">
+                    <button
+                        onClick={() => setViewDate(d => subDays(d, 1))}
+                        className="p-1.5 rounded-lg text-space-muted hover:text-space-text hover:bg-space-card2 transition"
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+                    <div className="text-center">
+                        <p className="text-sm font-extrabold text-space-text">
+                            {isViewToday ? 'Hoy' : format(viewDate, "d 'de' MMMM", { locale: es })}
+                        </p>
+                        <p className="text-[10px] text-space-muted">{format(viewDate, 'EEEE', { locale: es })}</p>
+                    </div>
+                    <button
+                        onClick={() => setViewDate(d => addDays(d, 1))}
+                        className="p-1.5 rounded-lg text-space-muted hover:text-space-text hover:bg-space-card2 transition"
+                    >
+                        <ChevronRight size={18} />
+                    </button>
                 </div>
 
                 {/* Summary cards */}
                 <div className="grid grid-cols-2 gap-3">
                     <div className="bg-space-card border border-space-border rounded-2xl p-4">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-space-muted mb-1">Hoy</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-space-muted mb-1">
+                            {isViewToday ? 'Hoy' : 'Ese día'}
+                        </p>
                         <p className="text-3xl font-black text-space-text">{appointments.length}</p>
                         <p className="text-[11px] text-space-muted">{appointments.length === 1 ? 'cita' : 'citas'}</p>
                     </div>
                     <div className="bg-space-card border border-space-border rounded-2xl p-4">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-space-muted mb-1">Próxima</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-space-muted mb-1">
+                            {isViewToday ? 'Próxima' : 'Primera'}
+                        </p>
                         {nextAppt ? (
                             <>
                                 <p className="text-3xl font-black text-space-primary">{nextAppt.start_time}</p>
@@ -118,62 +156,89 @@ export default function StaffHome() {
                     </div>
                 </div>
 
-                {/* Appointments */}
+                {/* Appointments list */}
                 <div>
                     <h2 className="text-sm font-black text-space-text uppercase tracking-wide mb-3 flex items-center gap-2">
-                        <Calendar size={14} /> Citas de hoy
+                        <Calendar size={14} /> Citas
                     </h2>
                     {loading ? (
                         <div className="flex justify-center py-10"><LoadingSpinner /></div>
                     ) : !barberProfile ? (
                         <div className="bg-space-card border border-space-border rounded-2xl p-8 text-center">
                             <p className="text-space-muted text-sm">
-                                Tu perfil de barbero no está configurado aún. Contacta al administrador.
+                                Tu perfil de barbero no está configurado. Contacta al administrador.
                             </p>
                         </div>
                     ) : appointments.length === 0 ? (
                         <div className="bg-space-card border border-space-border rounded-2xl p-8 text-center">
-                            <p className="text-space-muted text-sm">No hay citas para hoy. ¡Disfruta el día!</p>
+                            <p className="text-space-muted text-sm">
+                                {isViewToday ? 'No hay citas para hoy. ¡Disfruta!' : 'Sin citas para este día.'}
+                            </p>
                         </div>
                     ) : (
                         <div className="space-y-2">
                             {appointments.map(apt => {
                                 const style = STATUS_STYLES[apt.status] || STATUS_STYLES.confirmed;
-                                const isPast = apt.end_time < nowTime;
+                                const isPast = isViewToday && apt.end_time < nowTime;
+                                const canUpdate = apt.status === 'confirmed';
+                                const isUpdating = updatingId === apt.id;
+
                                 return (
                                     <div
                                         key={apt.id}
-                                        className={`bg-space-card border border-space-border rounded-2xl p-4 flex items-center gap-3 transition-opacity ${isPast ? 'opacity-50' : ''}`}
+                                        className={`bg-space-card border border-space-border rounded-2xl p-4 transition-opacity ${isPast && apt.status === 'confirmed' ? 'opacity-60' : ''}`}
                                     >
-                                        {/* Time column */}
-                                        <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-12 text-center">
-                                            <p className="text-sm font-extrabold text-space-text leading-tight">{apt.start_time}</p>
-                                            <p className="text-[9px] text-space-muted">{apt.end_time}</p>
-                                        </div>
-                                        {/* Info */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-1.5 mb-0.5">
-                                                <User size={11} className="text-space-muted flex-shrink-0" />
-                                                <p className="font-bold text-space-text text-sm truncate">{apt.customer_name}</p>
+                                        <div className="flex items-center gap-3">
+                                            {/* Time */}
+                                            <div className="flex flex-col items-center gap-0.5 flex-shrink-0 w-12 text-center">
+                                                <p className="text-sm font-extrabold text-space-text leading-tight">{apt.start_time}</p>
+                                                <p className="text-[9px] text-space-muted">{apt.end_time}</p>
                                             </div>
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                {apt.services && (
-                                                    <p className="text-[11px] text-space-muted">{apt.services.name}</p>
-                                                )}
-                                                {apt.customer_phone && (
-                                                    <a
-                                                        href={`tel:${apt.customer_phone}`}
-                                                        className="flex items-center gap-0.5 text-[11px] text-space-primary"
-                                                    >
-                                                        <Phone size={10} /> {apt.customer_phone}
-                                                    </a>
-                                                )}
+                                            {/* Info */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-1.5 mb-0.5">
+                                                    <User size={11} className="text-space-muted flex-shrink-0" />
+                                                    <p className="font-bold text-space-text text-sm truncate">{apt.customer_name}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    {apt.services && (
+                                                        <p className="text-[11px] text-space-muted">{apt.services.name}</p>
+                                                    )}
+                                                    {apt.customer_phone && (
+                                                        <a
+                                                            href={`tel:${apt.customer_phone}`}
+                                                            className="flex items-center gap-0.5 text-[11px] text-space-primary"
+                                                        >
+                                                            <Phone size={10} /> {apt.customer_phone}
+                                                        </a>
+                                                    )}
+                                                </div>
                                             </div>
+                                            {/* Status badge */}
+                                            <span className={`px-2 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wide flex-shrink-0 ${style}`}>
+                                                {STATUS_LABELS[apt.status] || apt.status}
+                                            </span>
                                         </div>
-                                        {/* Status badge */}
-                                        <span className={`px-2 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wide flex-shrink-0 ${style}`}>
-                                            {STATUS_LABELS[apt.status] || apt.status}
-                                        </span>
+
+                                        {/* Action buttons — only for confirmed appointments */}
+                                        {canUpdate && (
+                                            <div className="flex gap-2 mt-3 pt-3 border-t border-space-border">
+                                                <button
+                                                    onClick={() => updateStatus(apt.id, 'completed')}
+                                                    disabled={isUpdating}
+                                                    className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-xl bg-green-500/10 text-green-400 text-[10px] font-extrabold uppercase tracking-wider hover:bg-green-500/20 transition disabled:opacity-50"
+                                                >
+                                                    <CheckCircle2 size={12} /> Completada
+                                                </button>
+                                                <button
+                                                    onClick={() => updateStatus(apt.id, 'no_show')}
+                                                    disabled={isUpdating}
+                                                    className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-xl bg-yellow-500/10 text-yellow-400 text-[10px] font-extrabold uppercase tracking-wider hover:bg-yellow-500/20 transition disabled:opacity-50"
+                                                >
+                                                    <UserX size={12} /> No asistió
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}

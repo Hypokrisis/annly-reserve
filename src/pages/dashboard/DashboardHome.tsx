@@ -4,7 +4,7 @@ import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     Scissors, Users, Calendar, Clock, TrendingUp, Award,
-    Copy, Check, ArrowRight, Sparkles, BarChart3
+    Copy, Check, ArrowRight, Sparkles, BarChart3, CheckCircle2, XCircle, Rocket
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/supabaseClient';
@@ -15,6 +15,8 @@ export default function DashboardHome() {
     const { role } = useAuth();
     const [copied, setCopied] = useState(false);
     const [todayApts, setTodayApts] = useState<any[]>([]);
+    const [scheduleCount, setScheduleCount] = useState(0);
+    const [publishing, setPublishing] = useState(false);
     const [stats, setStats] = useState({
         totalRevenue: 0, totalCustomers: 0, returningRate: 0,
         revenueTrend: 0, appointmentsTrend: 0, totalAppointments: 0,
@@ -28,7 +30,14 @@ export default function DashboardHome() {
         if (!business?.id) return;
         loadAnalytics();
         loadToday();
-    }, [business?.id]);
+        if (!business.is_active) {
+            supabase
+                .from('schedules')
+                .select('id', { count: 'exact', head: true })
+                .eq('business_id', business.id)
+                .then(({ count }) => setScheduleCount(count || 0));
+        }
+    }, [business?.id, business?.is_active]);
 
     const loadAnalytics = async () => {
         try {
@@ -102,6 +111,26 @@ export default function DashboardHome() {
         setTodayApts(data || []);
     };
 
+    const onboardingSteps = [
+        { label: 'Info básica', desc: 'Dirección y teléfono', done: !!(business?.address && business?.phone), href: '/dashboard/settings' },
+        { label: 'Servicios', desc: 'Al menos 1 servicio', done: services.length > 0, href: '/dashboard/services' },
+        { label: 'Equipo y horarios', desc: 'Barbero con horario activo', done: barbers.filter(b => b.is_active).length > 0 && scheduleCount > 0, href: '/dashboard/schedules' },
+        { label: 'WhatsApp', desc: 'Número del bot (opcional)', done: !!business?.whatsapp_booking_link, href: '/dashboard/settings', optional: true },
+    ];
+    const canPublish = onboardingSteps.filter(s => !s.optional).every(s => s.done);
+
+    const handlePublish = async () => {
+        if (!business?.id || !canPublish) return;
+        setPublishing(true);
+        try {
+            await supabase.from('businesses').update({ is_active: true }).eq('id', business.id);
+            window.location.reload();
+        } catch (e) {
+            console.error(e);
+            setPublishing(false);
+        }
+    };
+
     const handleCopy = () => {
         navigator.clipboard.writeText(`${window.location.origin}/book/${business?.slug}`);
         setCopied(true);
@@ -130,6 +159,47 @@ export default function DashboardHome() {
     return (
         <DashboardLayout>
             <div className="animate-fade-up pb-12 space-y-8">
+
+                {/* ── Onboarding banner (shown while business is inactive) ── */}
+                {business && !business.is_active && (
+                    <div className="rounded-2xl border-2 border-dashed border-space-primary/30 bg-space-primary/5 p-5 space-y-4">
+                        <div className="flex items-start gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-space-primary/15 flex items-center justify-center flex-shrink-0">
+                                <Rocket size={16} className="text-space-primary" />
+                            </div>
+                            <div>
+                                <p className="font-extrabold text-space-text text-sm">Tu negocio no está visible al público todavía.</p>
+                                <p className="text-[11px] text-space-muted mt-0.5">Completa estos pasos para publicarlo y empezar a recibir reservas.</p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {onboardingSteps.map(step => (
+                                <Link key={step.label} to={step.href} className="flex items-center gap-2 bg-space-card border border-space-border rounded-xl px-3 py-2.5 hover:border-space-primary/40 transition-colors">
+                                    {step.done
+                                        ? <CheckCircle2 size={15} className="text-green-500 flex-shrink-0" />
+                                        : <XCircle size={15} className={step.optional ? 'text-space-muted flex-shrink-0' : 'text-red-400 flex-shrink-0'} />
+                                    }
+                                    <div className="min-w-0">
+                                        <p className="text-[11px] font-bold text-space-text truncate">{step.label}</p>
+                                        <p className="text-[9px] text-space-muted truncate">{step.desc}</p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                        <button
+                            onClick={handlePublish}
+                            disabled={!canPublish || publishing}
+                            className={`w-full h-11 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 transition-all ${
+                                canPublish
+                                    ? 'bg-space-primary text-white hover:opacity-90'
+                                    : 'bg-space-card border border-space-border text-space-muted cursor-not-allowed'
+                            }`}
+                        >
+                            <Rocket size={15} />
+                            {publishing ? 'Publicando...' : canPublish ? 'Publicar mi negocio →' : 'Completa los pasos para publicar'}
+                        </button>
+                    </div>
+                )}
 
                 {/* ── Page header ──────────────────────────── */}
                 <div className="flex items-center justify-between">

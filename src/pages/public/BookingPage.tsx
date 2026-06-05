@@ -17,6 +17,7 @@ export default function PublicBookingPage() {
     const { user, login } = useAuth();
 
     const [business, setBusiness] = useState<Business | null>(null);
+    const [businessInactive, setBusinessInactive] = useState(false);
     const [services, setServices] = useState<Service[]>([]);
     const [barbers, setBarbers] = useState<Barber[]>([]);
     const [loading, setLoading] = useState(true);
@@ -80,13 +81,18 @@ export default function PublicBookingPage() {
                 .from('businesses')
                 .select('*')
                 .eq('slug', slug)
-                .eq('is_active', true)
                 .maybeSingle();
 
             if (businessError) throw businessError;
 
             if (!businessData) {
                 setBusiness(null);
+                setLoading(false);
+                return;
+            }
+
+            if (!businessData.is_active) {
+                setBusinessInactive(true);
                 setLoading(false);
                 return;
             }
@@ -349,6 +355,19 @@ export default function PublicBookingPage() {
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-space-bg">
             <LoadingSpinner />
+        </div>
+    );
+
+    if (businessInactive) return (
+        <div className="min-h-screen flex items-center justify-center bg-space-bg px-4">
+            <div className="text-center space-y-4 max-w-sm">
+                <div className="w-16 h-16 rounded-2xl bg-space-primary/10 flex items-center justify-center mx-auto">
+                    <Clock size={28} className="text-space-primary" />
+                </div>
+                <h1 className="text-xl font-extrabold text-space-text">Próximamente disponible</h1>
+                <p className="text-space-muted text-sm">Este negocio aún no está disponible para reservas en línea. Vuelve pronto.</p>
+                <Link to="/" className="inline-block btn-secondary text-sm px-6 py-2.5">← Explorar negocios</Link>
+            </div>
         </div>
     );
 
