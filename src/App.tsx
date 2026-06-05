@@ -23,6 +23,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import AuthCallbackPage from './pages/auth/AuthCallbackPage';
 import AuthRedirectPage from './pages/auth/AuthRedirectPage';
+import JoinPage from './pages/auth/JoinPage';
 
 // Public pages
 import CancelPage from './pages/public/CancelPage';
@@ -40,6 +41,7 @@ import BusinessSettingsPage from './pages/dashboard/BusinessSettingsPage';
 import AIAssistantPage from './pages/dashboard/AIAssistantPage';
 import CreateBusinessPage from './pages/dashboard/CreateBusinessPage';
 import SubscriptionPage from './pages/dashboard/SubscriptionPage';
+import TeamPage from './pages/dashboard/TeamPage';
 
 // Staff pages (Phase 4)
 import StaffHome from './pages/staff/StaffHome';
@@ -72,6 +74,7 @@ export default function App() {
                                     <Route path="/auth/callback" element={<AuthCallbackPage />} />
                                     <Route path="/auth-redirect" element={<AuthRedirectPage />} />
                                     <Route path="/cancel/:token" element={<CancelPage />} />
+                                    <Route path="/join" element={<JoinPage />} />
 
                                     {/* ── OWNER / ADMIN (/dashboard) ─────────────── */}
                                     <Route path="/dashboard" element={<OwnerRoute><DashboardHome /></OwnerRoute>} />
@@ -84,6 +87,7 @@ export default function App() {
                                     <Route path="/dashboard/ai-assistant" element={<OwnerRoute><AIAssistantPage /></OwnerRoute>} />
                                     <Route path="/dashboard/billing" element={<OwnerRoute><SubscriptionPage /></OwnerRoute>} />
                                     <Route path="/dashboard/settings" element={<OwnerRoute><BusinessSettingsPage /></OwnerRoute>} />
+                                    <Route path="/dashboard/team" element={<OwnerRoute><TeamPage /></OwnerRoute>} />
                                     {/* /create-business only needs auth — no business required (new owners) */}
                                     <Route path="/create-business" element={<AuthOnlyRoute><CreateBusinessPage /></AuthOnlyRoute>} />
 

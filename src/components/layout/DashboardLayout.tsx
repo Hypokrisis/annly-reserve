@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
     LayoutDashboard, Scissors, Users, Calendar, LogOut, Menu, X,
-    Settings, Globe, Clock, CreditCard, Zap, Moon, Sun, Sparkles, ChevronRight
+    Settings, Globe, Clock, CreditCard, Zap, Moon, Sun, Sparkles, ChevronRight, UserPlus
 } from 'lucide-react';
 
 interface DashboardLayoutProps { children: React.ReactNode; }
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
     { name: 'Asistente IA',   href: '/dashboard/ai-assistant', icon: Sparkles,        roles: ['owner','admin'] },
     { name: 'Suscripción',    href: '/dashboard/billing',      icon: CreditCard,      roles: ['owner','admin'] },
     { name: 'Configuración',  href: '/dashboard/settings',     icon: Settings,        roles: ['owner','admin'] },
+    { name: 'Staff',          href: '/dashboard/team',          icon: UserPlus,        roles: ['owner','admin'] },
 ];
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
