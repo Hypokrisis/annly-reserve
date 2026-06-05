@@ -159,16 +159,22 @@ export default function PublicBookingPage() {
     };
 
     const handleDateSelect = (date: string) => {
-        if (business?.max_days_advance) {
-            const msPerDay = 1000 * 60 * 60 * 24;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const selected = new Date(date + 'T12:00:00');
-            const daysAhead = Math.round((selected.getTime() - today.getTime()) / msPerDay);
-            if (daysAhead > business.max_days_advance) {
-                alert(`Solo puedes reservar hasta ${business.max_days_advance} días en adelanto.`);
-                return;
-            }
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selected = new Date(date + 'T12:00:00');
+        const daysAhead = Math.round((selected.getTime() - today.getTime()) / msPerDay);
+
+        // Block past dates
+        if (daysAhead < 0) {
+            alert('No puedes reservar en fechas pasadas.');
+            return;
+        }
+
+        // Block beyond max advance window
+        if (business?.max_days_advance && daysAhead > business.max_days_advance) {
+            alert(`Solo puedes reservar hasta ${business.max_days_advance} días en adelanto.`);
+            return;
         }
         setSelectedDate(date);
         setSelectedSlot(null);
@@ -356,7 +362,7 @@ export default function PublicBookingPage() {
         if (!confirmedAptId) return;
         setGuestSaving(true);
         try {
-            const token = Date.now().toString(36) + Math.random().toString(36).substr(2, 10);
+            const token = crypto.randomUUID();
             const { error } = await supabase
                 .from('appointments')
                 .update({ is_guest: true, cancel_token: token })
