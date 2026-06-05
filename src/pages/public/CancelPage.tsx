@@ -40,14 +40,13 @@ export default function CancelPage() {
         if (!confirm('¿Estás seguro de que quieres cancelar esta cita?')) return;
         setCancelling(true);
         try {
-            const { error: err } = await supabase
-                .from('appointments')
-                .update({ status: 'cancelled' })
-                .eq('cancel_token', token);
+            const { data, error: err } = await supabase
+                .rpc('cancel_appointment_by_token', { p_token: token });
             if (err) throw err;
+            if (!data?.success) throw new Error(data?.error || 'token_invalid');
             setCancelled(true);
         } catch {
-            setError('No se pudo cancelar. Intenta de nuevo.');
+            setError('No se pudo cancelar. El link puede haber expirado o la cita ya fue cancelada.');
         } finally {
             setCancelling(false);
         }
