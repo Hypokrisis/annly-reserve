@@ -22,6 +22,9 @@ export default function BusinessSettingsPage() {
         description: '',
         address: '',
         city: '',
+        state: 'PR',
+        zip_code: '',
+        business_type: 'barberia',
         latitude: '',
         longitude: '',
         logo_url: '',
@@ -45,7 +48,7 @@ export default function BusinessSettingsPage() {
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-    const [activeTab, setActiveTab] = useState<'profile' | 'gallery' | 'location' | 'bot'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'public' | 'gallery' | 'location' | 'bot'>('profile');
 
     // QR connection states
     const [qrModalOpen, setQrModalOpen] = useState(false);
@@ -160,6 +163,9 @@ export default function BusinessSettingsPage() {
                 description: currentBusiness.description || '',
                 address: currentBusiness.address || '',
                 city: currentBusiness.city || '',
+                state: (currentBusiness as any).state || 'PR',
+                zip_code: (currentBusiness as any).zip_code || '',
+                business_type: (currentBusiness as any).business_type || 'barberia',
                 latitude: currentBusiness.latitude?.toString() || '',
                 longitude: currentBusiness.longitude?.toString() || '',
                 logo_url: currentBusiness.logo_url || '',
@@ -276,6 +282,9 @@ export default function BusinessSettingsPage() {
                     description: formData.description.trim(),
                     address: formData.address.trim(),
                     city: formData.city.trim(),
+                    state: formData.state.trim() || 'PR',
+                    zip_code: formData.zip_code.trim(),
+                    business_type: formData.business_type,
                     latitude: formData.latitude ? parseFloat(formData.latitude) : null,
                     longitude: formData.longitude ? parseFloat(formData.longitude) : null,
                     logo_url: formData.logo_url,
@@ -321,10 +330,11 @@ export default function BusinessSettingsPage() {
     );
 
     const TABS = [
-        { id: 'profile',  label: 'Perfil',    icon: Store },
-        { id: 'gallery',  label: 'Galería',   icon: Sparkles },
-        { id: 'location', label: 'Ubicación', icon: MapPin },
-        { id: 'bot',      label: 'Bot IA',    icon: Zap },
+        { id: 'profile',  label: 'Perfil',         icon: Store },
+        { id: 'public',   label: 'Perfil Público', icon: Eye },
+        { id: 'gallery',  label: 'Galería',        icon: Sparkles },
+        { id: 'location', label: 'Ubicación',      icon: MapPin },
+        { id: 'bot',      label: 'Bot IA',         icon: Zap },
     ] as const;
 
     return (
@@ -420,6 +430,78 @@ export default function BusinessSettingsPage() {
                                 className="input-field resize-none min-h-[90px]"
                                 placeholder="Cuéntanos sobre tu barbería..." />
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* PERFIL PÚBLICO */}
+            {activeTab === 'public' && (
+                <div className="space-y-6 animate-fade-in">
+                    {/* Preview link banner */}
+                    <div className="rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-space-primary/20" style={{ background: 'rgba(var(--space-primary), 0.06)' }}>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-space-primary/15 flex items-center justify-center flex-shrink-0">
+                                <Eye size={18} className="text-space-primary" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-extrabold text-space-text">Tu perfil público</p>
+                                <p className="text-[11px] text-space-muted">Así te ven los clientes en el directorio de Spacey.</p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => window.open(`/business/${formData.slug}`, '_blank')}
+                            disabled={!formData.slug}
+                            className="btn-secondary text-xs px-5 py-2.5 gap-2 flex-shrink-0 disabled:opacity-50"
+                        >
+                            <Eye size={14} /> Ver cómo me ven los clientes
+                        </button>
+                    </div>
+
+                    <div className="bg-space-card rounded-2xl p-6 border border-space-border space-y-5">
+                        <h2 className="text-sm font-black text-space-text uppercase tracking-wide flex items-center gap-2">
+                            <Store size={14} className="text-space-primary" />Tipo y dirección
+                        </h2>
+
+                        {/* Business type selector */}
+                        <div>
+                            <label className="input-label">Tipo de negocio</label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {[
+                                    { id: 'barberia', label: 'Barbería', emoji: '💈' },
+                                    { id: 'salon', label: 'Salón', emoji: '✂️' },
+                                    { id: 'nails', label: 'Nail Salon', emoji: '💅' },
+                                ].map(t => (
+                                    <button
+                                        key={t.id}
+                                        type="button"
+                                        onClick={() => setFormData(p => ({ ...p, business_type: t.id }))}
+                                        className={`h-16 rounded-2xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${
+                                            formData.business_type === t.id
+                                            ? 'border-space-primary bg-space-primary/5 text-space-primary'
+                                            : 'border-space-border text-space-muted hover:border-space-primary/40'
+                                        }`}
+                                    >
+                                        <span className="text-lg">{t.emoji}</span>
+                                        <span className="text-[10px] font-extrabold uppercase tracking-wider">{t.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Address */}
+                        <Input label="Dirección física" name="address" value={formData.address} onChange={handleChange} placeholder="Calle Principal #123" />
+
+                        {/* City / ZIP / State */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <Input label="Ciudad" name="city" value={formData.city} onChange={handleChange} placeholder="Aibonito" />
+                            <Input label="ZIP / Código postal" name="zip_code" value={formData.zip_code} onChange={handleChange} placeholder="00705" />
+                            <Input label="Estado" name="state" value={formData.state} onChange={handleChange} placeholder="PR" />
+                        </div>
+
+                        <p className="text-[10px] text-space-muted">
+                            La ciudad y el ZIP permiten que los clientes te encuentren en la búsqueda del directorio. Las coordenadas GPS del mapa se configuran en la pestaña "Ubicación".
+                        </p>
                     </div>
                 </div>
             )}
