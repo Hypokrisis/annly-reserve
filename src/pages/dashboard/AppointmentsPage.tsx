@@ -1,9 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
-import { Calendar as CalendarIcon, User, Mail, Phone, X, Check, Filter, Trash2, Clock, Bell } from 'lucide-react';
+import { Calendar as CalendarIcon, User, Mail, Phone, X, Check, Filter, Trash2, Clock, Bell, Plus } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Modal } from '@/components/common/Modal';
+import { Input } from '@/components/common/Input';
 import { useAppointments } from '@/hooks/useAppointments';
+import { useAvailability } from '@/hooks/useAvailability';
 import { TimelineCalendar } from '@/components/calendar/TimelineCalendar';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,7 +13,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { formatDateDisplay, formatTimeDisplay, formatRelativeTime } from '@/utils';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/contexts/ToastContext';
-import type { Appointment } from '@/types';
+import type { Appointment, CreateAppointmentData } from '@/types';
 
 type Tab = 'today' | 'upcoming' | 'all';
 
@@ -35,11 +37,42 @@ export default function AppointmentsPage() {
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    // New appointment modal state
+    const [isNewAptModalOpen, setIsNewAptModalOpen] = useState(false);
+    const [newAptForm, setNewAptForm] = useState({
+        customerSearch: '',
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        barberId: '',
+        serviceId: '',
+        date: '',
+        time: '',
+    });
+    const [selectedBarberidForAvail, setSelectedBarberidForAvail] = useState<string | null>(null);
+    const [selectedServiceIdForAvail, setSelectedServiceIdForAvail] = useState<string | null>(null);
+    const [selectedDateForAvail, setSelectedDateForAvail] = useState<string | null>(null);
+    const [creatingApt, setCreatingApt] = useState(false);
+    const [customerResults, setCustomerResults] = useState<Array<{ customer_name: string; customer_email: string; customer_phone: string }>>([]);
+    const [newAptCreated, setNewAptCreated] = useState<{ barberName: string; barberWhatsApp: string } | null>(null);
+
+    const { availableSlots, loading: loadingSlots } = useAvailability(
+        selectedBarberidForAvail && selectedServiceIdForAvail && selectedDateForAvail
+            ? {
+                businessId: business?.id || '',
+                barberId: selectedBarberidForAvail,
+                serviceId: selectedServiceIdForAvail,
+                date: selectedDateForAvail,
+            }
+            : null
+    );
+
     const {
         appointments,
         loading,
         fetchAppointments,
         updateAppointmentStatus,
+        createAppointment,
         clearHistory,
     } = useAppointments();
 
@@ -170,6 +203,112 @@ export default function AppointmentsPage() {
         }
     };
 
+    // ── New appointment (manual booking) ──────────────────────
+    const handleOpenNewAptModal = () => {
+        setNewAptForm({
+            customerSearch: '', customerName: '', customerEmail: '', customerPhone: '',
+            barberId: isStaffBarber && currentStaffBarber ? currentStaffBarber.id : '',
+            serviceId: '', date: '', time: '',
+        });
+        setCustomerResults([]);
+        setSelectedBarberidForAvail(isStaffBarber && currentStaffBarber ? currentStaffBarber.id : null);
+        setSelectedServiceIdForAvail(null);
+        setSelectedDateForAvail(null);
+        setNewAptCreated(null);
+        setIsNewAptModalOpen(true);
+    };
+
+    // Search existing customers from past appointments by name/phone
+    const handleCustomerSearch = async (term: string) => {
+        setNewAptForm(p => ({ ...p, customerSearch: term, customerName: term }));
+        if (!business || term.trim().length < 2) {
+            setCustomerResults([]);
+            return;
+        }
+        const { data } = await supabase
+            .from('appointments')
+            .select('customer_name, customer_email, customer_phone')
+            .eq('business_id', business.id)
+            .or(`customer_name.ilike.%${term.trim()}%,customer_phone.ilike.%${term.trim()}%`)
+            .limit(20);
+
+        // Dedupe by email+phone
+        const seen = new Set<string>();
+        const unique = (data || []).filter(c => {
+            const key = `${c.customer_email}|${c.customer_phone}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        }).slice(0, 5);
+        setCustomerResults(unique);
+    };
+
+    const pickCustomer = (c: { customer_name: string; customer_email: string; customer_phone: string }) => {
+        setNewAptForm(p => ({
+            ...p,
+            customerSearch: c.customer_name,
+            customerName: c.customer_name,
+            customerEmail: c.customer_email || '',
+            customerPhone: c.customer_phone || '',
+        }));
+        setCustomerResults([]);
+    };
+
+    const buildBarberWhatsAppLink = (phone: string, customerName: string, date: string, time: string) => {
+        const digits = phone.replace(/[^\d]/g, '');
+        const msg = `Nueva cita asignada en ${business?.name}:\n\n👤 ${customerName}\n📅 ${formatDateDisplay(date)}\n⏰ ${formatTimeDisplay(time)}`;
+        return `https://wa.me/${digits}?text=${encodeURIComponent(msg)}`;
+    };
+
+    const handleCreateAppointment = async () => {
+        if (!business) return;
+        const { customerName, customerEmail, barberId, serviceId, date, time } = newAptForm;
+        if (!customerName.trim() || !barberId || !serviceId || !date || !time) {
+            toast.error('Completa cliente, barbero, servicio, fecha y hora.');
+            return;
+        }
+
+        setCreatingApt(true);
+        try {
+            const aptData: CreateAppointmentData = {
+                business_id: business.id,
+                barber_id: barberId,
+                service_id: serviceId,
+                appointment_date: date,
+                start_time: time,
+                customer_name: customerName.trim(),
+                // Email is optional in DB but type requires it; fall back to placeholder
+                customer_email: customerEmail.trim() || `${newAptForm.customerPhone.replace(/[^\d]/g, '') || 'walkin'}@sincorreo.local`,
+                customer_phone: newAptForm.customerPhone.trim() || undefined,
+            };
+
+            const created = await createAppointment(aptData);
+            if (!created) {
+                toast.error('No se pudo crear la cita.');
+                return;
+            }
+
+            // Customer auto-notified by DB trigger (trg_notify_appointment_v2).
+            toast.success(`✅ Cita creada para ${customerName.trim()}`);
+
+            // Offer to notify the assigned barber via WhatsApp (if they have a phone)
+            const barber = barbers.find(b => b.id === barberId);
+            if (barber?.phone) {
+                setNewAptCreated({
+                    barberName: barber.name,
+                    barberWhatsApp: buildBarberWhatsAppLink(barber.phone, customerName.trim(), date, time),
+                });
+            } else {
+                setIsNewAptModalOpen(false);
+            }
+            loadAppointments();
+        } catch (e: any) {
+            toast.error(e.message || 'Error al crear la cita.');
+        } finally {
+            setCreatingApt(false);
+        }
+    };
+
     const getClientBadge = (appointment: Appointment) => {
         const isRegistered = !!(appointment.client_id || appointment.customer_user_id);
         return isRegistered ? (
@@ -245,15 +384,20 @@ export default function AppointmentsPage() {
                         <h1 className="page-title">Citas</h1>
                         <p className="page-subtitle">Gestiona la agenda y el historial</p>
                     </div>
-                    {role === 'owner' && activeTab === 'all' && (
-                        <button
-                            onClick={handleClearHistory}
-                            className="btn-danger flex items-center gap-2"
-                        >
-                            <Trash2 size={14} />
-                            Limpiar Historial
+                    <div className="flex items-center gap-2">
+                        {role === 'owner' && activeTab === 'all' && (
+                            <button
+                                onClick={handleClearHistory}
+                                className="btn-danger flex items-center gap-2"
+                            >
+                                <Trash2 size={14} />
+                                Limpiar Historial
+                            </button>
+                        )}
+                        <button onClick={handleOpenNewAptModal} className="btn-primary flex items-center gap-2">
+                            <Plus size={16} /> Nueva cita
                         </button>
-                    )}
+                    </div>
                 </div>
 
                 {/* Filters & Tabs */}
@@ -444,6 +588,179 @@ export default function AppointmentsPage() {
                         </div>
                     </Modal>
                 )}
+
+                {/* New Appointment Modal */}
+                <Modal
+                    isOpen={isNewAptModalOpen}
+                    onClose={() => setIsNewAptModalOpen(false)}
+                    title={newAptCreated ? '¡Cita creada!' : 'Nueva cita'}
+                >
+                    {newAptCreated ? (
+                        <div className="space-y-5">
+                            <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200">
+                                <Check size={20} className="text-space-success flex-shrink-0" />
+                                <p className="text-sm text-space-text">
+                                    La cita quedó confirmada. El cliente recibió su confirmación automáticamente por WhatsApp.
+                                </p>
+                            </div>
+                            <p className="text-sm text-space-muted">
+                                ¿Avisar a <strong className="text-space-text">{newAptCreated.barberName}</strong> que tiene una cita nueva?
+                            </p>
+                            <a
+                                href={newAptCreated.barberWhatsApp}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-primary w-full flex items-center justify-center gap-2"
+                            >
+                                <Phone size={15} /> Notificar al barbero
+                            </a>
+                            <button onClick={() => setIsNewAptModalOpen(false)} className="btn-secondary w-full">
+                                Listo
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {/* Customer search */}
+                            <div className="relative">
+                                <Input
+                                    label="Cliente (nombre o teléfono)"
+                                    value={newAptForm.customerSearch}
+                                    onChange={(e) => handleCustomerSearch(e.target.value)}
+                                    placeholder="Buscar o escribir nombre…"
+                                    required
+                                />
+                                {customerResults.length > 0 && (
+                                    <div className="absolute z-20 mt-1 w-full bg-white border border-space-border rounded-xl shadow-card-lg overflow-hidden">
+                                        {customerResults.map((c, i) => (
+                                            <button
+                                                key={i}
+                                                type="button"
+                                                onClick={() => pickCustomer(c)}
+                                                className="w-full text-left px-4 py-2.5 hover:bg-space-card2 transition border-b border-space-border/40 last:border-0"
+                                            >
+                                                <p className="text-sm font-semibold text-space-text">{c.customer_name}</p>
+                                                <p className="text-[11px] text-space-muted">{c.customer_phone || c.customer_email}</p>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <Input
+                                    label="Email (opcional)"
+                                    type="email"
+                                    value={newAptForm.customerEmail}
+                                    onChange={(e) => setNewAptForm(p => ({ ...p, customerEmail: e.target.value }))}
+                                    placeholder="cliente@email.com"
+                                />
+                                <Input
+                                    label="Teléfono (opcional)"
+                                    type="tel"
+                                    value={newAptForm.customerPhone}
+                                    onChange={(e) => setNewAptForm(p => ({ ...p, customerPhone: e.target.value }))}
+                                    placeholder="787-555-1234"
+                                />
+                            </div>
+
+                            {/* Barber */}
+                            <div>
+                                <label className="input-label">Barbero</label>
+                                <select
+                                    value={newAptForm.barberId}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setNewAptForm(p => ({ ...p, barberId: v, time: '' }));
+                                        setSelectedBarberidForAvail(v || null);
+                                    }}
+                                    disabled={isStaffBarber}
+                                    className="input-field appearance-none cursor-pointer disabled:opacity-60"
+                                >
+                                    <option value="">Selecciona un barbero</option>
+                                    {barbers.filter(b => b.is_active).map(b => (
+                                        <option key={b.id} value={b.id}>{b.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Service */}
+                            <div>
+                                <label className="input-label">Servicio</label>
+                                <select
+                                    value={newAptForm.serviceId}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setNewAptForm(p => ({ ...p, serviceId: v, time: '' }));
+                                        setSelectedServiceIdForAvail(v || null);
+                                    }}
+                                    className="input-field appearance-none cursor-pointer"
+                                >
+                                    <option value="">Selecciona un servicio</option>
+                                    {services.filter(s => s.is_active).map(s => (
+                                        <option key={s.id} value={s.id}>
+                                            {s.name} · {s.duration_minutes}min · ${s.price}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Date */}
+                            <div>
+                                <label className="input-label">Fecha</label>
+                                <input
+                                    type="date"
+                                    value={newAptForm.date}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setNewAptForm(p => ({ ...p, date: v, time: '' }));
+                                        setSelectedDateForAvail(v || null);
+                                    }}
+                                    className="input-field"
+                                />
+                            </div>
+
+                            {/* Available slots */}
+                            {newAptForm.barberId && newAptForm.serviceId && newAptForm.date && (
+                                <div>
+                                    <label className="input-label">Horario disponible</label>
+                                    {loadingSlots ? (
+                                        <div className="py-4 flex justify-center"><LoadingSpinner /></div>
+                                    ) : availableSlots.length === 0 ? (
+                                        <p className="text-sm text-space-muted py-3 text-center bg-space-bg rounded-xl border border-space-border">
+                                            No hay horarios disponibles ese día.
+                                        </p>
+                                    ) : (
+                                        <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
+                                            {availableSlots.map(slot => (
+                                                <button
+                                                    key={slot.time}
+                                                    type="button"
+                                                    onClick={() => setNewAptForm(p => ({ ...p, time: slot.time }))}
+                                                    className={`py-2 rounded-xl text-xs font-bold border transition-all ${
+                                                        newAptForm.time === slot.time
+                                                            ? 'bg-space-primary text-white border-space-primary'
+                                                            : 'bg-white text-space-text border-space-border hover:border-space-primary/40'
+                                                    }`}
+                                                >
+                                                    {formatTimeDisplay(slot.time)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <button
+                                onClick={handleCreateAppointment}
+                                disabled={creatingApt}
+                                className="btn-primary w-full h-11"
+                            >
+                                {creatingApt ? 'Creando…' : 'Crear cita'}
+                            </button>
+                        </div>
+                    )}
+                </Modal>
             </div>
         </DashboardLayout>
     );
