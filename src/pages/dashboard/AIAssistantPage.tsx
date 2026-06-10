@@ -127,6 +127,13 @@ export default function AIAssistantPage() {
     ]);
     const [simTyping, setSimTyping] = useState(false);
 
+    // ── Twilio per-business connection ──────────────────────────
+    const [twilio, setTwilio] = useState({ account_sid: '', auth_token: '', whatsapp_from: '', is_active: false });
+    const [twilioExists, setTwilioExists] = useState(false);
+    const [savingTwilio, setSavingTwilio] = useState(false);
+    const [testNumber, setTestNumber] = useState('');
+    const [testingTwilio, setTestingTwilio] = useState(false);
+
     const plan = ((currentBusiness as any)?.plan_status || 'basic').toLowerCase() as keyof typeof PLAN_FEATURES;
     const planData = PLAN_FEATURES[plan] || PLAN_FEATURES.basic;
     const isProOrPremium = plan === 'pro' || plan === 'premium';
@@ -146,8 +153,85 @@ export default function AIAssistantPage() {
                 whatsapp_bot_prompt: (currentBusiness as any).whatsapp_bot_prompt || '',
             });
             setLoading(false);
+            loadTwilio();
         }
     }, [currentBusiness]);
+
+    const loadTwilio = async () => {
+        if (!currentBusiness?.id) return;
+        const { data } = await supabase
+            .from('twilio_settings')
+            .select('account_sid, auth_token, whatsapp_from, is_active')
+            .eq('business_id', currentBusiness.id)
+            .maybeSingle();
+        if (data) {
+            setTwilio({
+                account_sid: data.account_sid || '',
+                auth_token: data.auth_token || '',
+                whatsapp_from: data.whatsapp_from || '',
+                is_active: data.is_active ?? false,
+            });
+            setTwilioExists(true);
+        }
+    };
+
+    const handleSaveTwilio = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!currentBusiness?.id) return;
+        if (!twilio.account_sid.trim() || !twilio.auth_token.trim() || !twilio.whatsapp_from.trim()) {
+            toast.error('Completa Account SID, Auth Token y número de WhatsApp.');
+            return;
+        }
+        setSavingTwilio(true);
+        const { error } = await supabase.from('twilio_settings').upsert({
+            business_id: currentBusiness.id,
+            account_sid: twilio.account_sid.trim(),
+            auth_token: twilio.auth_token.trim(),
+            whatsapp_from: twilio.whatsapp_from.trim(),
+            is_active: true,
+            updated_at: new Date().toISOString(),
+        }, { onConflict: 'business_id' });
+        setSavingTwilio(false);
+        if (error) {
+            toast.error('No se pudo guardar: ' + error.message);
+        } else {
+            setTwilioExists(true);
+            setTwilio(p => ({ ...p, is_active: true }));
+            toast.success('✓ Credenciales de Twilio guardadas');
+        }
+    };
+
+    const handleTestTwilio = async () => {
+        if (!twilio.account_sid.trim() || !twilio.auth_token.trim() || !twilio.whatsapp_from.trim()) {
+            toast.error('Completa las credenciales antes de probar.');
+            return;
+        }
+        if (!testNumber.trim()) {
+            toast.error('Escribe un número de prueba (tu WhatsApp).');
+            return;
+        }
+        setTestingTwilio(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('test-twilio', {
+                body: {
+                    account_sid: twilio.account_sid.trim(),
+                    auth_token: twilio.auth_token.trim(),
+                    whatsapp_from: twilio.whatsapp_from.trim(),
+                    to: testNumber.trim(),
+                },
+            });
+            if (error) throw error;
+            if (data?.success) {
+                toast.success('✅ ¡Mensaje de prueba enviado! Revisa tu WhatsApp.');
+            } else {
+                toast.error(data?.error || 'No se pudo enviar el mensaje de prueba.');
+            }
+        } catch (err: any) {
+            toast.error(err.message || 'Error al probar la conexión.');
+        } finally {
+            setTestingTwilio(false);
+        }
+    };
 
     const handleToggleBot = async () => {
         const newVal = !config.whatsapp_bot_active;
@@ -425,6 +509,83 @@ export default function AIAssistantPage() {
                             <div className="px-3 py-3 rounded-xl" style={{ background: `rgba(var(--space-muted), 0.06)`, border: `1px solid rgba(var(--space-border))` }}>
                                 <p className="text-[10px] font-medium" style={{ color: `rgb(var(--space-muted))` }}>
                                     El bot corre en Railway y recibe mensajes vía Twilio WhatsApp. Para cambiar la configuración avanzada del servidor, usa Railway variables.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Twilio connection (per-business credentials) */}
+                        <div className="dash-card space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-sm font-bold" style={{ color: `rgb(var(--space-text))` }}>Conexión de WhatsApp (Twilio)</h2>
+                                {twilioExists && (
+                                    <span className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider" style={{ color: `rgb(var(--space-success))` }}>
+                                        <Check size={12} /> Guardada
+                                    </span>
+                                )}
+                            </div>
+
+                            <form onSubmit={handleSaveTwilio} className="space-y-3">
+                                <div>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: `rgb(var(--space-muted))` }}>Account SID</label>
+                                    <input
+                                        value={twilio.account_sid}
+                                        onChange={(e) => setTwilio(p => ({ ...p, account_sid: e.target.value }))}
+                                        placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                        className="input-field mt-1 font-mono text-xs"
+                                        autoComplete="off"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: `rgb(var(--space-muted))` }}>Auth Token</label>
+                                    <input
+                                        type="password"
+                                        value={twilio.auth_token}
+                                        onChange={(e) => setTwilio(p => ({ ...p, auth_token: e.target.value }))}
+                                        placeholder="••••••••••••••••••••••••••••••••"
+                                        className="input-field mt-1 font-mono text-xs"
+                                        autoComplete="off"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: `rgb(var(--space-muted))` }}>Número de WhatsApp Business</label>
+                                    <input
+                                        value={twilio.whatsapp_from}
+                                        onChange={(e) => setTwilio(p => ({ ...p, whatsapp_from: e.target.value }))}
+                                        placeholder="+1 939 555 1234"
+                                        className="input-field mt-1 font-mono text-xs"
+                                        autoComplete="off"
+                                    />
+                                </div>
+                                <button type="submit" disabled={savingTwilio} className="btn-primary w-full">
+                                    {savingTwilio ? 'Guardando…' : 'Guardar credenciales'}
+                                </button>
+                            </form>
+
+                            {/* Test connection */}
+                            <div className="pt-3 border-t" style={{ borderColor: `rgb(var(--space-border))` }}>
+                                <label className="text-[10px] font-bold uppercase tracking-wider" style={{ color: `rgb(var(--space-muted))` }}>Número de prueba (tu WhatsApp)</label>
+                                <div className="flex gap-2 mt-1">
+                                    <input
+                                        value={testNumber}
+                                        onChange={(e) => setTestNumber(e.target.value)}
+                                        placeholder="+1 787 555 1234"
+                                        className="input-field flex-1 font-mono text-xs"
+                                        autoComplete="off"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleTestTwilio}
+                                        disabled={testingTwilio}
+                                        className="btn-secondary flex-shrink-0 flex items-center gap-1.5"
+                                    >
+                                        <Send size={13} /> {testingTwilio ? 'Enviando…' : 'Probar conexión'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="px-3 py-3 rounded-xl" style={{ background: `rgba(var(--space-yellow), 0.08)`, border: `1px solid rgba(var(--space-yellow), 0.2)` }}>
+                                <p className="text-[10px] font-medium leading-relaxed" style={{ color: `rgb(var(--space-muted))` }}>
+                                    Guardar tus credenciales valida y habilita el botón de prueba. El bot en vivo (Railway) y los recordatorios automáticos usan por ahora la cuenta Twilio de la plataforma; enrutar el envío en vivo a tu propia cuenta es el siguiente paso de integración.
                                 </p>
                             </div>
                         </div>
