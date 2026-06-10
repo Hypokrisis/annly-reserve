@@ -32,127 +32,10 @@ export default function BusinessSettingsPage() {
         instagram_url: '',
         website_url: '',
         gallery: [] as string[],
-        whatsapp_bot_active: true,
-        whatsapp_reminder_template: '',
-        whatsapp_booking_link: '',
-        whatsapp_offer: '',
-        whatsapp_marketing_active: true,
-        whatsapp_bot_personality: 'quick',
-        // New features:
-        whatsapp_bot_auto_schedule: false,
-        whatsapp_bot_start_hour: '09:00',
-        whatsapp_bot_end_hour: '18:00',
-        whatsapp_bot_anti_collision: true,
-        whatsapp_device_connected: false,
-        whatsapp_bot_prompt: '',
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [activeTab, setActiveTab] = useState<'profile' | 'public' | 'gallery' | 'location' | 'bot'>('profile');
-
-    // QR connection states
-    const [qrModalOpen, setQrModalOpen] = useState(false);
-    const [isGeneratingQr, setIsGeneratingQr] = useState(false);
-    const [qrSimulatedScan, setQrSimulatedScan] = useState(false);
-
-    // ── WhatsApp Simulator State ──
-    const [simulatorMessages, setSimulatorMessages] = useState<Array<{ sender: 'bot' | 'user'; text: string; time: string }>>([
-        { sender: 'bot', text: '¡Hola! 💈 Bienvenido al bot de atención automática. Escribe "hola", "precios", "ubicación" o "oferta" para simular cómo respondo a tus clientes.', time: '11:00 AM' }
-    ]);
-    const [simulatorInput, setSimulatorInput] = useState('');
-    const [isBotTyping, setIsBotTyping] = useState(false);
-
-    const handleSendSimulatorMessage = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!simulatorInput.trim()) return;
-
-        const userMsg = simulatorInput.trim();
-        const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        // Add user message
-        setSimulatorMessages(prev => [...prev, { sender: 'user', text: userMsg, time: currentTime }]);
-        setSimulatorInput('');
-        setIsBotTyping(true);
-
-        setTimeout(() => {
-            let botText = '';
-            const lower = userMsg.toLowerCase();
-            const businessName = formData.name || 'Nuestra Barbería';
-            const bookingLink = formData.whatsapp_booking_link || `${window.location.origin}/book/${formData.slug}`;
-            const address = formData.address || 'nuestra dirección';
-            const city = formData.city || '';
-            const offer = formData.whatsapp_offer || '';
-
-            // Anti-collision alert simulator
-            if (formData.whatsapp_bot_anti_collision && (lower.includes('barbero') || lower.includes('humano') || lower.includes('atencion'))) {
-                botText = `[🔇 Bot en silencio temporal]\n\nHe detectado que deseas hablar con un barbero real. El bot se ha silenciado automáticamente para evitar interrumpir tu conversación con el staff. ¡En unos instantes te atenderemos de forma manual!`;
-                setSimulatorMessages(prev => [...prev, { sender: 'bot', text: botText, time: currentTime }]);
-                setIsBotTyping(false);
-                return;
-            }
-
-            // Personality prefix helper
-            const getPersonalityGreeting = () => {
-                const prefix = formData.whatsapp_bot_prompt 
-                    ? `[🧠 Simulación de IA leyendo tu prompt personalizado...]\n\n`
-                    : '';
-                if (formData.whatsapp_bot_personality === 'cool') {
-                    return `${prefix}¡Qué lo qué mi hermano! 💈 Activo en ${businessName}. ¿Listo para el flow? 😎`;
-                } else if (formData.whatsapp_bot_personality === 'executive') {
-                    return `${prefix}Estimado cliente, bienvenido al portal oficial de ${businessName}. Es un honor asistirle el día de hoy.`;
-                } else {
-                    return `${prefix}¡Hola! Bienvenido a ${businessName}. ¿En qué te puedo ayudar hoy?`;
-                }
-            };
-
-            const getPersonalityOffer = () => {
-                if (!offer) return 'Por el momento no tenemos ofertas activas, pero siempre tenemos la mejor atención lista para ti.';
-                if (formData.whatsapp_bot_personality === 'cool') {
-                    return `¡Durísimo! 🔥 Tenemos esta promo activa hoy: "${offer}". ¡Aprovéchala ya!`;
-                } else if (formData.whatsapp_bot_personality === 'executive') {
-                    return `Le complacemos en informarle que disponemos de la siguiente cortesía exclusiva: "${offer}".`;
-                } else {
-                    return `¡Sí! Tenemos la siguiente promoción activa hoy: "${offer}".`;
-                }
-            };
-
-            const getPersonalityBooking = () => {
-                if (formData.whatsapp_bot_personality === 'cool') {
-                    return `¡Agenda tu cita de una en este link y separa tu espacio! 🔗 ${bookingLink} 🚀✂️`;
-                } else if (formData.whatsapp_bot_personality === 'executive') {
-                    return `Le invitamos a seleccionar su servicio y horario de preferencia mediante nuestro enlace de reserva: 🔗 ${bookingLink}`;
-                } else {
-                    return `Puedes reservar tu cita en segundos ingresando a este enlace: 🔗 ${bookingLink} 📅`;
-                }
-            };
-
-            // Intent mapping
-            const aiPrefix = formData.whatsapp_bot_prompt 
-                ? `[🧠 IA usando tu prompt: "${formData.whatsapp_bot_prompt.substring(0, 30)}..."]\n\n`
-                : '';
-
-            if (lower.includes('hola') || lower.includes('buenos') || lower.includes('buenas')) {
-                botText = `${getPersonalityGreeting()}\n\nEscribe "precios", "ubicación", "ofertas" o "reservar" para asistirte.`;
-            } else if (lower.includes('precio') || lower.includes('servicio') || lower.includes('cuesta')) {
-                const serviceList = services && services.length > 0 
-                    ? services.slice(0, 4).map(s => `• ${s.name}: $${s.price}`).join('\n')
-                    : '• Corte de Cabello: $20\n• Afeitado Clásico: $15\n• Combo Flow Completo: $30';
-                
-                botText = `${aiPrefix}Claro, estos son algunos de nuestros servicios principales:\n\n${serviceList}\n\n${getPersonalityBooking()}`;
-            } else if (lower.includes('donde') || lower.includes('ubicacion') || lower.includes('direccion') || lower.includes('como llego')) {
-                botText = `${aiPrefix}Nos encontramos ubicados en: 📍 ${address}${city ? ', ' + city : ''}.\n\n¡Te esperamos! Recuerda reservar antes para asegurar tu espacio.`;
-            } else if (lower.includes('oferta') || lower.includes('promo') || lower.includes('descuento')) {
-                botText = `${aiPrefix}${getPersonalityOffer()}\n\n${getPersonalityBooking()}`;
-            } else if (lower.includes('reserva') || lower.includes('cita') || lower.includes('agendar')) {
-                botText = `${aiPrefix}${getPersonalityBooking()}`;
-            } else {
-                botText = `${aiPrefix}Entendido. Para cualquier consulta adicional o para agendar de inmediato, puedes usar nuestro portal de reservas en segundos: \n\n🔗 ${bookingLink}\n\n¡Esperamos verte pronto! 💈`;
-            }
-
-            setSimulatorMessages(prev => [...prev, { sender: 'bot', text: botText, time: currentTime }]);
-            setIsBotTyping(false);
-        }, 1200);
-    };
 
     useEffect(() => {
         if (currentBusiness) {
@@ -173,50 +56,9 @@ export default function BusinessSettingsPage() {
                 instagram_url: currentBusiness.instagram_url || '',
                 website_url: currentBusiness.website_url || '',
                 gallery: currentBusiness.gallery || [],
-                whatsapp_bot_active: currentBusiness.whatsapp_bot_active ?? true,
-                whatsapp_reminder_template: currentBusiness.whatsapp_reminder_template || '',
-                whatsapp_booking_link: currentBusiness.whatsapp_booking_link || '',
-                whatsapp_offer: (currentBusiness as any).whatsapp_offer || '',
-                whatsapp_marketing_active: (currentBusiness as any).whatsapp_marketing_active ?? true,
-                whatsapp_bot_personality: (currentBusiness as any).whatsapp_bot_personality || 'quick',
-                whatsapp_bot_auto_schedule: (currentBusiness as any).whatsapp_bot_auto_schedule ?? false,
-                whatsapp_bot_start_hour: (currentBusiness as any).whatsapp_bot_start_hour || '09:00',
-                whatsapp_bot_end_hour: (currentBusiness as any).whatsapp_bot_end_hour || '18:00',
-                whatsapp_bot_anti_collision: (currentBusiness as any).whatsapp_bot_anti_collision ?? true,
-                whatsapp_device_connected: (currentBusiness as any).whatsapp_device_connected ?? false,
-                whatsapp_bot_prompt: (currentBusiness as any).whatsapp_bot_prompt || '',
             });
-            if ((currentBusiness as any).whatsapp_device_connected) {
-                setQrSimulatedScan(true);
-            }
         }
     }, [currentBusiness]);
-
-    const handleToggleBotActive = async () => {
-        const newVal = !formData.whatsapp_bot_active;
-        setFormData(p => ({ ...p, whatsapp_bot_active: newVal }));
-        
-        if (!currentBusiness) return;
-        try {
-            const { error } = await supabase
-                .from('businesses')
-                .update({ whatsapp_bot_active: newVal })
-                .eq('id', currentBusiness.id);
-            
-            if (error) throw error;
-            
-            if (newVal) {
-                toast.success('🤖 Asistente de IA Activo en vivo');
-            } else {
-                toast.success('🔇 Asistente de IA Pausado al instante');
-            }
-        } catch (err) {
-            console.error('Error toggling bot active:', err);
-            // Fallback: revert local state on failure
-            setFormData(p => ({ ...p, whatsapp_bot_active: !newVal }));
-            toast.error('No se pudo cambiar el estado del bot. Intente de nuevo.');
-        }
-    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -292,17 +134,6 @@ export default function BusinessSettingsPage() {
                     instagram_url: formData.instagram_url.trim(),
                     website_url: formData.website_url.trim(),
                     gallery: formData.gallery,
-                    whatsapp_bot_active: formData.whatsapp_bot_active,
-                    whatsapp_reminder_template: formData.whatsapp_reminder_template.trim(),
-                    whatsapp_booking_link: formData.whatsapp_booking_link.trim(),
-                    whatsapp_offer: formData.whatsapp_offer.trim(),
-                    whatsapp_marketing_active: formData.whatsapp_marketing_active,
-                    whatsapp_bot_personality: formData.whatsapp_bot_personality,
-                    whatsapp_bot_auto_schedule: formData.whatsapp_bot_auto_schedule,
-                    whatsapp_bot_start_hour: formData.whatsapp_bot_start_hour,
-                    whatsapp_bot_end_hour: formData.whatsapp_bot_end_hour,
-                    whatsapp_bot_anti_collision: formData.whatsapp_bot_anti_collision,
-                    whatsapp_bot_prompt: formData.whatsapp_bot_prompt.trim(),
                 })
                 .eq('id', currentBusiness.id);
 

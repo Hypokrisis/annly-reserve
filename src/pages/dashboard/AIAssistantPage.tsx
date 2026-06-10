@@ -119,6 +119,10 @@ export default function AIAssistantPage() {
         whatsapp_marketing_active: false,
         reminder_inactive_days: 30,
         whatsapp_bot_prompt: '',
+        whatsapp_bot_personality: 'quick',
+        whatsapp_bot_auto_schedule: false,
+        whatsapp_bot_start_hour: '09:00',
+        whatsapp_bot_end_hour: '18:00',
     });
 
     const [simInput, setSimInput] = useState('');
@@ -151,6 +155,10 @@ export default function AIAssistantPage() {
                 whatsapp_marketing_active: (currentBusiness as any).whatsapp_marketing_active ?? false,
                 reminder_inactive_days: (currentBusiness as any).reminder_inactive_days ?? 30,
                 whatsapp_bot_prompt: (currentBusiness as any).whatsapp_bot_prompt || '',
+                whatsapp_bot_personality: (currentBusiness as any).whatsapp_bot_personality || 'quick',
+                whatsapp_bot_auto_schedule: (currentBusiness as any).whatsapp_bot_auto_schedule ?? false,
+                whatsapp_bot_start_hour: (currentBusiness as any).whatsapp_bot_start_hour || '09:00',
+                whatsapp_bot_end_hour: (currentBusiness as any).whatsapp_bot_end_hour || '18:00',
             });
             setLoading(false);
             loadTwilio();
@@ -256,6 +264,10 @@ export default function AIAssistantPage() {
             whatsapp_marketing_active: config.whatsapp_marketing_active,
             reminder_inactive_days: config.reminder_inactive_days,
             whatsapp_bot_prompt: config.whatsapp_bot_prompt,
+            whatsapp_bot_personality: config.whatsapp_bot_personality,
+            whatsapp_bot_auto_schedule: config.whatsapp_bot_auto_schedule,
+            whatsapp_bot_start_hour: config.whatsapp_bot_start_hour,
+            whatsapp_bot_end_hour: config.whatsapp_bot_end_hour,
         }).eq('id', currentBusiness.id);
         setSaving(false);
         if (error) { toast.error('Error al guardar.'); } else { toast.success('✓ Configuración guardada'); }
@@ -406,6 +418,39 @@ export default function AIAssistantPage() {
                                 </p>
                             </div>
 
+                            {/* Personality */}
+                            <div>
+                                <label className="input-label">Personalidad del bot</label>
+                                <div className="grid grid-cols-2 gap-2 mt-1">
+                                    {[
+                                        { id: 'quick',   emoji: '⚡', label: 'Rápido',  desc: 'Directo y breve' },
+                                        { id: 'casual',  emoji: '💬', label: 'Casual',  desc: 'Amistoso y cercano' },
+                                        { id: 'cool',    emoji: '😎', label: 'Cool',    desc: 'Relajado, con flow' },
+                                        { id: 'premium', emoji: '👑', label: 'Premium', desc: 'Elegante y formal' },
+                                    ].map(opt => {
+                                        const active = config.whatsapp_bot_personality === opt.id;
+                                        return (
+                                            <button
+                                                key={opt.id}
+                                                type="button"
+                                                onClick={() => setConfig(p => ({ ...p, whatsapp_bot_personality: opt.id }))}
+                                                className="text-left px-3 py-2.5 rounded-xl border transition-all"
+                                                style={{
+                                                    background: active ? `rgba(var(--space-primary), 0.08)` : `rgb(var(--space-card2))`,
+                                                    borderColor: active ? `rgb(var(--space-primary))` : `rgb(var(--space-border))`,
+                                                }}
+                                            >
+                                                <p className="text-xs font-bold" style={{ color: `rgb(var(--space-text))` }}>{opt.emoji} {opt.label}</p>
+                                                <p className="text-[10px] mt-0.5" style={{ color: `rgb(var(--space-muted))` }}>{opt.desc}</p>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <p className="text-[10px] mt-1.5 font-medium" style={{ color: `rgb(var(--space-muted))` }}>
+                                    Define el tono de las respuestas del bot a preguntas generales.
+                                </p>
+                            </div>
+
                             {/* AI Prompt — Pro/Premium only */}
                             <div style={{ opacity: isProOrPremium ? 1 : 0.45 }}>
                                 <div className="flex items-center justify-between mb-1.5">
@@ -462,6 +507,44 @@ export default function AIAssistantPage() {
                                         />
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Business hours */}
+                            <div style={{ borderTop: `1px solid rgb(var(--space-border))`, paddingTop: '1rem' }}>
+                                <div className="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-xs font-bold" style={{ color: `rgb(var(--space-text))` }}>Horario de atención del bot</p>
+                                        <p className="text-[10px] font-medium mt-0.5" style={{ color: `rgb(var(--space-muted))` }}>
+                                            Fuera de este horario, el bot responde un mensaje automático con el link de reserva en vez de conversar.
+                                        </p>
+                                    </div>
+                                    <Toggle
+                                        value={config.whatsapp_bot_auto_schedule}
+                                        onChange={() => setConfig(p => ({ ...p, whatsapp_bot_auto_schedule: !p.whatsapp_bot_auto_schedule }))}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3 mt-4" style={{ opacity: config.whatsapp_bot_auto_schedule ? 1 : 0.45 }}>
+                                    <div>
+                                        <label className="input-label">Abre</label>
+                                        <input
+                                            type="time"
+                                            value={config.whatsapp_bot_start_hour}
+                                            disabled={!config.whatsapp_bot_auto_schedule}
+                                            onChange={e => setConfig(p => ({ ...p, whatsapp_bot_start_hour: e.target.value }))}
+                                            className="input-field"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="input-label">Cierra</label>
+                                        <input
+                                            type="time"
+                                            value={config.whatsapp_bot_end_hour}
+                                            disabled={!config.whatsapp_bot_auto_schedule}
+                                            onChange={e => setConfig(p => ({ ...p, whatsapp_bot_end_hour: e.target.value }))}
+                                            className="input-field"
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             <button type="submit" disabled={saving} className="btn-primary w-full">
