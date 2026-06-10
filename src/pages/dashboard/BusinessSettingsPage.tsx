@@ -302,7 +302,6 @@ export default function BusinessSettingsPage() {
                     whatsapp_bot_start_hour: formData.whatsapp_bot_start_hour,
                     whatsapp_bot_end_hour: formData.whatsapp_bot_end_hour,
                     whatsapp_bot_anti_collision: formData.whatsapp_bot_anti_collision,
-                    whatsapp_device_connected: formData.whatsapp_device_connected,
                     whatsapp_bot_prompt: formData.whatsapp_bot_prompt.trim(),
                 })
                 .eq('id', currentBusiness.id);
