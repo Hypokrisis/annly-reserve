@@ -67,12 +67,30 @@ export default function AppointmentsPage() {
             : null
     );
 
+    // Reschedule state (within detail modal)
+    const [rescheduleMode, setRescheduleMode] = useState(false);
+    const [rescheduleDate, setRescheduleDate] = useState<string | null>(null);
+    const [rescheduleTime, setRescheduleTime] = useState('');
+    const [reschedulingApt, setReschedulingApt] = useState(false);
+
+    const { availableSlots: reschedSlots, loading: reschedLoading } = useAvailability(
+        selectedAppointment && rescheduleDate
+            ? {
+                businessId: business?.id || '',
+                barberId: selectedAppointment.barber_id,
+                serviceId: selectedAppointment.service_id || '',
+                date: rescheduleDate,
+            }
+            : null
+    );
+
     const {
         appointments,
         loading,
         fetchAppointments,
         updateAppointmentStatus,
         createAppointment,
+        rescheduleAppointment,
         clearHistory,
     } = useAppointments();
 
@@ -156,7 +174,34 @@ export default function AppointmentsPage() {
 
     const handleViewDetails = (appointment: Appointment) => {
         setSelectedAppointment(appointment);
+        setRescheduleMode(false);
+        setRescheduleDate(null);
+        setRescheduleTime('');
         setIsModalOpen(true);
+    };
+
+    const handleReschedule = async () => {
+        if (!selectedAppointment || !rescheduleDate || !rescheduleTime) {
+            toast.error('Selecciona fecha y hora.');
+            return;
+        }
+        setReschedulingApt(true);
+        try {
+            const ok = await rescheduleAppointment(selectedAppointment.id, rescheduleDate, rescheduleTime);
+            if (ok) {
+                // UPDATE of date/time fires trg_notify_appointment_v2 → customer is
+                // auto-notified with the approved "rescheduled" WhatsApp template.
+                toast.success('✅ Cita reagendada. El cliente recibió el aviso por WhatsApp.');
+                setIsModalOpen(false);
+                loadAppointments();
+            } else {
+                toast.error('No se pudo reagendar la cita.');
+            }
+        } catch (e: any) {
+            toast.error(e.message || 'Error al reagendar.');
+        } finally {
+            setReschedulingApt(false);
+        }
     };
 
     const handleCancel = async (appointmentId: string) => {
@@ -553,9 +598,9 @@ export default function AppointmentsPage() {
                                 </div>
                             )}
 
-                            {selectedAppointment.status === 'confirmed' && (
+                            {selectedAppointment.status === 'confirmed' && !rescheduleMode && (
                                 <div className="space-y-3 pt-4 border-t border-space-border">
-                                    <button 
+                                    <button
                                         onClick={async () => {
                                             if (!window.confirm('¿Enviar recordatorio a este cliente?')) return;
                                             try {
@@ -573,6 +618,11 @@ export default function AppointmentsPage() {
                                         <Bell size={15} /> Enviar Recordatorio Manual
                                     </button>
 
+                                    <button onClick={() => { setRescheduleMode(true); setRescheduleDate(null); setRescheduleTime(''); }}
+                                        className="w-full py-2.5 rounded-xl text-sm font-semibold bg-space-card2 text-space-text hover:bg-space-primary hover:text-white border border-space-border transition flex items-center justify-center gap-2 min-h-[44px]">
+                                        <CalendarIcon size={15} /> Reagendar
+                                    </button>
+
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <button onClick={() => handleMarkCompleted(selectedAppointment.id)}
                                             className="w-full py-2.5 rounded-xl text-sm font-semibold bg-green-50 text-space-success hover:bg-space-success hover:text-white border border-green-200 transition flex items-center justify-center gap-2 min-h-[44px]">
@@ -583,6 +633,68 @@ export default function AppointmentsPage() {
                                             <X size={15} />Cancelar
                                         </button>
                                     </div>
+                                </div>
+                            )}
+
+                            {/* Reschedule sub-panel */}
+                            {selectedAppointment.status === 'confirmed' && rescheduleMode && (
+                                <div className="space-y-4 pt-4 border-t border-space-border">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-sm font-bold text-space-text">Reagendar cita</p>
+                                        <button onClick={() => setRescheduleMode(false)}
+                                            className="text-xs text-space-muted hover:text-space-text transition">← Volver</button>
+                                    </div>
+
+                                    <div>
+                                        <label className="input-label">Nueva fecha</label>
+                                        <input
+                                            type="date"
+                                            value={rescheduleDate || ''}
+                                            min={new Date().toISOString().split('T')[0]}
+                                            onChange={(e) => { setRescheduleDate(e.target.value || null); setRescheduleTime(''); }}
+                                            className="input-field"
+                                        />
+                                    </div>
+
+                                    {rescheduleDate && (
+                                        <div>
+                                            <label className="input-label">
+                                                Horarios de {getBarberName(selectedAppointment.barber_id)}
+                                            </label>
+                                            {reschedLoading ? (
+                                                <div className="py-4 flex justify-center"><LoadingSpinner /></div>
+                                            ) : reschedSlots.length === 0 ? (
+                                                <p className="text-sm text-space-muted py-3 text-center bg-space-bg rounded-xl border border-space-border">
+                                                    No hay horarios disponibles ese día.
+                                                </p>
+                                            ) : (
+                                                <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
+                                                    {reschedSlots.map(slot => (
+                                                        <button
+                                                            key={slot.time}
+                                                            type="button"
+                                                            onClick={() => setRescheduleTime(slot.time)}
+                                                            className={`py-2 rounded-xl text-xs font-bold border transition-all ${
+                                                                rescheduleTime === slot.time
+                                                                    ? 'bg-space-primary text-white border-space-primary'
+                                                                    : 'bg-white text-space-text border-space-border hover:border-space-primary/40'
+                                                            }`}
+                                                        >
+                                                            {formatTimeDisplay(slot.time)}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={handleReschedule}
+                                        disabled={reschedulingApt || !rescheduleDate || !rescheduleTime}
+                                        className="btn-primary w-full h-11 disabled:opacity-50"
+                                    >
+                                        {reschedulingApt ? 'Reagendando…' : 'Confirmar nuevo horario'}
+                                    </button>
                                 </div>
                             )}
                         </div>
