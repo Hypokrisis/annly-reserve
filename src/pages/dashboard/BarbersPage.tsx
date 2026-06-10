@@ -5,6 +5,7 @@ import { supabase } from '@/supabaseClient';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Modal } from '@/components/common/Modal';
 import { Input } from '@/components/common/Input';
+import { ImageUploadWithCrop } from '@/components/common/ImageUploadWithCrop';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useBarbers } from '@/hooks/useBarbers';
 import { useServices } from '@/hooks/useServices';
@@ -66,6 +67,7 @@ export default function BarbersPage() {
         email: '',
         phone: '',
         bio: '',
+        avatar_url: '',
     });
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -87,6 +89,7 @@ export default function BarbersPage() {
                 email: barber.email || '',
                 phone: barber.phone || '',
                 bio: barber.bio || '',
+                avatar_url: barber.avatar_url || '',
             });
 
             // Load barber's services
@@ -100,6 +103,7 @@ export default function BarbersPage() {
                 email: '',
                 phone: '',
                 bio: '',
+                avatar_url: '',
             });
             setSelectedServices([]);
         }
@@ -110,7 +114,7 @@ export default function BarbersPage() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingBarber(null);
-        setFormData({ name: '', user_id: '', email: '', phone: '', bio: '' });
+        setFormData({ name: '', user_id: '', email: '', phone: '', bio: '', avatar_url: '' });
         setSelectedServices([]);
         setFormErrors({});
     };
@@ -140,6 +144,7 @@ export default function BarbersPage() {
             user_id: formData.user_id.trim() || undefined,
             email: formData.email.trim() || undefined,
             phone: formData.phone.trim() || undefined,
+            avatar_url: formData.avatar_url || undefined,
             bio: formData.bio.trim() || undefined,
             service_ids: selectedServices,
         };
@@ -242,11 +247,19 @@ export default function BarbersPage() {
                                 <div className="flex flex-col gap-4">
                                     <div className="flex gap-4 items-start flex-1 min-w-0">
                                         {/* Avatar */}
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-lg font-black shadow-sm
-                                            ${barber.is_active ? 'bg-space-primary-light text-space-primary' : 'bg-space-card2 text-space-muted'}`}
-                                        >
-                                            {barber.name.charAt(0)}
-                                        </div>
+                                        {barber.avatar_url ? (
+                                            <img
+                                                src={barber.avatar_url}
+                                                alt={barber.name}
+                                                className={`w-12 h-12 rounded-2xl object-cover shrink-0 shadow-sm ${!barber.is_active ? 'grayscale' : ''}`}
+                                            />
+                                        ) : (
+                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-lg font-black shadow-sm
+                                                ${barber.is_active ? 'bg-space-primary-light text-space-primary' : 'bg-space-card2 text-space-muted'}`}
+                                            >
+                                                {barber.name.charAt(0)}
+                                            </div>
+                                        )}
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center gap-2 flex-wrap mb-0.5">
                                                 <h3 className="font-bold text-space-text truncate group-hover:text-space-primary transition-colors text-sm sm:text-base">{barber.name}</h3>
@@ -320,6 +333,17 @@ export default function BarbersPage() {
                     title={editingBarber ? 'Editar Barbero' : 'Nuevo Barbero'} size="lg">
                     <form onSubmit={handleSubmit} className="space-y-6 px-1 pr-3">
                         <div className="space-y-4 pb-24">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-28">
+                                    <ImageUploadWithCrop
+                                        label="Foto del barbero"
+                                        value={formData.avatar_url}
+                                        onUploadComplete={(url) => setFormData(p => ({ ...p, avatar_url: url }))}
+                                        aspect={1}
+                                    />
+                                </div>
+                            </div>
+
                             <Input label="Nombre" value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 error={formErrors.name} placeholder="Ej: Juan Pérez" required />

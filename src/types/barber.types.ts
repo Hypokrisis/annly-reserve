@@ -20,6 +20,7 @@ export interface CreateBarberData {
     name: string;
     email?: string;
     phone?: string;
+    avatar_url?: string;
     bio?: string;
     service_ids?: string[];
 }
