@@ -338,6 +338,15 @@ serve(async (req) => {
                     payload:     { ...job.payload, delivery_logs: logs },
                 }).eq('id', job.id);
 
+                // Medición de uso: 1 notificación saliente (confirmación/recordatorio)
+                try {
+                    await supabase.rpc('increment_message_usage', {
+                        p_business_id: apt.business_id,
+                        p_direction:   'outbound',
+                        p_count:       1,
+                    });
+                } catch (_) { /* no bloquear el job si la medición falla */ }
+
                 results.push({ id: job.id, status: 'success', logs });
 
             } catch (err: any) {
