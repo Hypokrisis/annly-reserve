@@ -1,53 +1,64 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import { AuthProvider } from '@/contexts/AuthContext';
 import { BusinessProvider } from '@/contexts/BusinessContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
-// Route guards
+// Route guards (small, always needed — keep static)
 import { OwnerRoute } from '@/components/auth/OwnerRoute';
 import { StaffRoute } from '@/components/auth/StaffRoute';
 import { ClientRoute } from '@/components/auth/ClientRoute';
 import { AuthOnlyRoute } from '@/components/auth/AuthOnlyRoute';
 
-// Public pages
-import Home from './pages/Home';
-import BookingPage from './pages/public/BookingPage';
-import PricingPage from './pages/PricingPage';
-import HowItWorksPage from './pages/HowItWorksPage';
+// Public pages — lazy so each route is its own chunk and heavy deps
+// (leaflet maps, image cropper, dashboard) load only when visited.
+const Home = lazy(() => import('./pages/Home'));
+const BookingPage = lazy(() => import('./pages/public/BookingPage'));
+const PricingPage = lazy(() => import('./pages/PricingPage'));
+const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'));
 
 // Auth pages
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import AuthCallbackPage from './pages/auth/AuthCallbackPage';
-import AuthRedirectPage from './pages/auth/AuthRedirectPage';
-import JoinPage from './pages/auth/JoinPage';
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
+const AuthCallbackPage = lazy(() => import('./pages/auth/AuthCallbackPage'));
+const AuthRedirectPage = lazy(() => import('./pages/auth/AuthRedirectPage'));
+const JoinPage = lazy(() => import('./pages/auth/JoinPage'));
 
 // Public pages
-import CancelPage from './pages/public/CancelPage';
-import BusinessProfilePage from './pages/public/BusinessProfilePage';
+const CancelPage = lazy(() => import('./pages/public/CancelPage'));
+const BusinessProfilePage = lazy(() => import('./pages/public/BusinessProfilePage'));
 
 // Owner / Admin dashboard
-import DashboardHome from './pages/dashboard/DashboardHome';
-import ServicesPage from './pages/dashboard/ServicesPage';
-import BarbersPage from './pages/dashboard/BarbersPage';
-import SchedulesPage from './pages/dashboard/SchedulesPage';
-import AppointmentsPage from './pages/dashboard/AppointmentsPage';
-import ClientsPage from './pages/dashboard/ClientsPage';
-import CampaignsPage from './pages/dashboard/CampaignsPage';
-import BusinessSettingsPage from './pages/dashboard/BusinessSettingsPage';
-import AIAssistantPage from './pages/dashboard/AIAssistantPage';
-import CreateBusinessPage from './pages/dashboard/CreateBusinessPage';
-import SubscriptionPage from './pages/dashboard/SubscriptionPage';
-import TeamPage from './pages/dashboard/TeamPage';
+const DashboardHome = lazy(() => import('./pages/dashboard/DashboardHome'));
+const ServicesPage = lazy(() => import('./pages/dashboard/ServicesPage'));
+const BarbersPage = lazy(() => import('./pages/dashboard/BarbersPage'));
+const SchedulesPage = lazy(() => import('./pages/dashboard/SchedulesPage'));
+const AppointmentsPage = lazy(() => import('./pages/dashboard/AppointmentsPage'));
+const ClientsPage = lazy(() => import('./pages/dashboard/ClientsPage'));
+const CampaignsPage = lazy(() => import('./pages/dashboard/CampaignsPage'));
+const BusinessSettingsPage = lazy(() => import('./pages/dashboard/BusinessSettingsPage'));
+const AIAssistantPage = lazy(() => import('./pages/dashboard/AIAssistantPage'));
+const CreateBusinessPage = lazy(() => import('./pages/dashboard/CreateBusinessPage'));
+const SubscriptionPage = lazy(() => import('./pages/dashboard/SubscriptionPage'));
+const TeamPage = lazy(() => import('./pages/dashboard/TeamPage'));
 
 // Staff pages (Phase 4)
-import StaffHome from './pages/staff/StaffHome';
+const StaffHome = lazy(() => import('./pages/staff/StaffHome'));
 
 // Client pages (Phase 5)
-import ClientHome from './pages/client/ClientHome';
+const ClientHome = lazy(() => import('./pages/client/ClientHome'));
+
+function PageFallback() {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-space-bg">
+            <LoadingSpinner />
+        </div>
+    );
+}
 
 export default function App() {
     return (
@@ -57,52 +68,54 @@ export default function App() {
                     <BusinessProvider>
                         <Router>
                             <div className="min-h-screen bg-space-bg text-space-text font-sans">
-                                <Routes>
+                                <Suspense fallback={<PageFallback />}>
+                                    <Routes>
 
-                                    {/* ── PUBLIC ─────────────────────────────────── */}
-                                    {/* / NEVER redirects — always shows landing */}
-                                    <Route path="/" element={<Home />} />
-                                    <Route path="/business/:slug" element={<BusinessProfilePage />} />
-                                    <Route path="/book/:slug" element={<BookingPage />} />
-                                    <Route path="/pricing" element={<PricingPage />} />
-                                    <Route path="/how-it-works" element={<HowItWorksPage />} />
+                                        {/* ── PUBLIC ─────────────────────────────────── */}
+                                        {/* / NEVER redirects — always shows landing */}
+                                        <Route path="/" element={<Home />} />
+                                        <Route path="/business/:slug" element={<BusinessProfilePage />} />
+                                        <Route path="/book/:slug" element={<BookingPage />} />
+                                        <Route path="/pricing" element={<PricingPage />} />
+                                        <Route path="/how-it-works" element={<HowItWorksPage />} />
 
-                                    {/* ── AUTH ───────────────────────────────────── */}
-                                    <Route path="/login" element={<LoginPage />} />
-                                    <Route path="/register" element={<RegisterPage />} />
-                                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                                    <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                                    <Route path="/auth-redirect" element={<AuthRedirectPage />} />
-                                    <Route path="/cancel/:token" element={<CancelPage />} />
-                                    <Route path="/join" element={<JoinPage />} />
+                                        {/* ── AUTH ───────────────────────────────────── */}
+                                        <Route path="/login" element={<LoginPage />} />
+                                        <Route path="/register" element={<RegisterPage />} />
+                                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                                        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                                        <Route path="/auth-redirect" element={<AuthRedirectPage />} />
+                                        <Route path="/cancel/:token" element={<CancelPage />} />
+                                        <Route path="/join" element={<JoinPage />} />
 
-                                    {/* ── OWNER / ADMIN (/dashboard) ─────────────── */}
-                                    <Route path="/dashboard" element={<OwnerRoute><DashboardHome /></OwnerRoute>} />
-                                    <Route path="/dashboard/appointments" element={<OwnerRoute><AppointmentsPage /></OwnerRoute>} />
-                                    <Route path="/dashboard/clients" element={<OwnerRoute><ClientsPage /></OwnerRoute>} />
-                                    <Route path="/dashboard/services" element={<OwnerRoute><ServicesPage /></OwnerRoute>} />
-                                    <Route path="/dashboard/barbers" element={<OwnerRoute><BarbersPage /></OwnerRoute>} />
-                                    <Route path="/dashboard/schedules" element={<OwnerRoute><SchedulesPage /></OwnerRoute>} />
-                                    <Route path="/dashboard/campaigns" element={<OwnerRoute><CampaignsPage /></OwnerRoute>} />
-                                    <Route path="/dashboard/ai-assistant" element={<OwnerRoute><AIAssistantPage /></OwnerRoute>} />
-                                    <Route path="/dashboard/billing" element={<OwnerRoute><SubscriptionPage /></OwnerRoute>} />
-                                    <Route path="/dashboard/settings" element={<OwnerRoute><BusinessSettingsPage /></OwnerRoute>} />
-                                    <Route path="/dashboard/team" element={<OwnerRoute><TeamPage /></OwnerRoute>} />
-                                    {/* /create-business only needs auth — no business required (new owners) */}
-                                    <Route path="/create-business" element={<AuthOnlyRoute><CreateBusinessPage /></AuthOnlyRoute>} />
+                                        {/* ── OWNER / ADMIN (/dashboard) ─────────────── */}
+                                        <Route path="/dashboard" element={<OwnerRoute><DashboardHome /></OwnerRoute>} />
+                                        <Route path="/dashboard/appointments" element={<OwnerRoute><AppointmentsPage /></OwnerRoute>} />
+                                        <Route path="/dashboard/clients" element={<OwnerRoute><ClientsPage /></OwnerRoute>} />
+                                        <Route path="/dashboard/services" element={<OwnerRoute><ServicesPage /></OwnerRoute>} />
+                                        <Route path="/dashboard/barbers" element={<OwnerRoute><BarbersPage /></OwnerRoute>} />
+                                        <Route path="/dashboard/schedules" element={<OwnerRoute><SchedulesPage /></OwnerRoute>} />
+                                        <Route path="/dashboard/campaigns" element={<OwnerRoute><CampaignsPage /></OwnerRoute>} />
+                                        <Route path="/dashboard/ai-assistant" element={<OwnerRoute><AIAssistantPage /></OwnerRoute>} />
+                                        <Route path="/dashboard/billing" element={<OwnerRoute><SubscriptionPage /></OwnerRoute>} />
+                                        <Route path="/dashboard/settings" element={<OwnerRoute><BusinessSettingsPage /></OwnerRoute>} />
+                                        <Route path="/dashboard/team" element={<OwnerRoute><TeamPage /></OwnerRoute>} />
+                                        {/* /create-business only needs auth — no business required (new owners) */}
+                                        <Route path="/create-business" element={<AuthOnlyRoute><CreateBusinessPage /></AuthOnlyRoute>} />
 
-                                    {/* ── STAFF (/staff) — Phase 4 ──────────────── */}
-                                    <Route path="/staff" element={<StaffRoute><StaffHome /></StaffRoute>} />
-                                    <Route path="/staff/*" element={<StaffRoute><StaffHome /></StaffRoute>} />
+                                        {/* ── STAFF (/staff) — Phase 4 ──────────────── */}
+                                        <Route path="/staff" element={<StaffRoute><StaffHome /></StaffRoute>} />
+                                        <Route path="/staff/*" element={<StaffRoute><StaffHome /></StaffRoute>} />
 
-                                    {/* ── CLIENT (/client) — Phase 5 ────────────── */}
-                                    <Route path="/client" element={<ClientRoute><ClientHome /></ClientRoute>} />
-                                    <Route path="/client/*" element={<ClientRoute><ClientHome /></ClientRoute>} />
+                                        {/* ── CLIENT (/client) — Phase 5 ────────────── */}
+                                        <Route path="/client" element={<ClientRoute><ClientHome /></ClientRoute>} />
+                                        <Route path="/client/*" element={<ClientRoute><ClientHome /></ClientRoute>} />
 
-                                    {/* ── FALLBACK ───────────────────────────────── */}
-                                    <Route path="*" element={<Navigate to="/" replace />} />
+                                        {/* ── FALLBACK ───────────────────────────────── */}
+                                        <Route path="*" element={<Navigate to="/" replace />} />
 
-                                </Routes>
+                                    </Routes>
+                                </Suspense>
                             </div>
                         </Router>
                     </BusinessProvider>
