@@ -383,3 +383,38 @@
   to   { opacity: 1; transform: translateX(0); }
 }
 .animate-slide-in { animation: slide-in 0.3s ease forwards; }
+
+/* ═══════════════════════════════════════════════
+   MOBILE PERFORMANCE GUARD
+   iOS Safari re-rasterizes backdrop-filter on every frame and repaints
+   infinite animations continuously → janky scroll and laggy/unresponsive
+   taps on phones. Turn both off on small screens. Purely visual — no layout
+   or behavior change.
+   ═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .glass-effect,
+  [class*="backdrop-blur"] {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  /* Opaque fallback so translucent surfaces stay legible without the blur */
+  .glass-effect { background: rgb(var(--space-card)); }
+
+  /* Stop continuously-repainting decorative animations on mobile */
+  .animate-float,
+  .animate-float-slow,
+  .animate-gradient,
+  .animate-pulse-subtle {
+    animation: none !important;
+  }
+}
+
+/* Honor users who ask the OS to reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
