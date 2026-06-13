@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { AuthStatusScreen } from '@/components/common/AuthStatusScreen';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 /**
  * Protects routes for staff (barber role).
@@ -10,10 +10,14 @@ import { AuthStatusScreen } from '@/components/common/AuthStatusScreen';
  * - member / client  → /client
  */
 export const StaffRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, role, loading, authError, retryBootstrap } = useAuth();
+    const { user, role, loading } = useAuth();
 
-    if (loading || authError) {
-        return <AuthStatusScreen error={authError} onRetry={retryBootstrap} />;
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-space-bg">
+                <LoadingSpinner />
+            </div>
+        );
     }
 
     if (!user) return <Navigate to="/login" replace />;
