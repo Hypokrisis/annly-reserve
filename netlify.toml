@@ -13,3 +13,16 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Hashed build assets never change content for a given filename → cache forever.
+# Makes repeat visits / reloads near-instant (no re-download of JS/CSS).
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# index.html must always revalidate so new deploys are picked up immediately.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
