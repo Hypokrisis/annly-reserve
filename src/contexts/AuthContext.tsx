@@ -17,8 +17,10 @@ interface AuthContextType {
     barberProfile: BarberProfile | null;
     loading: boolean;
     loadingMessage: string | null;
+    authError: string | null;
     isEmailConfirmed: boolean;
 
+    retryBootstrap: () => void;
     login: (email: string, password: string) => Promise<void>;
     signup: (data: {
         email: string;
@@ -33,6 +35,20 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/** Network timeout (ms) for auth bootstrap queries so the UI never hangs forever. */
+const BOOTSTRAP_TIMEOUT_MS = 12000;
+
+/** Rejects if the given promise doesn't settle within `ms`. Keeps the UI from hanging on slow/dead networks. */
+function withTimeout<T>(promise: PromiseLike<T>, ms: number, label: string): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error(`timeout:${label}`)), ms);
+        Promise.resolve(promise).then(
+            (v) => { clearTimeout(timer); resolve(v); },
+            (e) => { clearTimeout(timer); reject(e); },
+        );
+    });
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [businesses, setBusinesses] = useState<UserBusiness[]>([]);
@@ -41,6 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [barberProfile, setBarberProfile] = useState<BarberProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
+    const [authError, setAuthError] = useState<string | null>(null);
 
     const isEmailConfirmed = true; // Bypassed for development testing
 
@@ -59,13 +76,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const bootstrap = async () => {
         setLoading(true);
         setLoadingMessage(null);
+        setAuthError(null);
         try {
             const v = localStorage.getItem(LS_VERSION);
             if (v !== SCHEMA_VERSION) {
                 hardResetClientState();
             }
 
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await withTimeout(
+                supabase.auth.getSession(), BOOTSTRAP_TIMEOUT_MS, 'getSession'
+            );
             if (!session) {
                 setUser(null);
                 setBusinesses([]);
@@ -88,13 +108,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(session.user as User);
 
             // Fetch user businesses (may be empty for normal users)
-            const { data: memberships, error } = await supabase
-                .from("users_businesses")
-                .select(`
-                    *,
-                    business:businesses (*)
-                `)
-                .eq("user_id", uid);
+            const { data: memberships, error } = await withTimeout(
+                supabase
+                    .from("users_businesses")
+                    .select(`
+                        *,
+                        business:businesses (*)
+                    `)
+                    .eq("user_id", uid),
+                BOOTSTRAP_TIMEOUT_MS,
+                'memberships'
+            );
 
             if (error) throw error;
 
@@ -145,12 +169,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             }
 
-        } catch (e) {
+        } catch (e: any) {
             console.error("[Auth bootstrap] fatal:", e);
-            setUser(null);
-            setBusinesses([]);
-            setCurrentBusiness(null);
-            setBarberProfile(null);
+            const isTimeout = typeof e?.message === 'string' && e.message.startsWith('timeout:');
+            if (isTimeout) {
+                // Network was too slow / unreachable. Keep whatever we have and let the
+                // user retry instead of wiping their session or hanging on a spinner.
+                setAuthError('La conexión está lenta o no responde. Revisa tu internet e inténtalo de nuevo.');
+            } else {
+                setUser(null);
+                setBusinesses([]);
+                setCurrentBusiness(null);
+                setBarberProfile(null);
+            }
         } finally {
             setLoading(false);
             setLoadingMessage(null);
@@ -168,8 +199,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setRole(null);
                 setBarberProfile(null);
                 setLoading(false);
-            } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                bootstrap();
+            } else if (event === 'SIGNED_IN') {
+                // Defer out of the auth callback: awaiting supabase queries directly
+                // inside onAuthStateChange can deadlock the internal auth lock.
+                // TOKEN_REFRESHED is intentionally ignored — the token is rotated
+                // internally and our cached user/role/business don't change, so a
+                // full re-fetch on every hourly refresh / tab-focus is wasteful.
+                setTimeout(() => { bootstrap(); }, 0);
             }
         });
         return () => sub.subscription.unsubscribe();
@@ -290,7 +326,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         barberProfile,
         loading,
         loadingMessage,
+        authError,
         isEmailConfirmed,
+        retryBootstrap: bootstrap,
         login,
         signup,
         logout,

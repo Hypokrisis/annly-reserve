@@ -129,7 +129,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             {/* Mobile top bar */}
             <header
                 className="lg:hidden fixed top-3 left-3 right-3 z-40 h-14 rounded-2xl flex items-center justify-between px-4 shadow-lg"
-                style={{ background: `rgba(var(--space-card), 0.95)`, backdropFilter: 'blur(20px)', border: `1px solid rgb(var(--space-border))` }}
+                style={{ background: `rgb(var(--space-card))`, border: `1px solid rgb(var(--space-border))` }}
             >
                 <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg overflow-hidden flex-shrink-0" style={{ background: `rgb(var(--space-primary))` }}>
@@ -150,7 +150,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             {mobileOpen && (
                 <div
                     className="fixed inset-0 z-40 lg:hidden"
-                    style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
+                    style={{ background: 'rgba(0,0,0,0.5)' }}
                     onClick={() => setMobileOpen(false)}
                 />
             )}
@@ -160,7 +160,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 className={`fixed inset-y-0 left-0 w-56 z-50 flex flex-col h-screen transform transition-transform duration-250 ease-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:block`}
                 style={{ background: `rgb(var(--sidebar-bg))`, borderRight: `1px solid rgb(var(--space-border))` }}
             >
-                <SidebarContent />
+                {/* Call as a function (not <SidebarContent/>) so React keeps it as
+                    inline JSX instead of a new component type that remounts the
+                    whole sidebar on every render. */}
+                {SidebarContent()}
             </aside>
 
             {/* Main */}

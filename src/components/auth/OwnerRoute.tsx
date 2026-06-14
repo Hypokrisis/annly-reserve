@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { AuthStatusScreen } from '@/components/common/AuthStatusScreen';
 
 /**
  * Protects routes for owner / admin only.
@@ -11,14 +11,10 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
  * - no business linked yet → /create-business
  */
 export const OwnerRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { user, role, loading, currentBusiness } = useAuth();
+    const { user, role, loading, currentBusiness, authError, retryBootstrap } = useAuth();
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-space-bg">
-                <LoadingSpinner />
-            </div>
-        );
+    if (loading || authError) {
+        return <AuthStatusScreen error={authError} onRetry={retryBootstrap} />;
     }
 
     if (!user) return <Navigate to="/login" replace />;
