@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, processLock } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -11,6 +11,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: true,
         autoRefreshToken: true,
+        detectSessionInUrl: true,
+        // iOS fix: the default auth lock uses navigator.locks, which can deadlock
+        // on iOS Safari/WebKit (getSession/signInWithPassword hang forever → the
+        // app loads but never lets you do anything). processLock is the library's
+        // in-memory lock: serializes auth calls without navigator.locks.
+        lock: processLock,
     },
     db: {
         schema: 'public',
