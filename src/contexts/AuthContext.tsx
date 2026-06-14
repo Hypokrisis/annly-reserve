@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { User, UserBusiness, UserRole, Business } from '@/types';
 import * as authService from '@/services/auth.service';
 import { supabase } from '../supabaseClient';
@@ -318,7 +318,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    const value: AuthContextType = {
+    // Memoized so consumers (e.g. the heavy Home tree) only re-render when auth
+    // STATE actually changes — not on every AuthProvider render. The provider
+    // functions only close over the state listed in deps, so this is correct.
+    const value: AuthContextType = useMemo(() => ({
         user,
         businesses,
         currentBusiness,
@@ -334,7 +337,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         switchBusiness,
         createBusiness,
-    };
+    }), [user, businesses, currentBusiness, role, barberProfile, loading, loadingMessage, authError]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

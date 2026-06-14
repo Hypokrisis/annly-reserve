@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from './AuthContext';
 import type { Business, Barber, Service } from '@/types';
 import * as businessService from '@/services/business.service';
@@ -195,7 +195,8 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         await loadSubscriptionAndStats(business.id);
     };
 
-    const value: BusinessContextType = {
+    // Memoized so consumers only re-render when business STATE changes.
+    const value: BusinessContextType = useMemo(() => ({
         business,
         barbers,
         services,
@@ -208,7 +209,7 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         refreshBarbers,
         refreshServices,
         refreshSubscription,
-    };
+    }), [business, barbers, services, loading, subscription, monthlyAppointmentsCount, loadingSubscription]);
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
 };

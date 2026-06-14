@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useRef } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 // ── Types ────────────────────────────────────────────────────
@@ -95,15 +95,17 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         timerRef.current[id] = setTimeout(() => remove(id), duration);
     }, [remove]);
 
-    const toast = {
+    const toast = useMemo(() => ({
         success: (msg: string, d?: number) => add('success', msg, d),
         error:   (msg: string, d?: number) => add('error',   msg, d),
         warning: (msg: string, d?: number) => add('warning', msg, d),
         info:    (msg: string, d?: number) => add('info',    msg, d),
-    };
+    }), [add]);
+
+    const ctxValue = useMemo(() => ({ toast }), [toast]);
 
     return (
-        <ToastContext.Provider value={{ toast }}>
+        <ToastContext.Provider value={ctxValue}>
             {children}
             {/* Toast Container */}
             <div
