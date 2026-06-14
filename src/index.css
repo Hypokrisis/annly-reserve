@@ -398,6 +398,14 @@
   }
   .glass-effect { background: rgb(var(--space-card)); }
 
+  /* Big decorative blur glows (blur-[120px], blur-3xl, etc.) are extremely
+     expensive to rasterize on mobile Safari and were a main-thread freeze
+     source on the landing. Drop the filter entirely on phones (purely visual). */
+  [class*="blur-"] {
+    -webkit-filter: none !important;
+    filter: none !important;
+  }
+
   .animate-float,
   .animate-float-slow,
   .animate-gradient,

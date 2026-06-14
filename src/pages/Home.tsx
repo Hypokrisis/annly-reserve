@@ -91,7 +91,7 @@ function isNew(createdAt?: string) {
 }
 
 // ─── BUSINESS CARD (module-level: stable identity → React no lo remonta en cada render de Home) ──
-const BusinessCard = ({ business, isFav, isLoggedIn, onToggleFavorite }: {
+const BusinessCard = React.memo(({ business, isFav, isLoggedIn, onToggleFavorite }: {
   business: BusinessResult;
   isFav: boolean;
   isLoggedIn: boolean;
@@ -194,7 +194,7 @@ const BusinessCard = ({ business, isFav, isLoggedIn, onToggleFavorite }: {
         </div>
       </div>
     );
-};
+});
 
 // ─── NAV (module-level) ──
 const NavBar = ({ isScrolled, user, theme, toggleTheme, isAccountMenuOpen, setIsAccountMenuOpen, role, barberProfile, currentBusiness, onLogout }: {
