@@ -85,6 +85,246 @@ const STEPS = [
   { emoji: '📊', title: 'Tú ves todo en el dashboard y recibes reportes', desc: 'Dashboard en tiempo real + reportes por WhatsApp cada 2 horas.' },
 ];
 
+function isNew(createdAt?: string) {
+  if (!createdAt) return false;
+  return Date.now() - new Date(createdAt).getTime() < 30 * 24 * 60 * 60 * 1000;
+}
+
+// ─── BUSINESS CARD (module-level: stable identity → React no lo remonta en cada render de Home) ──
+const BusinessCard = ({ business, isFav, isLoggedIn, onToggleFavorite }: {
+  business: BusinessResult;
+  isFav: boolean;
+  isLoggedIn: boolean;
+  onToggleFavorite: (e: React.MouseEvent, slug: string) => void;
+}) => {
+    const typeMeta = TYPE_META[business.business_type || 'barberia'] || TYPE_META.barberia;
+    const rating = business.avg_rating || 0;
+    const reviews = business.total_reviews || 0;
+    const serviceNames = (business.services || []).map(s => s.name).slice(0, 3).join(' · ');
+    const isNewBiz = isNew(business.created_at);
+
+    return (
+      <div className="group bg-space-card border border-space-border/60 hover:border-space-primary/40 rounded-[2rem] overflow-hidden hover:shadow-xl hover:shadow-space-primary/10 hover:-translate-y-1.5 transition-all duration-400 flex flex-col">
+        {/* Banner */}
+        <div className="relative">
+          <Link to={`/business/${business.slug}`} className="block h-36 overflow-hidden bg-space-card2">
+            <img
+              src={business.banner_url || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=600'}
+              alt={business.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy"
+            />
+          </Link>
+
+          {/* Top-left badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+            {business.is_verified && (
+              <span className="px-2 py-1 rounded-lg bg-space-primary text-space-card text-[8px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                <CheckCircle2 size={9} /> Verificado
+              </span>
+            )}
+            {isNewBiz && (
+              <span className="px-2 py-1 rounded-lg bg-space-yellow text-space-text text-[8px] font-extrabold uppercase tracking-wider shadow-sm">
+                ✨ Nuevo
+              </span>
+            )}
+          </div>
+
+          {isLoggedIn && (
+            <button onClick={(e) => onToggleFavorite(e, business.slug)}
+              className="absolute top-3 right-3 w-8 h-8 bg-space-card/90 backdrop-blur rounded-xl flex items-center justify-center border border-space-border/40 hover:scale-110 transition-all">
+              <Heart size={14} className={isFav ? 'fill-space-danger text-space-danger' : 'text-space-muted'} />
+            </button>
+          )}
+
+          {/* Logo */}
+          <div className="absolute -bottom-6 left-4 w-12 h-12 rounded-xl bg-space-card p-0.5 shadow-lg border border-space-border/30 overflow-hidden">
+            <img
+              src={business.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(business.name)}&background=1a2e28&color=fff`}
+              className="w-full h-full object-cover rounded-lg"
+              alt=""
+            />
+          </div>
+        </div>
+
+        <div className="p-4 pt-8 flex flex-col flex-1">
+          {/* Name + rating */}
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <Link to={`/business/${business.slug}`} className="min-w-0">
+              <h3 className="font-extrabold text-space-text text-sm leading-tight hover:text-space-primary transition-colors truncate">{business.name}</h3>
+            </Link>
+            {reviews > 0 ? (
+              <div className="flex items-center gap-1 flex-shrink-0 text-[11px] font-bold text-space-text">
+                <Star size={11} className="fill-space-yellow text-space-yellow" />
+                {rating.toFixed(1)}
+                <span className="text-space-muted font-medium">({reviews})</span>
+              </div>
+            ) : (
+              <span className="flex-shrink-0 text-[9px] font-bold text-space-muted/50 uppercase tracking-wider">Sin reseñas</span>
+            )}
+          </div>
+
+          {/* Type + city */}
+          <div className="flex items-center gap-1 text-[10px] text-space-muted font-bold tracking-wide mb-2">
+            <span>{typeMeta.emoji}</span>
+            <span className="text-space-primary">{typeMeta.label}</span>
+            {business.city && <><span className="text-space-muted/40">·</span><span>{business.city}, {business.state || 'PR'}</span></>}
+          </div>
+
+          {/* Services */}
+          {serviceNames ? (
+            <p className="text-[11px] text-space-muted/80 line-clamp-1 mb-3 flex-1">
+              <span className="font-bold text-space-text/70">Servicios:</span> {serviceNames}
+            </p>
+          ) : (
+            <p className="text-[11px] text-space-muted/60 line-clamp-2 mb-3 flex-1">{business.description || 'Reserva tu cita con los mejores profesionales.'}</p>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2 mt-auto">
+            <Link to={`/business/${business.slug}`}
+              className="flex-1 h-9 flex items-center justify-center text-[10px] font-extrabold uppercase tracking-wider rounded-xl border border-space-border/60 text-space-muted hover:border-space-primary/30 hover:text-space-text transition-all">
+              Ver detalles
+            </Link>
+            <Link to={`/book/${business.slug}`}
+              className="flex-1 h-9 flex items-center justify-center gap-1 text-[10px] font-extrabold uppercase tracking-wider rounded-xl bg-space-primary text-space-card hover:bg-space-primary-dark transition-all shadow-sm">
+              Reservar <ArrowRight size={11} />
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+};
+
+// ─── NAV (module-level) ──
+const NavBar = ({ isScrolled, user, theme, toggleTheme, isAccountMenuOpen, setIsAccountMenuOpen, role, barberProfile, currentBusiness, onLogout }: {
+  isScrolled: boolean;
+  user: any;
+  theme: string;
+  toggleTheme: () => void;
+  isAccountMenuOpen: boolean;
+  setIsAccountMenuOpen: (v: boolean) => void;
+  role: any;
+  barberProfile: any;
+  currentBusiness: any;
+  onLogout: () => void;
+}) => (
+    <nav className="fixed w-full z-50 top-3 sm:top-5 px-3 sm:px-4">
+      <div className="max-w-5xl mx-auto">
+        <div className={`flex justify-between items-center px-4 sm:px-5 h-14 rounded-full transition-all duration-500 ${isScrolled ? 'backdrop-blur-2xl bg-space-card/95 border border-space-border/50 shadow-xl' : 'backdrop-blur-xl bg-space-card/75 border border-space-border/25 shadow-lg'}`}>
+          <div className="flex items-center gap-2.5 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <div className="w-8 h-8 bg-gradient-to-br from-space-primary-light to-space-primary rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-all overflow-hidden flex-shrink-0">
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
+            </div>
+            <span className="text-lg font-extrabold tracking-tight text-space-text">Spacey</span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-6">
+            <a href="#explore" className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted hover:text-space-primary transition-all">Explorar</a>
+            {!user && (
+              <>
+                <a href="#features" className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted hover:text-space-primary transition-all">Funciones</a>
+                <a href="#pricing" className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted hover:text-space-primary transition-all">Precios</a>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button onClick={toggleTheme} className="p-2 rounded-xl text-space-muted hover:text-space-primary hover:bg-space-card2/80 transition-all flex-shrink-0">
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            {user ? (
+              <div className="relative">
+                <button onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+                  className="flex items-center gap-1.5 p-1 rounded-full hover:bg-space-bg transition border-2 border-transparent hover:border-space-border">
+                  <div className="w-8 h-8 bg-gradient-to-br from-space-primary-light to-space-primary rounded-xl flex items-center justify-center font-extrabold text-xs flex-shrink-0"
+                    style={{ color: 'rgb(var(--space-card))' }}>
+                    {user.email?.[0].toUpperCase()}
+                  </div>
+                </button>
+                {isAccountMenuOpen && (
+                  <div className="absolute right-0 mt-2.5 w-64 bg-space-card rounded-[2rem] shadow-2xl border border-space-border/30 overflow-hidden py-1 z-50 animate-scale-in">
+                    {/* Header with role badge */}
+                    <div className="px-5 py-4 border-b border-space-border/30 bg-space-bg flex justify-between items-center">
+                      <div>
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[8px] font-extrabold uppercase tracking-widest mb-1 ${
+                          role === 'owner' || role === 'admin' ? 'bg-space-primary/15 text-space-primary' :
+                          role === 'barber' ? 'bg-space-yellow/15 text-space-yellow' :
+                          'bg-space-card2 text-space-muted'
+                        }`}>
+                          {role === 'owner' || role === 'admin' ? 'Owner' :
+                           role === 'barber' ? `Staff · ${barberProfile?.businessName || currentBusiness?.name || ''}` :
+                           'Cliente'}
+                        </span>
+                        <p className="text-xs font-bold text-space-text truncate max-w-[155px]">
+                          {role === 'owner' || role === 'admin' ? currentBusiness?.name :
+                           role === 'barber' ? (barberProfile?.name || user.email) :
+                           user.email}
+                        </p>
+                      </div>
+                      <button onClick={() => setIsAccountMenuOpen(false)} className="p-1 text-space-muted hover:text-space-text">
+                        <XCircle size={15} />
+                      </button>
+                    </div>
+                    <div className="p-2 space-y-0.5">
+                      {/* OWNER menu */}
+                      {(role === 'owner' || role === 'admin') && <>
+                        <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <LayoutDashboard size={15} className="text-space-primary" />Dashboard
+                        </Link>
+                        {currentBusiness && <Link to={`/book/${currentBusiness.slug}`} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Scissors size={15} className="text-space-muted" />Ver mi página pública
+                        </Link>}
+                        <Link to="/dashboard/settings" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Info size={15} className="text-space-muted" />Configuración
+                        </Link>
+                      </>}
+                      {/* STAFF menu */}
+                      {role === 'barber' && <>
+                        <Link to="/staff" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Calendar size={15} className="text-space-primary" />Mis citas de hoy
+                        </Link>
+                        <Link to="/staff" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Clock size={15} className="text-space-muted" />Mi horario
+                        </Link>
+                      </>}
+                      {/* CLIENT menu */}
+                      {!currentBusiness && role !== 'barber' && <>
+                        <a href="#mis-citas" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Calendar size={15} className="text-space-primary" />Mis citas
+                        </a>
+                        <a href="#explore" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                          <Heart size={15} className="text-space-muted" />Mis favoritos
+                        </a>
+                        <Link to="/create-business" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-primary hover:bg-space-primary/5 rounded-xl transition-all border border-space-primary/20 mx-1 my-1" onClick={() => setIsAccountMenuOpen(false)}>
+                          <LayoutDashboard size={15} />Crear mi negocio →
+                        </Link>
+                      </>}
+                      <div className="border-t border-space-border/30 mt-1 pt-1">
+                        <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-danger hover:bg-space-danger/5 rounded-xl transition-all">
+                          <LogOut size={15} />Cerrar Sesión
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <Link to="/login" className="text-[10px] font-extrabold text-space-text hover:text-space-primary px-3.5 py-2 rounded-full border border-space-border hover:border-space-primary uppercase tracking-widest transition-all">
+                  Entrar
+                </Link>
+                <Link to="/register" className="hidden sm:inline-flex btn-primary py-2 px-4 text-[10px] uppercase tracking-widest shadow-lg shadow-space-primary/20">
+                  Registrar barbería
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+);
+
 function Home() {
   const navigate = useNavigate();
   const { user, logout, currentBusiness, role, barberProfile } = useAuth();
@@ -261,231 +501,6 @@ function Home() {
   });
 
   const hasActiveFilters = searchQuery || locationQuery || selectedType;
-  const isNew = (createdAt?: string) => {
-    if (!createdAt) return false;
-    return Date.now() - new Date(createdAt).getTime() < 30 * 24 * 60 * 60 * 1000;
-  };
-
-  // ─── BUSINESS CARD ────────────────────────────────────────────────────────
-  const BusinessCard = ({ business }: { business: BusinessResult }) => {
-    const isFav = favoriteSlugs.includes(business.slug);
-    const typeMeta = TYPE_META[business.business_type || 'barberia'] || TYPE_META.barberia;
-    const rating = business.avg_rating || 0;
-    const reviews = business.total_reviews || 0;
-    const serviceNames = (business.services || []).map(s => s.name).slice(0, 3).join(' · ');
-    const isNewBiz = isNew(business.created_at);
-
-    return (
-      <div className="group bg-space-card border border-space-border/60 hover:border-space-primary/40 rounded-[2rem] overflow-hidden hover:shadow-xl hover:shadow-space-primary/10 hover:-translate-y-1.5 transition-all duration-400 flex flex-col">
-        {/* Banner */}
-        <div className="relative">
-          <Link to={`/business/${business.slug}`} className="block h-36 overflow-hidden bg-space-card2">
-            <img
-              src={business.banner_url || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=600'}
-              alt={business.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              loading="lazy"
-            />
-          </Link>
-
-          {/* Top-left badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-            {business.is_verified && (
-              <span className="px-2 py-1 rounded-lg bg-space-primary text-space-card text-[8px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-sm">
-                <CheckCircle2 size={9} /> Verificado
-              </span>
-            )}
-            {isNewBiz && (
-              <span className="px-2 py-1 rounded-lg bg-space-yellow text-space-text text-[8px] font-extrabold uppercase tracking-wider shadow-sm">
-                ✨ Nuevo
-              </span>
-            )}
-          </div>
-
-          {user && (
-            <button onClick={(e) => toggleFavorite(e, business.slug)}
-              className="absolute top-3 right-3 w-8 h-8 bg-space-card/90 backdrop-blur rounded-xl flex items-center justify-center border border-space-border/40 hover:scale-110 transition-all">
-              <Heart size={14} className={isFav ? 'fill-space-danger text-space-danger' : 'text-space-muted'} />
-            </button>
-          )}
-
-          {/* Logo */}
-          <div className="absolute -bottom-6 left-4 w-12 h-12 rounded-xl bg-space-card p-0.5 shadow-lg border border-space-border/30 overflow-hidden">
-            <img
-              src={business.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(business.name)}&background=1a2e28&color=fff`}
-              className="w-full h-full object-cover rounded-lg"
-              alt=""
-            />
-          </div>
-        </div>
-
-        <div className="p-4 pt-8 flex flex-col flex-1">
-          {/* Name + rating */}
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <Link to={`/business/${business.slug}`} className="min-w-0">
-              <h3 className="font-extrabold text-space-text text-sm leading-tight hover:text-space-primary transition-colors truncate">{business.name}</h3>
-            </Link>
-            {reviews > 0 ? (
-              <div className="flex items-center gap-1 flex-shrink-0 text-[11px] font-bold text-space-text">
-                <Star size={11} className="fill-space-yellow text-space-yellow" />
-                {rating.toFixed(1)}
-                <span className="text-space-muted font-medium">({reviews})</span>
-              </div>
-            ) : (
-              <span className="flex-shrink-0 text-[9px] font-bold text-space-muted/50 uppercase tracking-wider">Sin reseñas</span>
-            )}
-          </div>
-
-          {/* Type + city */}
-          <div className="flex items-center gap-1 text-[10px] text-space-muted font-bold tracking-wide mb-2">
-            <span>{typeMeta.emoji}</span>
-            <span className="text-space-primary">{typeMeta.label}</span>
-            {business.city && <><span className="text-space-muted/40">·</span><span>{business.city}, {business.state || 'PR'}</span></>}
-          </div>
-
-          {/* Services */}
-          {serviceNames ? (
-            <p className="text-[11px] text-space-muted/80 line-clamp-1 mb-3 flex-1">
-              <span className="font-bold text-space-text/70">Servicios:</span> {serviceNames}
-            </p>
-          ) : (
-            <p className="text-[11px] text-space-muted/60 line-clamp-2 mb-3 flex-1">{business.description || 'Reserva tu cita con los mejores profesionales.'}</p>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-2 mt-auto">
-            <Link to={`/business/${business.slug}`}
-              className="flex-1 h-9 flex items-center justify-center text-[10px] font-extrabold uppercase tracking-wider rounded-xl border border-space-border/60 text-space-muted hover:border-space-primary/30 hover:text-space-text transition-all">
-              Ver detalles
-            </Link>
-            <Link to={`/book/${business.slug}`}
-              className="flex-1 h-9 flex items-center justify-center gap-1 text-[10px] font-extrabold uppercase tracking-wider rounded-xl bg-space-primary text-space-card hover:bg-space-primary-dark transition-all shadow-sm">
-              Reservar <ArrowRight size={11} />
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // ─── NAV ──────────────────────────────────────────────────────────────────
-  const NavBar = () => (
-    <nav className="fixed w-full z-50 top-3 sm:top-5 px-3 sm:px-4">
-      <div className="max-w-5xl mx-auto">
-        <div className={`flex justify-between items-center px-4 sm:px-5 h-14 rounded-full transition-all duration-500 ${isScrolled ? 'backdrop-blur-2xl bg-space-card/95 border border-space-border/50 shadow-xl' : 'backdrop-blur-xl bg-space-card/75 border border-space-border/25 shadow-lg'}`}>
-          <div className="flex items-center gap-2.5 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="w-8 h-8 bg-gradient-to-br from-space-primary-light to-space-primary rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-all overflow-hidden flex-shrink-0">
-              <img src="/logo.png" alt="Logo" className="w-full h-full object-cover object-top scale-110" />
-            </div>
-            <span className="text-lg font-extrabold tracking-tight text-space-text">Spacey</span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-6">
-            <a href="#explore" className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted hover:text-space-primary transition-all">Explorar</a>
-            {!user && (
-              <>
-                <a href="#features" className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted hover:text-space-primary transition-all">Funciones</a>
-                <a href="#pricing" className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted hover:text-space-primary transition-all">Precios</a>
-              </>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <button onClick={toggleTheme} className="p-2 rounded-xl text-space-muted hover:text-space-primary hover:bg-space-card2/80 transition-all flex-shrink-0">
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-            {user ? (
-              <div className="relative">
-                <button onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                  className="flex items-center gap-1.5 p-1 rounded-full hover:bg-space-bg transition border-2 border-transparent hover:border-space-border">
-                  <div className="w-8 h-8 bg-gradient-to-br from-space-primary-light to-space-primary rounded-xl flex items-center justify-center font-extrabold text-xs flex-shrink-0"
-                    style={{ color: 'rgb(var(--space-card))' }}>
-                    {user.email?.[0].toUpperCase()}
-                  </div>
-                </button>
-                {isAccountMenuOpen && (
-                  <div className="absolute right-0 mt-2.5 w-64 bg-space-card rounded-[2rem] shadow-2xl border border-space-border/30 overflow-hidden py-1 z-50 animate-scale-in">
-                    {/* Header with role badge */}
-                    <div className="px-5 py-4 border-b border-space-border/30 bg-space-bg flex justify-between items-center">
-                      <div>
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-[8px] font-extrabold uppercase tracking-widest mb-1 ${
-                          role === 'owner' || role === 'admin' ? 'bg-space-primary/15 text-space-primary' :
-                          role === 'barber' ? 'bg-space-yellow/15 text-space-yellow' :
-                          'bg-space-card2 text-space-muted'
-                        }`}>
-                          {role === 'owner' || role === 'admin' ? 'Owner' :
-                           role === 'barber' ? `Staff · ${barberProfile?.businessName || currentBusiness?.name || ''}` :
-                           'Cliente'}
-                        </span>
-                        <p className="text-xs font-bold text-space-text truncate max-w-[155px]">
-                          {role === 'owner' || role === 'admin' ? currentBusiness?.name :
-                           role === 'barber' ? (barberProfile?.name || user.email) :
-                           user.email}
-                        </p>
-                      </div>
-                      <button onClick={() => setIsAccountMenuOpen(false)} className="p-1 text-space-muted hover:text-space-text">
-                        <XCircle size={15} />
-                      </button>
-                    </div>
-                    <div className="p-2 space-y-0.5">
-                      {/* OWNER menu */}
-                      {(role === 'owner' || role === 'admin') && <>
-                        <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                          <LayoutDashboard size={15} className="text-space-primary" />Dashboard
-                        </Link>
-                        {currentBusiness && <Link to={`/book/${currentBusiness.slug}`} className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                          <Scissors size={15} className="text-space-muted" />Ver mi página pública
-                        </Link>}
-                        <Link to="/dashboard/settings" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                          <Info size={15} className="text-space-muted" />Configuración
-                        </Link>
-                      </>}
-                      {/* STAFF menu */}
-                      {role === 'barber' && <>
-                        <Link to="/staff" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                          <Calendar size={15} className="text-space-primary" />Mis citas de hoy
-                        </Link>
-                        <Link to="/staff" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                          <Clock size={15} className="text-space-muted" />Mi horario
-                        </Link>
-                      </>}
-                      {/* CLIENT menu */}
-                      {!currentBusiness && role !== 'barber' && <>
-                        <a href="#mis-citas" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                          <Calendar size={15} className="text-space-primary" />Mis citas
-                        </a>
-                        <a href="#explore" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
-                          <Heart size={15} className="text-space-muted" />Mis favoritos
-                        </a>
-                        <Link to="/create-business" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-primary hover:bg-space-primary/5 rounded-xl transition-all border border-space-primary/20 mx-1 my-1" onClick={() => setIsAccountMenuOpen(false)}>
-                          <LayoutDashboard size={15} />Crear mi negocio →
-                        </Link>
-                      </>}
-                      <div className="border-t border-space-border/30 mt-1 pt-1">
-                        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-danger hover:bg-space-danger/5 rounded-xl transition-all">
-                          <LogOut size={15} />Cerrar Sesión
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5">
-                <Link to="/login" className="text-[10px] font-extrabold text-space-text hover:text-space-primary px-3.5 py-2 rounded-full border border-space-border hover:border-space-primary uppercase tracking-widest transition-all">
-                  Entrar
-                </Link>
-                <Link to="/register" className="hidden sm:inline-flex btn-primary py-2 px-4 text-[10px] uppercase tracking-widest shadow-lg shadow-space-primary/20">
-                  Registrar barbería
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-
   return (
     <div className="min-h-screen bg-space-bg text-space-text overflow-x-hidden">
 
@@ -496,7 +511,18 @@ function Home() {
         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(#22321c 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
       </div>
 
-      <NavBar />
+      <NavBar
+        isScrolled={isScrolled}
+        user={user}
+        theme={theme}
+        toggleTheme={toggleTheme}
+        isAccountMenuOpen={isAccountMenuOpen}
+        setIsAccountMenuOpen={setIsAccountMenuOpen}
+        role={role}
+        barberProfile={barberProfile}
+        currentBusiness={currentBusiness}
+        onLogout={handleLogout}
+      />
 
       {/* ── HERO — siempre el mismo para todos ───────────────── */}
       <section className="relative flex flex-col items-center justify-center text-center overflow-hidden px-4 pt-28 pb-16 min-h-screen">
@@ -682,7 +708,15 @@ function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {filteredBusinesses.map(b => <BusinessCard key={b.id} business={b} />)}
+              {filteredBusinesses.map(b => (
+                <BusinessCard
+                  key={b.id}
+                  business={b}
+                  isFav={favoriteSlugs.includes(b.slug)}
+                  isLoggedIn={!!user}
+                  onToggleFavorite={toggleFavorite}
+                />
+              ))}
             </div>
           )}
         </div>
