@@ -14,62 +14,6 @@
 </head>
   <body>
     <div id="root"></div>
-    <script>
-      // Panel de diagnóstico visible en pantalla (TEMPORAL — quitar tras debug)
-      var panel = document.createElement('div');
-      panel.id = 'diag';
-      panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font-size:11px;padding:8px;z-index:99999;max-height:40vh;overflow-y:auto;font-family:monospace';
-      panel.innerHTML = 'Iniciando...';
-      document.body.appendChild(panel);
-
-      function log(msg, color) {
-        var el = document.createElement('div');
-        el.style.color = color || '#0f0';
-        el.textContent = new Date().toISOString().slice(11,19) + ' ' + msg;
-        panel.appendChild(el);
-        panel.scrollTop = panel.scrollHeight;
-      }
-
-      window.onerror = function(msg, src, line) {
-        log('ERROR: ' + msg + ' (' + src.split('/').pop() + ':' + line + ')', '#f00');
-      };
-
-      window.addEventListener('unhandledrejection', function(e) {
-        log('PROMISE: ' + (e.reason && e.reason.message || e.reason), '#f90');
-      });
-
-      // Medir tiempos clave
-      log('HTML parseado ✓');
-
-      window.addEventListener('DOMContentLoaded', function() {
-        log('DOM listo ✓');
-      });
-
-      window.addEventListener('load', function() {
-        log('Todo cargado ✓ | JS: ' + Math.round(performance.now()) + 'ms');
-      });
-
-      // Detectar si React montó
-      setTimeout(function() {
-        var root = document.getElementById('root');
-        if (!root || !root.children.length) {
-          log('⚠️ React NO montó después de 5s', '#f00');
-        } else {
-          log('React montó ✓', '#0f0');
-        }
-      }, 5000);
-
-      // Detectar freeze: si este timer se retrasa más de 2s, el hilo está bloqueado
-      var last = Date.now();
-      setInterval(function() {
-        var now = Date.now();
-        var delta = now - last - 1000;
-        if (delta > 2000) {
-          log('⚠️ FREEZE detectado: hilo bloqueado ' + Math.round(delta/1000) + 's', '#f00');
-        }
-        last = now;
-      }, 1000);
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
