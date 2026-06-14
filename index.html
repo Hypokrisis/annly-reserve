@@ -13,7 +13,16 @@
     <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
 </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div id="js-loading" style="position:fixed;top:0;left:0;right:0;background:#222;color:#0f0;padding:10px;font-size:16px;z-index:99998;font-family:monospace">JS cargando...</div></div>
+    <!-- TEMP on-screen diagnostic — remove after debugging on real device -->
+    <script>
+      window.onerror = function(msg, src, line, col, err) {
+        document.body.innerHTML += '<div style="background:red;color:white;padding:10px;font-size:16px;position:fixed;top:0;left:0;right:0;z-index:99999">' + msg + ' | ' + src + ':' + line + '</div>';
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        document.body.innerHTML += '<div style="background:orange;color:black;padding:10px;font-size:16px;position:fixed;top:50px;left:0;right:0;z-index:99999">' + e.reason + '</div>';
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
