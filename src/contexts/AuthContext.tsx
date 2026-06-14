@@ -168,13 +168,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setRole(null);
                 setBarberProfile(null);
                 setLoading(false);
-            } else if (event === 'SIGNED_IN') {
-                // Defer out of the auth callback (awaiting supabase inside it can
-                // deadlock the auth lock). TOKEN_REFRESHED is intentionally ignored:
-                // the token rotates internally and our cached user/role/business
-                // don't change, so a full re-fetch + re-render on every hourly
-                // refresh / tab-focus is wasted work that janks mobile.
-                setTimeout(() => { bootstrap(); }, 0);
+            } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                bootstrap();
             }
         });
         return () => sub.subscription.unsubscribe();

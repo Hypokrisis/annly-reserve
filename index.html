@@ -2,46 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- TEMP MOBILE DIAGNOSTIC — remove after debugging.
-         Prints any JS error on screen and reports if React never mounts,
-         so we can see what breaks on iOS without a Mac/Web Inspector. -->
-    <script>
-      (function () {
-        var t0 = Date.now();
-        var errors = [];
-        function show() {
-          var el = document.getElementById('__diag');
-          if (!el) {
-            el = document.createElement('div');
-            el.id = '__diag';
-            el.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;max-height:55%;overflow:auto;background:#111;color:#0f0;font:12px/1.4 monospace;padding:12px;white-space:pre-wrap;border-top:3px solid #0f0';
-            (document.body || document.documentElement).appendChild(el);
-          }
-          el.textContent =
-            'DIAG (' + ((Date.now() - t0) / 1000).toFixed(1) + 's)\n' +
-            'UA: ' + navigator.userAgent + '\n' +
-            'root children: ' + (document.getElementById('root') ? document.getElementById('root').childElementCount : 'no #root') + '\n\n' +
-            (errors.length ? errors.join('\n\n') : '(sin errores JS capturados)');
-        }
-        window.addEventListener('error', function (e) {
-          errors.push('ERROR: ' + (e.message || e.error) + '\n  @ ' + (e.filename || '?') + ':' + e.lineno + ':' + e.colno);
-          show();
-        }, true);
-        window.addEventListener('unhandledrejection', function (e) {
-          var r = e.reason;
-          errors.push('PROMISE REJECTED: ' + (r && (r.stack || r.message) ? (r.stack || r.message) : JSON.stringify(r)));
-          show();
-        });
-        // If React hasn't rendered anything into #root after 8s, surface it.
-        setTimeout(function () {
-          var root = document.getElementById('root');
-          if (!root || root.childElementCount === 0) {
-            errors.push('La app NO montó en 8s (#root vacío). El JS no corrió o falló al arrancar.');
-            show();
-          }
-        }, 8000);
-      })();
-    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
