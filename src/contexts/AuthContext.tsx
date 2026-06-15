@@ -59,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
     const [authError, setAuthError] = useState<string | null>(null);
 
-    const isEmailConfirmed = true; // Bypassed for development testing
+    const isEmailConfirmed = !!user?.email_confirmed_at;
 
     const LS_BUSINESS = "currentBusinessId";
     const LS_VERSION = "appSchemaVersion";
