@@ -29,7 +29,7 @@ export default function PrivacyPage() {
 
                     <section>
                         <h2 className="text-lg font-bold text-space-text mb-3">1. Introducción</h2>
-                        <p>Spacey Reserve ("nosotros", "nuestro"), operado por <strong>[TU NOMBRE]</strong>, toma en serio la privacidad de sus usuarios. Esta política explica qué información recopilamos, cómo la usamos, con quién la compartimos y cuáles son tus derechos. Al usar Spacey Reserve, aceptas las prácticas descritas en esta política.</p>
+                        <p>Spacey Reserve ("nosotros", "nuestro"), operado por <strong>Loann Santiago</strong>, toma en serio la privacidad de sus usuarios. Esta política explica qué información recopilamos, cómo la usamos, con quién la compartimos y cuáles son tus derechos. Al usar Spacey Reserve, aceptas las prácticas descritas en esta política.</p>
                     </section>
 
                     <section>
@@ -115,7 +115,7 @@ export default function PrivacyPage() {
                             <li><strong>Portabilidad:</strong> solicitar tus datos en un formato estructurado y legible</li>
                             <li><strong>Oposición:</strong> oponerte al procesamiento de tus datos en ciertas circunstancias</li>
                         </ul>
-                        <p>Para ejercer cualquiera de estos derechos, contáctanos en <a href="mailto:[EMAIL DE CONTACTO]" className="text-space-primary hover:opacity-80 transition">[EMAIL DE CONTACTO]</a>. Responderemos en un plazo de 30 días.</p>
+                        <p>Para ejercer cualquiera de estos derechos, contáctanos en <a href="mailto:loann.santiago@gmail.com" className="text-space-primary hover:opacity-80 transition">loann.santiago@gmail.com</a>. Responderemos en un plazo de 30 días.</p>
                     </section>
 
                     <section>
@@ -136,8 +136,8 @@ export default function PrivacyPage() {
                     <section>
                         <h2 className="text-lg font-bold text-space-text mb-3">12. Contacto</h2>
                         <p className="mb-1">Para preguntas sobre privacidad, solicitudes de datos o cualquier inquietud:</p>
-                        <p><strong>[TU NOMBRE]</strong></p>
-                        <p>Email: <a href="mailto:[EMAIL DE CONTACTO]" className="text-space-primary hover:opacity-80 transition">[EMAIL DE CONTACTO]</a></p>
+                        <p><strong>Loann Santiago</strong></p>
+                        <p>Email: <a href="mailto:loann.santiago@gmail.com" className="text-space-primary hover:opacity-80 transition">loann.santiago@gmail.com</a></p>
                         <p>Puerto Rico, Estados Unidos</p>
                     </section>
 

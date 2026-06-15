@@ -29,7 +29,7 @@ export default function TermsPage() {
 
                     <section>
                         <h2 className="text-lg font-bold text-space-text mb-3">1. Descripción del Servicio</h2>
-                        <p>Spacey Reserve es una plataforma de software como servicio (SaaS) que permite a propietarios de barberías y salones gestionar reservas en línea, administrar clientes, configurar horarios y enviar recordatorios automáticos por WhatsApp a sus clientes. El servicio es operado por <strong>[TU NOMBRE]</strong> ("nosotros", "nuestro").</p>
+                        <p>Spacey Reserve es una plataforma de software como servicio (SaaS) que permite a propietarios de barberías y salones gestionar reservas en línea, administrar clientes, configurar horarios y enviar recordatorios automáticos por WhatsApp a sus clientes. El servicio es operado por <strong>Loann Santiago</strong> ("nosotros", "nuestro").</p>
                     </section>
 
                     <section>
@@ -82,7 +82,7 @@ export default function TermsPage() {
 
                     <section>
                         <h2 className="text-lg font-bold text-space-text mb-3">8. Propiedad Intelectual</h2>
-                        <p>Spacey Reserve, su diseño, logotipos y código son propiedad de <strong>[TU NOMBRE]</strong>. Los datos que ingresas a la plataforma (información de tu negocio, clientes, citas) son de tu propiedad. Nos concedes una licencia limitada para procesar esos datos con el fin de prestar el servicio.</p>
+                        <p>Spacey Reserve, su diseño, logotipos y código son propiedad de <strong>Loann Santiago</strong>. Los datos que ingresas a la plataforma (información de tu negocio, clientes, citas) son de tu propiedad. Nos concedes una licencia limitada para procesar esos datos con el fin de prestar el servicio.</p>
                     </section>
 
                     <section>
@@ -103,7 +103,7 @@ export default function TermsPage() {
 
                     <section>
                         <h2 className="text-lg font-bold text-space-text mb-3">12. Contacto</h2>
-                        <p>Para preguntas sobre estos términos: <a href="mailto:[EMAIL DE CONTACTO]" className="text-space-primary hover:opacity-80 transition">[EMAIL DE CONTACTO]</a></p>
+                        <p>Para preguntas sobre estos términos: <a href="mailto:loann.santiago@gmail.com" className="text-space-primary hover:opacity-80 transition">loann.santiago@gmail.com</a></p>
                     </section>
 
                 </div>
