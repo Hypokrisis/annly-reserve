@@ -19,6 +19,8 @@ const Home = lazy(() => import('./pages/Home'));
 const BookingPage = lazy(() => import('./pages/public/BookingPage'));
 const PricingPage = lazy(() => import('./pages/PricingPage'));
 const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 
 // Auth pages
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -78,6 +80,8 @@ export default function App() {
                                         <Route path="/book/:slug" element={<BookingPage />} />
                                         <Route path="/pricing" element={<PricingPage />} />
                                         <Route path="/how-it-works" element={<HowItWorksPage />} />
+                                        <Route path="/terms" element={<TermsPage />} />
+                                        <Route path="/privacy" element={<PrivacyPage />} />
 
                                         {/* ── AUTH ───────────────────────────────────── */}
                                         <Route path="/login" element={<LoginPage />} />

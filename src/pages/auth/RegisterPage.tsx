@@ -136,8 +136,14 @@ export default function RegisterPage() {
                     <span className="font-bold">Necesitas una invitación del dueño.</span>
                 </p>
 
-                <p className="mt-3 text-center text-xs text-space-muted/40">
-                    © {new Date().getFullYear()} Spacey · Puerto Rico
+                <p className="mt-3 text-center text-[10px] text-space-muted/40 leading-relaxed">
+                    Al crear una cuenta aceptas nuestros{' '}
+                    <Link to="/terms" className="underline hover:opacity-80">Términos de Servicio</Link>
+                    {' '}y{' '}
+                    <Link to="/privacy" className="underline hover:opacity-80">Política de Privacidad</Link>.
+                </p>
+                <p className="mt-1 text-center text-[10px] text-space-muted/30">
+                    © {new Date().getFullYear()} Spacey Reserve · Puerto Rico
                 </p>
             </div>
         </div>

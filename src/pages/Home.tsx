@@ -1009,9 +1009,13 @@ function Home() {
               </ul>
             </div>
           </div>
-          <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <p className="text-xs" style={{ color: 'rgba(var(--space-card), 0.25)' }}>© {new Date().getFullYear()} Spacey Platform · Todos los derechos reservados</p>
-            <p className="text-[10px] font-extrabold uppercase tracking-widest" style={{ color: 'rgba(var(--space-primary-light), 0.35)' }}>Spacey Reserve · Puerto Rico</p>
+          <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-xs" style={{ color: 'rgba(var(--space-card), 0.25)' }}>© {new Date().getFullYear()} Spacey Reserve · Todos los derechos reservados</p>
+            <div className="flex items-center gap-5 text-[11px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(var(--space-primary-light), 0.45)' }}>
+              <a href="/terms" className="hover:opacity-80 transition">Términos</a>
+              <a href="/privacy" className="hover:opacity-80 transition">Privacidad</a>
+              <span style={{ color: 'rgba(var(--space-primary-light), 0.25)' }}>Puerto Rico</span>
+            </div>
           </div>
         </div>
       </footer>

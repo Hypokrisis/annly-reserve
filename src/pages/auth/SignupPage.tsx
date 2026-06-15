@@ -153,8 +153,14 @@ export default function SignupPage() {
                     </p>
                 </div>
 
-                <p className="mt-6 text-center text-xs font-medium" style={{ color: `rgba(var(--space-muted), 0.6)` }}>
-                    © {new Date().getFullYear()} Spacey · Puerto Rico
+                <p className="mt-4 text-center text-[10px] leading-relaxed" style={{ color: `rgba(var(--space-muted), 0.5)` }}>
+                    Al crear una cuenta aceptas nuestros{' '}
+                    <Link to="/terms" className="underline hover:opacity-80">Términos de Servicio</Link>
+                    {' '}y{' '}
+                    <Link to="/privacy" className="underline hover:opacity-80">Política de Privacidad</Link>.
+                </p>
+                <p className="mt-1 text-center text-[10px]" style={{ color: `rgba(var(--space-muted), 0.3)` }}>
+                    © {new Date().getFullYear()} Spacey Reserve · Puerto Rico
                 </p>
             </div>
         </div>
