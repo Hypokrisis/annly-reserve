@@ -1,13 +1,36 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBusiness } from '@/contexts/BusinessContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import {
     LayoutDashboard, Scissors, Users, Calendar, LogOut, Menu, X,
-    Settings, Globe, Clock, CreditCard, Zap, Moon, Sun, Sparkles, ChevronRight, UserPlus
+    Settings, Globe, Clock, CreditCard, Zap, Moon, Sun, Sparkles, ChevronRight, UserPlus, Lock
 } from 'lucide-react';
 
 interface DashboardLayoutProps { children: React.ReactNode; }
+
+function TrialExpiredScreen() {
+    return (
+        <div className="min-h-screen flex items-center justify-center px-4" style={{ background: `rgb(var(--space-bg))` }}>
+            <div className="max-w-md w-full rounded-3xl p-10 text-center shadow-xl" style={{ background: `rgb(var(--space-card))`, border: `1px solid rgb(var(--space-border))` }}>
+                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: `rgba(var(--space-danger), 0.1)` }}>
+                    <Lock size={36} style={{ color: `rgb(var(--space-danger))` }} />
+                </div>
+                <h2 className="text-2xl font-black mb-3" style={{ color: `rgb(var(--space-text))` }}>
+                    Tu período de prueba expiró
+                </h2>
+                <p className="mb-8 leading-relaxed" style={{ color: `rgb(var(--space-muted))` }}>
+                    Para continuar usando Spacey Reserve y mantener acceso a tus citas, clientes y configuración, elige un plan.
+                </p>
+                <Link to="/dashboard/billing" className="btn-primary w-full py-4 block text-center">
+                    Ver planes y precios →
+                </Link>
+            </div>
+        </div>
+    );
+}
 
 const NAV_ITEMS = [
     { name: 'Inicio',         href: '/dashboard',              icon: LayoutDashboard, roles: ['owner','admin','staff'] },
@@ -28,7 +51,30 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     const navigate = useNavigate();
     const { user, currentBusiness, logout, role } = useAuth();
     const { theme, toggleTheme } = useTheme();
+    const { subscription, loadingSubscription } = useBusiness();
     const [mobileOpen, setMobileOpen] = React.useState(false);
+
+    // ── Subscription gate ────────────────────────────────────────────────────
+    // /dashboard/billing is always accessible so owners can pick a plan.
+    const isBillingRoute = location.pathname === '/dashboard/billing';
+
+    if (!isBillingRoute && loadingSubscription) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{ background: `rgb(var(--space-bg))` }}>
+                <LoadingSpinner />
+            </div>
+        );
+    }
+
+    const isExpired =
+        !isBillingRoute &&
+        !!subscription &&
+        subscription.status !== 'active' &&
+        !!subscription.current_period_end &&
+        new Date(subscription.current_period_end) < new Date();
+
+    if (isExpired) return <TrialExpiredScreen />;
+    // ─────────────────────────────────────────────────────────────────────────
 
     const nav = NAV_ITEMS.filter(i => i.roles.includes(role || 'staff'));
 
