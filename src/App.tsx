@@ -22,6 +22,7 @@ const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const SuperAdminPage = lazy(() => import('./pages/SuperAdminPage'));
+const SuperAdminLoginPage = lazy(() => import('./pages/SuperAdminLoginPage'));
 
 // Auth pages
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -117,7 +118,8 @@ export default function App() {
                                         <Route path="/client/*" element={<ClientRoute><ClientHome /></ClientRoute>} />
 
                                         {/* ── SUPERADMIN ─────────────────────────────── */}
-                                        <Route path="/superadmin" element={<AuthOnlyRoute><SuperAdminPage /></AuthOnlyRoute>} />
+                                        <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
+                                        <Route path="/superadmin" element={<SuperAdminPage />} />
 
                                         {/* ── FALLBACK ───────────────────────────────── */}
                                         <Route path="*" element={<Navigate to="/" replace />} />
