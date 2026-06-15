@@ -21,6 +21,7 @@ const PricingPage = lazy(() => import('./pages/PricingPage'));
 const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const SuperAdminPage = lazy(() => import('./pages/SuperAdminPage'));
 
 // Auth pages
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -114,6 +115,9 @@ export default function App() {
                                         {/* ── CLIENT (/client) — Phase 5 ────────────── */}
                                         <Route path="/client" element={<ClientRoute><ClientHome /></ClientRoute>} />
                                         <Route path="/client/*" element={<ClientRoute><ClientHome /></ClientRoute>} />
+
+                                        {/* ── SUPERADMIN ─────────────────────────────── */}
+                                        <Route path="/superadmin" element={<AuthOnlyRoute><SuperAdminPage /></AuthOnlyRoute>} />
 
                                         {/* ── FALLBACK ───────────────────────────────── */}
                                         <Route path="*" element={<Navigate to="/" replace />} />
