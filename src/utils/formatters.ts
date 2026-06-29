@@ -25,6 +25,21 @@ export const formatPhoneDisplay = (phone: string): string => {
 };
 
 /**
+ * Normaliza un teléfono a E.164 para usarlo como identidad universal del cliente.
+ * - Quita todo lo que no sea dígito
+ * - 10 dígitos -> +1XXXXXXXXXX (default PR/USA)
+ * - 11 dígitos empezando en 1 -> +1XXXXXXXXXX
+ * - Cualquier otra cosa -> se devuelve tal cual (no romper)
+ */
+export const normalizePhoneE164 = (phone: string): string => {
+    if (!phone) return phone;
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 10) return `+1${digits}`;
+    if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+    return phone;
+};
+
+/**
  * Format date for display (e.g., "10 de diciembre, 2025")
  */
 export const formatDateDisplay = (dateString: string): string => {

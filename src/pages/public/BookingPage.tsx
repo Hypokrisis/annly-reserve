@@ -5,7 +5,7 @@ import { Input } from '@/components/common/Input';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { MonthGridCalendar } from '@/components/calendar/MonthGridCalendar';
 import { useAvailability } from '@/hooks/useAvailability';
-import { formatCurrency, formatDate, parseDate, formatTimeDisplay, isValidEmail, isValidPhone } from '@/utils';
+import { formatCurrency, formatDate, parseDate, formatTimeDisplay, isValidEmail, isValidPhone, normalizePhoneE164 } from '@/utils';
 import { isSlotAvailable } from '@/services/availability.service';
 import { supabase } from '@/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
@@ -312,7 +312,7 @@ export default function PublicBookingPage() {
                 end_time,
                 customer_name: customerInfo.name.trim(),
                 customer_email: customerInfo.email.toLowerCase().trim(),
-                customer_phone: customerInfo.phone.trim(),
+                customer_phone: normalizePhoneE164(customerInfo.phone.trim()),
                 customer_notes: customerInfo.notes.trim() || null,
                 status: 'confirmed',
             };
