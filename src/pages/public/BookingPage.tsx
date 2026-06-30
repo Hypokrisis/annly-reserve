@@ -397,7 +397,7 @@ export default function PublicBookingPage() {
     };
 
     const handleGuestCreateAccount = () => {
-        navigate('/register', { state: { prefill: { name: customerInfo.name, email: customerInfo.email } } });
+        navigate('/register-client', { state: { prefill: { name: customerInfo.name, email: customerInfo.email, phone: customerInfo.phone } } });
     };
 
     const handlePanelLogin = async (e: React.FormEvent) => {

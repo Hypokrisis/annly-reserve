@@ -11,6 +11,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { OwnerRoute } from '@/components/auth/OwnerRoute';
 import { StaffRoute } from '@/components/auth/StaffRoute';
 import { AuthOnlyRoute } from '@/components/auth/AuthOnlyRoute';
+import { ClientRoute } from '@/components/auth/ClientRoute';
 
 // Public pages — lazy so each route is its own chunk and heavy deps
 // (leaflet maps, image cropper, dashboard) load only when visited.
@@ -35,6 +36,10 @@ const JoinPage = lazy(() => import('./pages/auth/JoinPage'));
 const CancelPage = lazy(() => import('./pages/public/CancelPage'));
 const BusinessProfilePage = lazy(() => import('./pages/public/BusinessProfilePage'));
 const MisCitasTokenPage = lazy(() => import('./pages/public/MisCitasTokenPage'));
+const RegisterClientPage = lazy(() => import('./pages/public/RegisterClientPage'));
+
+// Client area
+const ClientHome = lazy(() => import('./pages/client/ClientHome'));
 
 // Owner / Admin dashboard
 const DashboardHome = lazy(() => import('./pages/dashboard/DashboardHome'));
@@ -85,6 +90,7 @@ export default function App() {
                                         {/* ── AUTH ───────────────────────────────────── */}
                                         <Route path="/login" element={<LoginPage />} />
                                         <Route path="/register" element={<RegisterPage />} />
+                                        <Route path="/register-client" element={<RegisterClientPage />} />
                                         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                                         <Route path="/auth/callback" element={<AuthCallbackPage />} />
                                         <Route path="/auth-redirect" element={<AuthRedirectPage />} />
@@ -111,9 +117,9 @@ export default function App() {
                                         <Route path="/staff" element={<StaffRoute><StaffHome /></StaffRoute>} />
                                         <Route path="/staff/*" element={<StaffRoute><StaffHome /></StaffRoute>} />
 
-                                        {/* ── CLIENT (/client) — se reconstruye en Fase 6; por ahora → / ── */}
-                                        <Route path="/client" element={<Navigate to="/" replace />} />
-                                        <Route path="/client/*" element={<Navigate to="/" replace />} />
+                                        {/* ── CLIENT (/client) — panel del cliente registrado ── */}
+                                        <Route path="/client" element={<ClientRoute><ClientHome /></ClientRoute>} />
+                                        <Route path="/client/*" element={<Navigate to="/client" replace />} />
 
                                         {/* ── SUPERADMIN ─────────────────────────────── */}
                                         <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
