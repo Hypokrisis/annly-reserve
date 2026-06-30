@@ -34,6 +34,7 @@ const JoinPage = lazy(() => import('./pages/auth/JoinPage'));
 // Public pages
 const CancelPage = lazy(() => import('./pages/public/CancelPage'));
 const BusinessProfilePage = lazy(() => import('./pages/public/BusinessProfilePage'));
+const MisCitasTokenPage = lazy(() => import('./pages/public/MisCitasTokenPage'));
 
 // Owner / Admin dashboard
 const DashboardHome = lazy(() => import('./pages/dashboard/DashboardHome'));
@@ -88,6 +89,7 @@ export default function App() {
                                         <Route path="/auth/callback" element={<AuthCallbackPage />} />
                                         <Route path="/auth-redirect" element={<AuthRedirectPage />} />
                                         <Route path="/cancel/:token" element={<CancelPage />} />
+                                        <Route path="/mis-citas/:token" element={<MisCitasTokenPage />} />
                                         <Route path="/join" element={<JoinPage />} />
 
                                         {/* ── OWNER / ADMIN (/dashboard) ─────────────── */}
