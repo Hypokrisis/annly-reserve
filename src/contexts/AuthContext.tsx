@@ -27,7 +27,8 @@ interface AuthContextType {
         password: string;
         full_name?: string;
         phone?: string;
-    }) => Promise<void>;
+        role?: 'client' | 'owner';
+    }) => Promise<{ hasSession: boolean }>;
     logout: () => Promise<void>;
     switchBusiness: (businessId: string) => Promise<void>;
     createBusiness: (name: string, slug: string) => Promise<void>;
@@ -233,15 +234,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password: string;
         full_name?: string;
         phone?: string;
-    }) => {
+        role?: 'client' | 'owner';
+    }): Promise<{ hasSession: boolean }> => {
         setLoading(true);
         try {
-            await authService.signup(data);
+            const result = await authService.signup(data);
+            if (result.hasSession) {
+                localStorage.setItem(LS_LAST_ACTIVITY, Date.now().toString());
+                localStorage.setItem(LS_LAST_EMAIL, data.email);
+                // Sesión creada → SIGNED_IN dispara bootstrap(); dejamos loading=true
+                // hasta que pueble el estado (igual que login: evita la carrera).
+            } else {
+                // Requiere confirmación de email: no llega SIGNED_IN, apagamos loading.
+                setLoading(false);
+            }
+            return result;
         } catch (error) {
+            setLoading(false);
             console.error('Signup failed:', error);
             throw error;
-        } finally {
-            setLoading(false);
         }
     };
 

@@ -12,8 +12,10 @@ export interface AuthResponse {
 }
 
 /**
- * Sign up a new user (normal customer account)
- * No business is created - users can upgrade later
+ * Sign up a new user.
+ * Returns `{ hasSession }`: true when signUp returned an active session
+ * (email confirmation disabled → user is logged in), false when Supabase
+ * requires email confirmation first (no session yet → show "revisa tu email").
  */
 export const signup = async (data: {
     email: string;
@@ -21,7 +23,7 @@ export const signup = async (data: {
     full_name?: string;
     phone?: string;
     role?: 'client' | 'owner';
-}): Promise<void> => {
+}): Promise<{ hasSession: boolean }> => {
     // Create user account
     const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
@@ -46,7 +48,7 @@ export const signup = async (data: {
                 id: authData.user.id,
                 full_name: data.full_name || '',
                 phone: data.phone || '',
-                // If 'profiles' table has a role column, adding it here would be good, 
+                // If 'profiles' table has a role column, adding it here would be good,
                 // but we rely on auth metadata for now as per plan.
                 // Assuming profiles schema is basic.
             });
@@ -56,6 +58,8 @@ export const signup = async (data: {
             // Don't throw - user is created, profile can be added later
         }
     }
+
+    return { hasSession: !!authData.session };
 };
 
 /**

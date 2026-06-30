@@ -8,7 +8,6 @@ export default function SignupPage() {
     const { signup, user } = useAuth();
     const navigate = useNavigate();
 
-    const [userType, setUserType] = useState<'client' | 'owner'>('client');
     const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '', full_name: '', phone: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -30,8 +29,8 @@ export default function SignupPage() {
 
         setLoading(true);
         try {
-            await signup({ email: formData.email, password: formData.password, full_name: formData.full_name, phone: formData.phone, role: userType });
-            localStorage.setItem('intended_role', userType);
+            await signup({ email: formData.email, password: formData.password, full_name: formData.full_name, phone: formData.phone, role: 'owner' });
+            localStorage.setItem('intended_role', 'owner');
             setSuccess(true);
         } catch (err: any) {
             setError(err.message?.includes('already') || err.message?.includes('duplicate') ? 'Este email ya está en uso.' : (err.message || 'Error al crear la cuenta.'));
@@ -84,24 +83,6 @@ export default function SignupPage() {
                     <div className="mb-6">
                         <h1 className="text-xl font-extrabold tracking-tight mb-1" style={{ color: `rgb(var(--space-text))` }}>Crear cuenta gratis</h1>
                         <p className="text-sm font-medium" style={{ color: `rgb(var(--space-muted))` }}>30 días gratis, sin tarjeta de crédito</p>
-                    </div>
-
-                    {/* Type toggle */}
-                    <div className="flex gap-2 p-1 rounded-xl mb-6" style={{ background: `rgb(var(--space-card2))` }}>
-                        {(['client', 'owner'] as const).map(t => (
-                            <button
-                                key={t}
-                                type="button"
-                                onClick={() => setUserType(t)}
-                                className="flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200"
-                                style={userType === t
-                                    ? { background: `rgb(var(--space-card))`, color: `rgb(var(--space-text))`, boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }
-                                    : { color: `rgb(var(--space-muted))` }
-                                }
-                            >
-                                {t === 'client' ? '👤 Soy cliente' : '✂️ Tengo negocio'}
-                            </button>
-                        ))}
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">

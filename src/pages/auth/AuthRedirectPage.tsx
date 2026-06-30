@@ -5,16 +5,18 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 /**
  * After login, waits for auth bootstrap (loading stays true until user/role/
- * currentBusiness are populated) and routes ONLY by real state:
+ * currentBusiness are populated) and routes by real state:
  *   owner / admin + business   → /dashboard
  *   owner / admin + no biz     → /create-business
  *   barber                     → /staff
- *   client (sesión sin negocio)→ /client
+ *   sin membresía + meta owner → /create-business  (owner recién registrado)
+ *   sin membresía (cliente)    → /client
  *   cualquier otro             → / (fallback seguro)
  *
- * No consulta user_metadata.role: ese atajo mandaba owners CON negocio a
- * /create-business durante la carrera de carga. Al esperar a `loading` el
- * estado ya es real, así que basta el rol de la membresía.
+ * user_metadata.role SOLO se consulta como desempate de cola, cuando la
+ * membresía (role) es null y `loading` ya terminó (estado real). Un owner CON
+ * negocio entra por la rama de arriba y nunca lo toca, así que esto NO
+ * reintroduce la carrera que arregló el fix de loading en login().
  */
 export default function AuthRedirectPage() {
     const { user, role, loading, currentBusiness } = useAuth();
@@ -40,9 +42,12 @@ export default function AuthRedirectPage() {
             return;
         }
 
-        // Sesión válida sin membresía de negocio = cliente con cuenta
+        // Sin membresía de negocio: owner-sin-negocio y cliente se ven igual
+        // (role=null). Desempate de cola por user_metadata.role — seguro aquí
+        // porque loading ya terminó y el owner CON negocio nunca llega a esta rama.
         if (!role) {
-            navigate('/client', { replace: true });
+            const metaRole = (user as any).user_metadata?.role;
+            navigate(metaRole === 'owner' ? '/create-business' : '/client', { replace: true });
             return;
         }
 

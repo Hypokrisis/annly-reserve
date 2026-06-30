@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { isValidEmail } from '@/utils';
-import { Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, ArrowRight, Mail } from 'lucide-react';
 
 export default function RegisterPage() {
     const navigate = useNavigate();
@@ -20,6 +20,7 @@ export default function RegisterPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPwd, setShowPwd] = useState(false);
+    const [emailSent, setEmailSent] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -34,10 +35,23 @@ export default function RegisterPage() {
 
         setLoading(true);
         try {
-            await signup({ email: formData.email, password: formData.password, full_name: formData.full_name });
-            navigate('/', { replace: true });
+            // Todo registro por /register crea un DUEÑO de negocio (role='owner').
+            // Los clientes se registran por /register-client.
+            const { hasSession } = await signup({
+                email: formData.email,
+                password: formData.password,
+                full_name: formData.full_name,
+                role: 'owner',
+            });
+            if (hasSession) {
+                // Sesión activa (sin confirmación de email) → AuthRedirectPage manda
+                // al owner sin negocio a /create-business.
+                navigate('/auth-redirect', { replace: true });
+            } else {
+                // Supabase pide confirmar email primero.
+                setEmailSent(true);
+            }
         } catch (err: any) {
-            // Block staff self-registration
             if (err.message?.includes('already registered')) {
                 setError('Este email ya tiene una cuenta. Inicia sesión.');
             } else {
@@ -47,6 +61,25 @@ export default function RegisterPage() {
             setLoading(false);
         }
     };
+
+    if (emailSent) {
+        return (
+            <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-space-bg">
+                <div className="relative w-full max-w-[400px]">
+                    <div className="bg-space-card rounded-2xl p-8 shadow-xl border border-space-border text-center">
+                        <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-5" style={{ background: `rgba(var(--space-primary), 0.12)` }}>
+                            <Mail size={28} className="text-space-primary" />
+                        </div>
+                        <h2 className="text-xl font-extrabold tracking-tight text-space-text mb-2">Revisa tu email</h2>
+                        <p className="text-sm font-medium text-space-muted mb-6">
+                            Enviamos un enlace de confirmación a <strong className="text-space-text">{formData.email}</strong>. Confírmalo para registrar tu barbería.
+                        </p>
+                        <Link to="/login" className="btn-secondary w-full">Ir al inicio de sesión</Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-space-bg">
@@ -73,9 +106,9 @@ export default function RegisterPage() {
 
                 <div className="bg-space-card rounded-2xl p-7 shadow-xl border border-space-border">
                     <div className="mb-6">
-                        <h1 className="text-xl font-extrabold tracking-tight text-space-text mb-1">Crea tu cuenta</h1>
+                        <h1 className="text-xl font-extrabold tracking-tight text-space-text mb-1">Registra tu barbería</h1>
                         <p className="text-sm font-medium text-space-muted">
-                            {prefill.name ? 'Guarda tus citas y lleva tu historial.' : 'Reserva barberías y lleva tu historial.'}
+                            Crea tu cuenta de dueño. 30 días gratis, sin tarjeta.
                         </p>
                     </div>
 

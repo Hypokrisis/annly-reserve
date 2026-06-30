@@ -10,7 +10,6 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 // Route guards (small, always needed — keep static)
 import { OwnerRoute } from '@/components/auth/OwnerRoute';
 import { StaffRoute } from '@/components/auth/StaffRoute';
-import { ClientRoute } from '@/components/auth/ClientRoute';
 import { AuthOnlyRoute } from '@/components/auth/AuthOnlyRoute';
 
 // Public pages — lazy so each route is its own chunk and heavy deps
@@ -52,9 +51,6 @@ const TeamPage = lazy(() => import('./pages/dashboard/TeamPage'));
 
 // Staff pages (Phase 4)
 const StaffHome = lazy(() => import('./pages/staff/StaffHome'));
-
-// Client pages (Phase 5)
-const ClientHome = lazy(() => import('./pages/client/ClientHome'));
 
 function PageFallback() {
     return (
@@ -113,9 +109,9 @@ export default function App() {
                                         <Route path="/staff" element={<StaffRoute><StaffHome /></StaffRoute>} />
                                         <Route path="/staff/*" element={<StaffRoute><StaffHome /></StaffRoute>} />
 
-                                        {/* ── CLIENT (/client) — Phase 5 ────────────── */}
-                                        <Route path="/client" element={<ClientRoute><ClientHome /></ClientRoute>} />
-                                        <Route path="/client/*" element={<ClientRoute><ClientHome /></ClientRoute>} />
+                                        {/* ── CLIENT (/client) — se reconstruye en Fase 6; por ahora → / ── */}
+                                        <Route path="/client" element={<Navigate to="/" replace />} />
+                                        <Route path="/client/*" element={<Navigate to="/" replace />} />
 
                                         {/* ── SUPERADMIN ─────────────────────────────── */}
                                         <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
