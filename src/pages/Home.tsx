@@ -221,12 +221,8 @@ const NavBar = ({ isScrolled, user, theme, toggleTheme, isAccountMenuOpen, setIs
 
           <div className="hidden md:flex items-center gap-6">
             <a href="#explore" className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted hover:text-space-primary transition-all">Explorar</a>
-            {!user && (
-              <>
-                <a href="#features" className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted hover:text-space-primary transition-all">Funciones</a>
-                <a href="#pricing" className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted hover:text-space-primary transition-all">Precios</a>
-              </>
-            )}
+            <a href="#features" className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted hover:text-space-primary transition-all">Funciones</a>
+            <a href="#pricing" className="text-[10px] font-extrabold uppercase tracking-widest text-space-muted hover:text-space-primary transition-all">Precios</a>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -794,9 +790,8 @@ function Home() {
         </section>
       )}
 
-      {/* ── MARKETING SECTIONS (solo para no logueados) ───────── */}
-      {!user && (
-        <>
+      {/* ── MARKETING SECTIONS (siempre visibles — el landing es marketing) ───────── */}
+      <>
           {/* Para Clientes */}
           <section className="relative py-24 px-4 overflow-hidden" style={{ background: `rgb(var(--space-text))` }}>
             <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(rgb(var(--space-primary-light)) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
@@ -974,8 +969,7 @@ function Home() {
               </div>
             </div>
           </section>
-        </>
-      )}
+      </>
 
       {/* ── FOOTER ───────────────────────────────────────────── */}
       <footer className="border-t pt-12 pb-8 px-4" style={{ background: 'rgb(var(--space-text))', borderColor: 'rgba(var(--space-card), 0.06)' }}>
