@@ -4,14 +4,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 /**
- * After login, waits for auth bootstrap and routes by DB role:
+ * After login, waits for auth bootstrap (loading stays true until user/role/
+ * currentBusiness are populated) and routes ONLY by real state:
  *   owner / admin + business   → /dashboard
  *   owner / admin + no biz     → /create-business
  *   barber                     → /staff
- *   member / null              → / (homepage — can browse directory)
+ *   client (sesión sin negocio)→ /client
+ *   cualquier otro             → / (fallback seguro)
  *
- * Also handles new signups where user_metadata.role === 'owner'
- * but users_businesses is still empty (no business created yet).
+ * No consulta user_metadata.role: ese atajo mandaba owners CON negocio a
+ * /create-business durante la carrera de carga. Al esperar a `loading` el
+ * estado ya es real, así que basta el rol de la membresía.
  */
 export default function AuthRedirectPage() {
     const { user, role, loading, currentBusiness } = useAuth();
@@ -25,7 +28,7 @@ export default function AuthRedirectPage() {
             return;
         }
 
-        // Business owner or admin
+        // Owner / admin
         if (role === 'owner' || role === 'admin') {
             navigate(currentBusiness ? '/dashboard' : '/create-business', { replace: true });
             return;
@@ -37,14 +40,13 @@ export default function AuthRedirectPage() {
             return;
         }
 
-        // No role in users_businesses — check if they signed up as owner
-        const metaRole = (user as any).user_metadata?.role;
-        if (metaRole === 'owner') {
-            navigate('/create-business', { replace: true });
+        // Sesión válida sin membresía de negocio = cliente con cuenta
+        if (!role) {
+            navigate('/client', { replace: true });
             return;
         }
 
-        // Everyone else (member, client, guest signup) → homepage with directory
+        // Rol inesperado → fallback seguro al landing
         navigate('/', { replace: true });
     }, [loading, user, role, currentBusiness]);
 

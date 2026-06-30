@@ -217,11 +217,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             await authService.login({ email, password });
             localStorage.setItem(LS_LAST_ACTIVITY, Date.now().toString());
             localStorage.setItem(LS_LAST_EMAIL, email);
+            // NO apagamos loading en éxito: signInWithPassword dispara
+            // onAuthStateChange('SIGNED_IN') → bootstrap(), que mantiene loading=true
+            // hasta poblar user/role/currentBusiness. Así el redirect post-login
+            // decide con estado real y no rebota (causa raíz del "doble click").
         } catch (error) {
+            setLoading(false);
             console.error('Login failed:', error);
             throw error;
-        } finally {
-            setLoading(false);
         }
     };
 
