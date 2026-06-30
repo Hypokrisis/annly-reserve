@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -48,7 +48,6 @@ const NAV_ITEMS = [
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     const location = useLocation();
-    const navigate = useNavigate();
     const { user, currentBusiness, logout, role } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const { subscription, loadingSubscription } = useBusiness();
@@ -79,7 +78,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     const nav = NAV_ITEMS.filter(i => i.roles.includes(role || 'staff'));
 
     const handleLogout = async () => {
-        try { await logout(); navigate('/login'); } catch {}
+        // logout() ya hace el redirect a / (hard nav). No añadir navegación
+        // propia: competía con window.location.href y dejaba destino no determinista.
+        try { await logout(); } catch {}
         setMobileOpen(false);
     };
 
