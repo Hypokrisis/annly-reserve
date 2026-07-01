@@ -43,6 +43,8 @@ export default function PublicBookingPage() {
 
     // Guest save modal state
     const [showGuestModal, setShowGuestModal] = useState(false);
+    // El email/teléfono de esta reserva ya está vinculado a una cuenta → sugerir login
+    const [existingAccount, setExistingAccount] = useState(false);
     const [cancelLink, setCancelLink] = useState('');
     const [guestSaving, setGuestSaving] = useState(false);
 
@@ -275,15 +277,22 @@ export default function PublicBookingPage() {
                 return;
             }
 
-            // Check for existing active appointments (only if we have email)
-            if (customerInfo.email) {
+            // Identidad universal del cliente: email + teléfono normalizado (E.164).
+            const emailNorm = customerInfo.email.toLowerCase().trim();
+            const phoneE164 = normalizePhoneE164(customerInfo.phone.trim());
+
+            // Dedup: ¿ya hay cita activa en ESTE negocio con este email O teléfono?
+            // (antes solo por email → no detectaba citas hechas por WhatsApp/bot.)
+            const dedupOr: string[] = [];
+            if (emailNorm) dedupOr.push(`customer_email.eq.${emailNorm}`);
+            if (phoneE164) dedupOr.push(`customer_phone.eq.${phoneE164}`);
+            if (dedupOr.length > 0) {
                 const { data: existingActive } = await supabase
                     .from('appointments')
                     .select('id')
                     .eq('business_id', business.id)
-                    .eq('customer_email', customerInfo.email.toLowerCase().trim())
                     .in('status', ['confirmed', 'pending'])
-                    .order('created_at', { ascending: false })
+                    .or(dedupOr.join(','))
                     .limit(1);
 
                 if (existingActive && existingActive.length > 0) {
@@ -311,8 +320,8 @@ export default function PublicBookingPage() {
                 start_time: selectedSlot.time,
                 end_time,
                 customer_name: customerInfo.name.trim(),
-                customer_email: customerInfo.email.toLowerCase().trim(),
-                customer_phone: normalizePhoneE164(customerInfo.phone.trim()),
+                customer_email: emailNorm,
+                customer_phone: phoneE164,
                 customer_notes: customerInfo.notes.trim() || null,
                 status: 'confirmed',
             };
@@ -343,6 +352,21 @@ export default function PublicBookingPage() {
             // Show guest save modal only for unauthenticated users
             if (!user) {
                 setShowGuestModal(true);
+                // ¿Este email/teléfono ya está vinculado a una cuenta? Solo para SUGERIR
+                // login (no bloquea la reserva). NO vinculamos por teléfono no verificado:
+                // eso permitiría reclamar citas ajenas escribiendo un número.
+                const acctOr: string[] = [];
+                if (emailNorm) acctOr.push(`customer_email.eq.${emailNorm}`);
+                if (phoneE164) acctOr.push(`customer_phone.eq.${phoneE164}`);
+                if (acctOr.length > 0) {
+                    const { data: linked } = await supabase
+                        .from('appointments')
+                        .select('id')
+                        .not('client_id', 'is', null)
+                        .or(acctOr.join(','))
+                        .limit(1);
+                    if (linked && linked.length > 0) setExistingAccount(true);
+                }
             }
         } catch (error: any) {
             console.error('Error creating appointment:', error);
@@ -457,17 +481,35 @@ export default function PublicBookingPage() {
                 {/* Guest save modal — only for unauthenticated users */}
                 {showGuestModal && !cancelLink && (
                     <div className="bg-space-bg rounded-2xl p-6 mb-6 border border-space-border text-left">
-                        <h3 className="font-extrabold text-space-text text-sm mb-1">¿Quieres guardar tu cita?</h3>
-                        <p className="text-space-muted text-xs mb-4">Crea una cuenta gratis para ver tu historial y cancelar desde la web.</p>
-                        <div className="flex flex-col gap-2">
-                            <button onClick={handleGuestCreateAccount} className="btn-primary text-xs py-3 w-full">
-                                Crear cuenta gratis
-                            </button>
-                            <button onClick={handleGuestSaveLink} disabled={guestSaving}
-                                className="btn-secondary text-xs py-3 w-full disabled:opacity-50">
-                                {guestSaving ? 'Generando...' : 'No gracias, solo dame el link'}
-                            </button>
-                        </div>
+                        {existingAccount ? (
+                            <>
+                                <h3 className="font-extrabold text-space-text text-sm mb-1">Ya tienes una cuenta</h3>
+                                <p className="text-space-muted text-xs mb-4">Detectamos una cuenta con ese email o teléfono. Inicia sesión para ver y gestionar todas tus citas.</p>
+                                <div className="flex flex-col gap-2">
+                                    <Link to="/login" className="btn-primary text-xs py-3 w-full text-center">
+                                        Iniciar sesión
+                                    </Link>
+                                    <button onClick={handleGuestSaveLink} disabled={guestSaving}
+                                        className="btn-secondary text-xs py-3 w-full disabled:opacity-50">
+                                        {guestSaving ? 'Generando...' : 'No gracias, solo dame el link'}
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <h3 className="font-extrabold text-space-text text-sm mb-1">¿Quieres guardar tu cita?</h3>
+                                <p className="text-space-muted text-xs mb-4">Crea una cuenta gratis para ver tu historial y cancelar desde la web.</p>
+                                <div className="flex flex-col gap-2">
+                                    <button onClick={handleGuestCreateAccount} className="btn-primary text-xs py-3 w-full">
+                                        Crear cuenta gratis
+                                    </button>
+                                    <button onClick={handleGuestSaveLink} disabled={guestSaving}
+                                        className="btn-secondary text-xs py-3 w-full disabled:opacity-50">
+                                        {guestSaving ? 'Generando...' : 'No gracias, solo dame el link'}
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
 
