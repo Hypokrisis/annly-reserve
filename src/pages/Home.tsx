@@ -286,9 +286,9 @@ const NavBar = ({ isScrolled, user, theme, toggleTheme, isAccountMenuOpen, setIs
                       </>}
                       {/* CLIENT menu */}
                       {!currentBusiness && role !== 'barber' && <>
-                        <a href="#mis-citas" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
+                        <Link to="/client" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
                           <Calendar size={15} className="text-space-primary" />Mis citas
-                        </a>
+                        </Link>
                         <a href="#explore" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-space-text hover:text-space-primary hover:bg-space-primary/5 rounded-xl transition-all" onClick={() => setIsAccountMenuOpen(false)}>
                           <Heart size={15} className="text-space-muted" />Mis favoritos
                         </a>
