@@ -47,17 +47,21 @@ function normalizePhone(raw: string): string {
 
 function getHumanDate(dateStr: string): string {
     if (!dateStr) return "Fecha desconocida";
-    const date  = new Date(dateStr + 'T00:00:00');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    date.setHours(0, 0, 0, 0);
+    // "Hoy/Mañana" relativo al día de PUERTO RICO (UTC-4, sin DST), no al UTC del
+    // servidor Deno. Antes, cerca de medianoche, comparar contra el UTC del server
+    // corría la fecha un día (una cita de mañana se veía como "Hoy").
+    const nowPR = new Date(Date.now() - 4 * 60 * 60 * 1000);
+    const todayPR = `${nowPR.getUTCFullYear()}-${String(nowPR.getUTCMonth() + 1).padStart(2, '0')}-${String(nowPR.getUTCDate()).padStart(2, '0')}`;
 
-    const diff = Math.round((date.getTime() - today.getTime()) / 86400000);
+    // Aritmética de fechas pura (ambas a medianoche UTC) → diff exacto en días.
+    const dateMs  = new Date(dateStr + 'T00:00:00Z').getTime();
+    const todayMs = new Date(todayPR + 'T00:00:00Z').getTime();
+    const diff = Math.round((dateMs - todayMs) / 86400000);
     if (diff === 0)  return "Hoy";
     if (diff === 1)  return "Mañana";
     if (diff === -1) return "Ayer";
 
-    return new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'short' }).format(date);
+    return new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(dateStr + 'T00:00:00Z'));
 }
 
 function formatTime(timeStr: string): string {
@@ -186,8 +190,13 @@ serve(async (req) => {
                 // D. Build message content based on event type
                 const customerName = apt.customer_name  || 'Cliente';
                 const serviceName  = (apt.services as any)?.name || 'Servicio';
-                const humanDate    = getHumanDate(apt.appointment_date);
-                const time         = formatTime(apt.start_time);
+                // Fecha/hora CONGELADAS al encolar (payload del trigger), no recalculadas
+                // desde la fila fresca. Así un reintento no cambia lo que se prometió al
+                // cliente. Fallback a la fila por compatibilidad con jobs viejos sin payload.
+                const aptDate      = (job.payload as any)?.appointment_date || apt.appointment_date;
+                const aptTime      = (job.payload as any)?.start_time       || apt.start_time;
+                const humanDate    = getHumanDate(aptDate);
+                const time         = formatTime(aptTime);
 
                 let contentSid    = '';
                 let templateVars: Record<string, string> = {};
