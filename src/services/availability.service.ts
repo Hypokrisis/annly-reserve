@@ -147,15 +147,11 @@ async function calculateBarberAvailability(
         return []; // Barber doesn't work this day
     }
 
-    // 2. Get existing appointments for this barber on this date
-    const { data: appointments } = await supabase
-        .from('appointments')
-        .select('*')
-        .eq('barber_id', barber.id)
-        .eq('appointment_date', date)
-        .eq('status', 'confirmed');
+    // 2. Get busy slots via SECURITY DEFINER RPC (bypasses RLS, no PII)
+    const { data: busySlots } = await supabase
+        .rpc('get_busy_slots', { p_barber_id: barber.id, p_date: date });
 
-    const existingAppointments = appointments || [];
+    const existingAppointments = busySlots || [];
 
     // 3. Generate all possible time slots
     const serviceDuration = service.duration_minutes;
@@ -223,13 +219,9 @@ export const isSlotAvailable = async (
 
     if (!service) return false;
 
-    // Get existing appointments
+    // Get busy slots via SECURITY DEFINER RPC (bypasses RLS, no PII)
     const { data: appointments } = await supabase
-        .from('appointments')
-        .select('*')
-        .eq('barber_id', barberId)
-        .eq('appointment_date', date)
-        .eq('status', 'confirmed');
+        .rpc('get_busy_slots', { p_barber_id: barberId, p_date: date });
 
     if (!appointments) return true;
 
