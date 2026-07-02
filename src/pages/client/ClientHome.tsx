@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCustomerAppointments } from '@/services/appointments.service';
@@ -6,30 +6,31 @@ import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { BusinessCard, type BusinessResult } from '@/components/directory/BusinessCard';
 import { formatDate, parseDate, formatTimeDisplay } from '@/utils';
-import { Calendar, CalendarClock, LogOut, Store, Search, Scissors } from 'lucide-react';
+import {
+    Calendar, CalendarClock, Home, LogOut,
+    Scissors, Search, Store, User as UserIcon,
+} from 'lucide-react';
 
 const FAVORITES_KEY = 'favoriteBusinesses';
 
 /**
- * Dashboard del cliente registrado (role='client'). Dos secciones:
- *   1. Mis citas activas (futuras, confirmed) — cancelar por token + reagendar.
- *   2. Explorar barberías — mismas tarjetas del directorio público, con filtro.
- * Nav simple con anclas a cada sección. No usa DashboardLayout (sin sidebar de gestión).
+ * Panel del cliente registrado (role='client').
+ * Sección 1 — Mis citas: cards mobile-first, cancelar + reagendar.
+ * Sección 2 — Barberías: directorio con búsqueda, mismas BusinessCard del landing.
  */
 export default function ClientHome() {
     const { user, logout } = useAuth();
 
-    // ── Sección 1: citas ──
     const [appointments, setAppointments] = useState<any[]>([]);
     const [loadingApts, setLoadingApts] = useState(true);
     const [cancellingId, setCancellingId] = useState<string | null>(null);
 
-    // ── Sección 2: directorio ──
     const [businesses, setBusinesses] = useState<BusinessResult[]>([]);
     const [loadingBiz, setLoadingBiz] = useState(true);
     const [search, setSearch] = useState('');
     const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
 
+    // ── Data loaders ────────────────────────────────────────────────────────
     const loadApts = useCallback(async () => {
         if (!user?.email) { setLoadingApts(false); return; }
         try {
@@ -71,6 +72,7 @@ export default function ClientHome() {
         } catch { /* ignore */ }
     }, []);
 
+    // ── Handlers ─────────────────────────────────────────────────────────────
     const toggleFavorite = (e: React.MouseEvent, slug: string) => {
         e.preventDefault();
         const next = favoriteSlugs.includes(slug)
@@ -99,17 +101,7 @@ export default function ClientHome() {
         }
     };
 
-    // Agrupa citas por negocio
-    const groups = appointments.reduce((acc: Record<string, { business: any; items: any[] }>, apt) => {
-        const biz = apt.business || {};
-        const key = biz.id || 'sin-negocio';
-        if (!acc[key]) acc[key] = { business: biz, items: [] };
-        acc[key].items.push(apt);
-        return acc;
-    }, {});
-    const groupList = Object.values(groups);
-
-    // Filtro del directorio: nombre, ciudad o servicio
+    // ── Derived ───────────────────────────────────────────────────────────────
     const q = search.toLowerCase().trim();
     const filteredBusinesses = businesses.filter((b) => {
         if (!q) return true;
@@ -118,107 +110,178 @@ export default function ClientHome() {
             || (b.services || []).some((s) => s.name.toLowerCase().includes(q));
     });
 
+    const fullName = user?.user_metadata?.full_name || '';
+    const firstName = fullName.split(' ')[0] || user?.email?.split('@')[0] || '';
+    const avatarLetter = (fullName || user?.email || 'U')[0].toUpperCase();
+
+    // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-space-bg">
-            {/* ── Nav ── */}
-            <header className="sticky top-0 z-40 border-b border-space-border bg-space-card/90 backdrop-blur">
-                <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg" style={{ background: `linear-gradient(135deg, rgb(var(--space-primary-light)), rgb(var(--space-primary)))` }}>
+        <div className="min-h-screen bg-space-bg text-space-text">
+
+            {/* ── Nav fija ── */}
+            <header className="sticky top-0 z-40 border-b border-space-border bg-space-card/95 backdrop-blur-xl">
+                <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
+
+                    {/* Logo */}
+                    <Link to="/" className="flex items-center gap-2 shrink-0">
+                        <div className="w-8 h-8 rounded-xl overflow-hidden shadow-md"
+                            style={{ background: 'linear-gradient(135deg, rgb(var(--space-primary-light)), rgb(var(--space-primary)))' }}>
                             <img src="/logo.png" alt="Spacey" className="w-full h-full object-cover object-top scale-110" />
                         </div>
-                        <span className="text-lg font-extrabold tracking-tight text-space-text hidden sm:block">Spacey</span>
+                        <span className="font-extrabold tracking-tight hidden sm:block">Spacey</span>
                     </Link>
-                    <nav className="flex items-center gap-1 sm:gap-3">
-                        <Link to="/client" className="px-3 py-2 text-xs font-bold text-space-muted hover:text-space-primary transition-colors">Mis citas</Link>
-                        <a href="#barberias" className="px-3 py-2 text-xs font-bold text-space-muted hover:text-space-primary transition-colors">Barberías</a>
-                        <button onClick={() => logout()} className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-space-danger hover:opacity-80 transition-opacity">
-                            <LogOut size={14} /> <span className="hidden sm:inline">Salir</span>
-                        </button>
+
+                    {/* Links centrales */}
+                    <nav className="flex items-center gap-0.5">
+                        <Link to="/"
+                            className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-[11px] font-bold text-space-muted hover:text-space-primary hover:bg-space-primary/5 transition-all">
+                            <Home size={13} /><span className="hidden sm:inline">Inicio</span>
+                        </Link>
+                        <a href="#mis-citas"
+                            className="px-2.5 py-2 rounded-xl text-[11px] font-bold text-space-muted hover:text-space-primary hover:bg-space-primary/5 transition-all">
+                            Mis citas
+                        </a>
+                        <a href="#barberias"
+                            className="px-2.5 py-2 rounded-xl text-[11px] font-bold text-space-muted hover:text-space-primary hover:bg-space-primary/5 transition-all">
+                            Barberías
+                        </a>
                     </nav>
+
+                    {/* Avatar + salir */}
+                    <button
+                        onClick={() => logout()}
+                        title="Cerrar sesión"
+                        className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-xl hover:bg-space-card2/60 group transition-all shrink-0">
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-extrabold shrink-0"
+                            style={{ background: 'linear-gradient(135deg, rgb(var(--space-primary-light)), rgb(var(--space-primary)))', color: 'rgb(var(--space-card))' }}>
+                            {avatarLetter}
+                        </div>
+                        {firstName && (
+                            <span className="hidden sm:block text-[11px] font-bold text-space-muted group-hover:text-space-danger transition-colors max-w-[72px] truncate">
+                                {firstName}
+                            </span>
+                        )}
+                        <LogOut size={13} className="text-space-muted group-hover:text-space-danger transition-colors" />
+                    </button>
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-4 py-8 space-y-14">
-                {/* ── Sección 1: Mis citas ── */}
+            <main className="max-w-5xl mx-auto px-4 py-8 space-y-16">
+
+                {/* ══ SECCIÓN 1 — Mis citas ══════════════════════════════════ */}
                 <section id="mis-citas" className="scroll-mt-20">
-                    <div className="mb-5">
-                        <h1 className="text-2xl font-extrabold text-space-text mb-1">Mis citas</h1>
+                    <div className="mb-6">
+                        <h1 className="text-2xl font-extrabold mb-1">Mis citas</h1>
                         <p className="text-sm text-space-muted">
-                            Hola{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ''} 👋 Estas son tus próximas reservas.
+                            {firstName ? `Hola, ${firstName} 👋` : 'Hola 👋'} Estas son tus próximas reservas.
                         </p>
                     </div>
 
                     {loadingApts ? (
                         <div className="py-16 flex justify-center"><LoadingSpinner /></div>
-                    ) : groupList.length === 0 ? (
-                        <div className="bg-space-card rounded-2xl p-8 text-center border border-space-border">
-                            <div className="w-14 h-14 mx-auto rounded-2xl bg-space-primary/10 flex items-center justify-center mb-4">
-                                <Calendar size={26} className="text-space-primary" />
+
+                    ) : appointments.length === 0 ? (
+                        /* Estado vacío */
+                        <div className="bg-space-card border border-space-border rounded-2xl p-10 text-center">
+                            <div className="w-16 h-16 mx-auto rounded-2xl bg-space-primary/10 flex items-center justify-center mb-5">
+                                <Calendar size={28} className="text-space-primary" />
                             </div>
-                            <h2 className="text-lg font-extrabold text-space-text mb-2">No tienes citas activas</h2>
-                            <p className="text-space-muted text-sm mb-6 max-w-xs mx-auto">
-                                Reserva en cualquiera de las barberías de abajo y tus citas aparecerán aquí.
+                            <h2 className="text-lg font-extrabold mb-2">No tienes citas activas</h2>
+                            <p className="text-sm text-space-muted mb-6 max-w-xs mx-auto leading-relaxed">
+                                Explora las barberías y reserva tu próxima cita en segundos.
                             </p>
-                            <a href="#barberias" className="btn-primary text-xs px-6 py-2.5 inline-flex items-center gap-2">
-                                <Store size={14} /> Explorar barberías
-                            </a>
+                            <Link to="/" className="btn-primary text-xs px-6 py-2.5 inline-flex items-center gap-2">
+                                <Store size={14} /> Reservar ahora
+                            </Link>
                         </div>
+
                     ) : (
-                        <div className="space-y-6">
-                            {groupList.map(({ business, items }) => (
-                                <div key={business.id || 'sin-negocio'}>
-                                    <div className="flex items-center gap-2 mb-3 px-1">
-                                        <Store size={15} className="text-space-muted" />
-                                        <h3 className="text-sm font-extrabold text-space-text">{business.name || 'Barbería'}</h3>
-                                    </div>
-                                    <div className="grid gap-3 sm:grid-cols-2">
-                                        {items.map((apt) => {
-                                            const serviceName = apt.services?.name || 'Servicio';
-                                            const barberName = apt.barbers?.name;
-                                            return (
-                                                <div key={apt.id} className="bg-space-card rounded-2xl p-5 border border-space-border shadow-sm">
-                                                    <div className="space-y-2 mb-4">
-                                                        <div className="text-sm text-space-text font-bold flex items-center gap-2">
-                                                            <Scissors size={14} className="text-space-primary shrink-0" />
-                                                            <span>{serviceName}{barberName ? <span className="text-space-muted font-medium"> con {barberName}</span> : null}</span>
-                                                        </div>
-                                                        <div className="text-sm text-space-text font-bold flex items-center gap-2">
-                                                            <CalendarClock size={14} className="text-space-primary shrink-0" />
-                                                            <span>{formatDate(parseDate(apt.appointment_date))} a las {formatTimeDisplay(apt.start_time)}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        {business.slug && (
-                                                            <Link to={`/book/${business.slug}`} className="flex-1 btn-secondary text-xs py-2.5 flex items-center justify-center gap-1.5">
-                                                                <CalendarClock size={13} /> Reagendar
-                                                            </Link>
-                                                        )}
-                                                        <button onClick={() => handleCancel(apt)} disabled={cancellingId === apt.id}
-                                                            className="flex-1 btn-danger text-xs py-2.5 disabled:opacity-50">
-                                                            {cancellingId === apt.id ? 'Cancelando...' : 'Cancelar'}
-                                                        </button>
-                                                    </div>
+                        /* Cards — una por cita */
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            {appointments.map((apt) => {
+                                const serviceName = apt.services?.name || 'Servicio';
+                                const barberName  = apt.barbers?.name;
+                                const bizName     = apt.business?.name;
+                                const bizSlug     = apt.business?.slug;
+                                const dateStr     = formatDate(parseDate(apt.appointment_date));
+                                const timeStr     = formatTimeDisplay(apt.start_time);
+                                const isCancelling = cancellingId === apt.id;
+
+                                return (
+                                    <div key={apt.id}
+                                        className="bg-space-card border border-space-border rounded-2xl p-5 flex flex-col gap-4 shadow-sm hover:border-space-primary/25 transition-colors">
+
+                                        {/* Datos */}
+                                        <div className="space-y-2.5">
+                                            {/* Servicio */}
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-7 h-7 rounded-lg bg-space-primary/10 flex items-center justify-center shrink-0">
+                                                    <Scissors size={13} className="text-space-primary" />
                                                 </div>
-                                            );
-                                        })}
+                                                <span className="text-sm font-extrabold">{serviceName}</span>
+                                            </div>
+
+                                            {/* Barbero */}
+                                            {barberName && (
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-7 h-7 rounded-lg bg-space-card2/50 flex items-center justify-center shrink-0">
+                                                        <UserIcon size={13} className="text-space-muted" />
+                                                    </div>
+                                                    <span className="text-sm text-space-muted font-medium">{barberName}</span>
+                                                </div>
+                                            )}
+
+                                            {/* Fecha y hora */}
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-7 h-7 rounded-lg bg-space-card2/50 flex items-center justify-center shrink-0">
+                                                    <CalendarClock size={13} className="text-space-primary" />
+                                                </div>
+                                                <span className="text-sm font-bold">{dateStr} · {timeStr}</span>
+                                            </div>
+
+                                            {/* Negocio */}
+                                            {bizName && (
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-7 h-7 rounded-lg bg-space-card2/50 flex items-center justify-center shrink-0">
+                                                        <Store size={13} className="text-space-muted" />
+                                                    </div>
+                                                    <span className="text-sm text-space-muted font-medium">{bizName}</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Botones */}
+                                        <div className="flex gap-2 pt-3 border-t border-space-border/40">
+                                            {bizSlug && (
+                                                <Link to={`/book/${bizSlug}`}
+                                                    className="flex-1 h-9 flex items-center justify-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wide rounded-xl border border-space-border/60 text-space-muted hover:border-space-primary/40 hover:text-space-primary transition-all">
+                                                    <CalendarClock size={12} /> Reagendar
+                                                </Link>
+                                            )}
+                                            <button
+                                                onClick={() => handleCancel(apt)}
+                                                disabled={isCancelling}
+                                                className="flex-1 h-9 text-[11px] font-extrabold uppercase tracking-wide rounded-xl border border-space-danger/30 text-space-danger hover:bg-space-danger hover:text-white transition-all disabled:opacity-40">
+                                                {isCancelling ? 'Cancelando…' : 'Cancelar'}
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </section>
 
-                {/* ── Sección 2: Explorar barberías ── */}
+                {/* ══ SECCIÓN 2 — Barberías ══════════════════════════════════ */}
                 <section id="barberias" className="scroll-mt-20">
-                    <div className="mb-5">
-                        <h2 className="text-2xl font-extrabold text-space-text mb-1">Barberías</h2>
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-extrabold mb-1">Barberías</h2>
                         <p className="text-sm text-space-muted">Explora y reserva en cualquiera de estos negocios.</p>
                     </div>
 
-                    {/* Filtro */}
+                    {/* Buscador */}
                     <div className="relative mb-6 max-w-md">
-                        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-space-muted pointer-events-none" />
+                        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-space-muted pointer-events-none" />
                         <input
                             type="text"
                             value={search}
@@ -230,12 +293,14 @@ export default function ClientHome() {
 
                     {loadingBiz ? (
                         <div className="py-16 flex justify-center"><LoadingSpinner /></div>
+
                     ) : filteredBusinesses.length === 0 ? (
-                        <div className="bg-space-card rounded-2xl p-8 text-center border border-space-border">
+                        <div className="bg-space-card border border-space-border rounded-2xl p-8 text-center">
                             <p className="text-space-muted text-sm">
                                 {q ? `No encontramos barberías para "${search}".` : 'Aún no hay barberías disponibles.'}
                             </p>
                         </div>
+
                     ) : (
                         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                             {filteredBusinesses.map((b) => (
@@ -250,6 +315,7 @@ export default function ClientHome() {
                         </div>
                     )}
                 </section>
+
             </main>
         </div>
     );
