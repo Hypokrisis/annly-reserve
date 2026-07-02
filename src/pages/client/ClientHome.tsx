@@ -130,7 +130,7 @@ export default function ClientHome() {
                         <span className="text-lg font-extrabold tracking-tight text-space-text hidden sm:block">Spacey</span>
                     </Link>
                     <nav className="flex items-center gap-1 sm:gap-3">
-                        <a href="#mis-citas" className="px-3 py-2 text-xs font-bold text-space-muted hover:text-space-primary transition-colors">Mis citas</a>
+                        <Link to="/client" className="px-3 py-2 text-xs font-bold text-space-muted hover:text-space-primary transition-colors">Mis citas</Link>
                         <a href="#barberias" className="px-3 py-2 text-xs font-bold text-space-muted hover:text-space-primary transition-colors">Barberías</a>
                         <button onClick={() => logout()} className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-space-danger hover:opacity-80 transition-opacity">
                             <LogOut size={14} /> <span className="hidden sm:inline">Salir</span>
