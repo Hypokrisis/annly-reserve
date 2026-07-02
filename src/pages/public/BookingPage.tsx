@@ -281,8 +281,9 @@ export default function PublicBookingPage() {
             const emailNorm = customerInfo.email.toLowerCase().trim();
             const phoneE164 = normalizePhoneE164(customerInfo.phone.trim());
 
-            // Dedup: ¿ya hay cita activa en ESTE negocio con este email O teléfono?
-            // (antes solo por email → no detectaba citas hechas por WhatsApp/bot.)
+            // Dedup: ¿ya hay cita FUTURA activa en ESTE negocio con este email O teléfono?
+            // Solo citas de hoy en adelante — una cita pasada no bloquea nuevas reservas.
+            const todayPR = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString().split('T')[0];
             const dedupOr: string[] = [];
             if (emailNorm) dedupOr.push(`customer_email.eq.${emailNorm}`);
             if (phoneE164) dedupOr.push(`customer_phone.eq.${phoneE164}`);
@@ -292,6 +293,7 @@ export default function PublicBookingPage() {
                     .select('id')
                     .eq('business_id', business.id)
                     .in('status', ['confirmed', 'pending'])
+                    .gte('appointment_date', todayPR)
                     .or(dedupOr.join(','))
                     .limit(1);
 

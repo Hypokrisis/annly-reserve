@@ -313,7 +313,7 @@ function Home() {
         else if (diffMins > 15) statusBadge = 'late';
         else if (apt.appointment_date === now.toISOString().split('T')[0]) statusBadge = 'today';
         return { ...apt, statusBadge };
-      }).filter(apt => apt.status === 'confirmed');
+      }).filter(apt => apt.status === 'confirmed' && apt.statusBadge !== 'expired');
       setCustomerAppointments(enriched);
     } catch { /* ignore */ }
     finally { setLoadingApts(false); }

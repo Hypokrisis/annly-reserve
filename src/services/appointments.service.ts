@@ -185,6 +185,7 @@ export const updateAppointmentStatus = async (
  * Get active appointments for a customer email
  */
 export const getCustomerAppointments = async (email: string, clientId?: string): Promise<Appointment[]> => {
+    const todayPR = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString().split('T')[0];
     let query = supabase
         .from('appointments')
         .select(`
@@ -193,7 +194,8 @@ export const getCustomerAppointments = async (email: string, clientId?: string):
             services(name),
             barbers(name)
         `)
-        .eq('status', 'confirmed');
+        .eq('status', 'confirmed')
+        .gte('appointment_date', todayPR);
 
     if (clientId) {
         // Use OR for either email match OR client_id match
