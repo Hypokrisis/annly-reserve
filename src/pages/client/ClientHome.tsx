@@ -7,8 +7,8 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { BusinessCard, type BusinessResult } from '@/components/directory/BusinessCard';
 import { formatDate, parseDate, formatTimeDisplay } from '@/utils';
 import {
-    Calendar, CalendarClock, Home, LogOut,
-    Scissors, Search, Store, User as UserIcon,
+    Calendar, CalendarClock, Home, LogOut, Phone,
+    Scissors, Search, ShieldCheck, Store, User as UserIcon, X,
 } from 'lucide-react';
 
 const FAVORITES_KEY = 'favoriteBusinesses';
@@ -29,6 +29,15 @@ export default function ClientHome() {
     const [loadingBiz, setLoadingBiz] = useState(true);
     const [search, setSearch] = useState('');
     const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
+
+    // ── Verificación de teléfono ──────────────────────────────────────
+    const [phoneVerified,  setPhoneVerified]  = useState<boolean | null>(null);
+    const [profilePhone,   setProfilePhone]   = useState('');
+    const [showVerifBanner, setShowVerifBanner] = useState(false);
+    const [verifStep,      setVerifStep]      = useState<'idle' | 'sending' | 'code' | 'done'>('idle');
+    const [verifCode,      setVerifCode]      = useState('');
+    const [verifError,     setVerifError]     = useState('');
+    const [verifLoading,   setVerifLoading]   = useState(false);
 
     // ── Data loaders ────────────────────────────────────────────────────────
     const loadApts = useCallback(async () => {
@@ -63,7 +72,21 @@ export default function ClientHome() {
         finally { setLoadingBiz(false); }
     }, []);
 
-    useEffect(() => { loadApts(); loadBusinesses(); }, [loadApts, loadBusinesses]);
+    // Cargar perfil para saber si el teléfono está verificado
+    const loadProfile = useCallback(async () => {
+        if (!user?.id) return;
+        const { data } = await supabase
+            .from('profiles')
+            .select('phone, phone_verified')
+            .eq('id', user.id)
+            .maybeSingle();
+        if (data) {
+            setPhoneVerified(data.phone_verified ?? false);
+            setProfilePhone(data.phone ?? '');
+        }
+    }, [user?.id]);
+
+    useEffect(() => { loadApts(); loadBusinesses(); loadProfile(); }, [loadApts, loadBusinesses, loadProfile]);
 
     useEffect(() => {
         try {
@@ -98,6 +121,52 @@ export default function ClientHome() {
             alert('No se pudo cancelar. Intenta de nuevo o contacta a la barbería.');
         } finally {
             setCancellingId(null);
+        }
+    };
+
+    // ── Verificación handlers ─────────────────────────────────────────────────
+    const sendVerifSMS = async () => {
+        setVerifStep('sending');
+        setVerifError('');
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const resp = await fetch(
+                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-verification`,
+                {
+                    method:  'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session?.access_token ?? ''}`,
+                        'Content-Type':  'application/json',
+                    },
+                    body: JSON.stringify({ phone: profilePhone }),
+                }
+            );
+            const json = await resp.json();
+            if (!json.success) throw new Error(json.error || 'Error al enviar SMS');
+            setVerifStep('code');
+        } catch (err: any) {
+            setVerifError(err.message || 'Error al enviar SMS');
+            setVerifStep('idle');
+        }
+    };
+
+    const handleVerifSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (verifCode.length !== 4) { setVerifError('El código tiene 4 dígitos.'); return; }
+        setVerifLoading(true);
+        setVerifError('');
+        try {
+            const { data, error } = await supabase.rpc('verify_phone_code', { p_code: verifCode });
+            if (error) throw error;
+            if (!data?.success) throw new Error(data?.error || 'Código inválido');
+            setPhoneVerified(true);
+            setVerifStep('done');
+            setShowVerifBanner(false);
+            await loadApts(); // Recargar citas — ahora incluye las de WhatsApp
+        } catch (err: any) {
+            setVerifError(err.message || 'Código inválido o expirado.');
+        } finally {
+            setVerifLoading(false);
         }
     };
 
@@ -165,6 +234,78 @@ export default function ClientHome() {
                     </button>
                 </div>
             </header>
+
+            {/* ── Banner de verificación de teléfono ── */}
+            {phoneVerified === false && profilePhone && !showVerifBanner && (
+                <div className="bg-space-primary/8 border-b border-space-primary/20">
+                    <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                            <Phone size={15} className="text-space-primary shrink-0" />
+                            <p className="text-sm font-medium text-space-text truncate">
+                                Verifica tu número para ver tus citas de WhatsApp
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                onClick={() => { setShowVerifBanner(true); sendVerifSMS(); }}
+                                className="text-xs font-extrabold text-space-primary hover:opacity-70 transition-opacity whitespace-nowrap">
+                                Verificar ahora →
+                            </button>
+                            <button onClick={() => setPhoneVerified(true)} className="p-1 text-space-muted hover:text-space-text transition-colors">
+                                <X size={14} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Panel inline de verificación ── */}
+            {showVerifBanner && phoneVerified === false && (
+                <div className="border-b border-space-border bg-space-card">
+                    <div className="max-w-5xl mx-auto px-4 py-4">
+                        {verifStep === 'sending' && (
+                            <div className="flex items-center gap-2 text-sm text-space-muted">
+                                <span className="w-4 h-4 rounded-full border-2 border-space-primary/30 border-t-space-primary animate-spin" />
+                                Enviando código a {profilePhone}…
+                            </div>
+                        )}
+                        {verifStep === 'code' && (
+                            <form onSubmit={handleVerifSubmit} className="flex items-end gap-3 flex-wrap">
+                                <div className="flex-1 min-w-[180px]">
+                                    <label className="input-label flex items-center gap-1.5">
+                                        <ShieldCheck size={13} className="text-space-primary" />
+                                        Código enviado a {profilePhone}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        maxLength={4}
+                                        value={verifCode}
+                                        onChange={(e) => { setVerifCode(e.target.value.replace(/\D/g, '')); setVerifError(''); }}
+                                        className="input-field text-center text-xl font-extrabold tracking-[0.4em] max-w-[140px]"
+                                        placeholder="····"
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2 pb-0.5">
+                                    <button type="submit" disabled={verifLoading || verifCode.length < 4} className="btn-primary text-xs px-4 h-10 disabled:opacity-40">
+                                        {verifLoading ? 'Verificando…' : 'Confirmar'}
+                                    </button>
+                                    <button type="button" onClick={sendVerifSMS} className="text-xs font-bold text-space-muted hover:text-space-primary transition-colors">
+                                        Reenviar
+                                    </button>
+                                    <button type="button" onClick={() => setShowVerifBanner(false)} className="p-1 text-space-muted hover:text-space-text transition-colors">
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                                {verifError && (
+                                    <p className="w-full text-xs font-medium text-space-danger">{verifError}</p>
+                                )}
+                            </form>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <main className="max-w-5xl mx-auto px-4 py-8 space-y-16">
 
