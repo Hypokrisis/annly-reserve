@@ -191,7 +191,7 @@ export const getCustomerAppointments = async (email: string, clientId?: string):
         .select(`
             *,
             business:businesses(id, name, slug),
-            services(name),
+            services(name, duration_minutes),
             barbers(name)
         `)
         .eq('status', 'confirmed')
