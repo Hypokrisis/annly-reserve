@@ -4,7 +4,10 @@
 -- UPDATE appointment_date o start_time (status='confirmed') → 'rescheduled' con old/new
 
 CREATE OR REPLACE FUNCTION public.queue_appointment_notification_v2()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql AS $$
 DECLARE
     v_event_type TEXT;
     v_payload    JSONB;
