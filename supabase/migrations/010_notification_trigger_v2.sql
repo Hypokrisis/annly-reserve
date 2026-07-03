@@ -45,12 +45,16 @@ BEGIN
         RETURN NEW;
     END IF;
 
-    INSERT INTO public.notification_jobs (appointment_id, event_type, payload, run_after)
-    VALUES (NEW.id, v_event_type, v_payload, now() + INTERVAL '3 seconds')
-    ON CONFLICT (appointment_id, event_type) WHERE (status = 'pending')
-    DO UPDATE SET
-        payload   = EXCLUDED.payload,
-        run_after = EXCLUDED.run_after;
+    BEGIN
+        INSERT INTO public.notification_jobs (appointment_id, event_type, payload, run_after)
+        VALUES (NEW.id, v_event_type, v_payload, now() + INTERVAL '3 seconds')
+        ON CONFLICT (appointment_id, event_type) WHERE (status = 'pending')
+        DO UPDATE SET
+            payload   = EXCLUDED.payload,
+            run_after = EXCLUDED.run_after;
+    EXCEPTION WHEN OTHERS THEN
+        RAISE WARNING 'queue_appointment_notification_v2: no se pudo encolar job para cita %: %', NEW.id, SQLERRM;
+    END;
 
     RETURN NEW;
 END;
