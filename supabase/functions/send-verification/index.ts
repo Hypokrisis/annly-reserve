@@ -49,6 +49,26 @@ serve(async (req) => {
         const phoneE164 = normalizePhone(phone);
         if (!/^\+\d{7,15}$/.test(phoneE164)) throw new Error('Número de teléfono inválido');
 
+        // ── Rate limit: mínimo 60s entre solicitudes por usuario ─────
+        const { data: lastCode } = await supabase
+            .from('phone_verifications')
+            .select('created_at')
+            .eq('user_id', user.id)
+            .eq('used', false)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (lastCode) {
+            const secsSince = (Date.now() - new Date(lastCode.created_at).getTime()) / 1000;
+            if (secsSince < 60) {
+                return new Response(JSON.stringify({ success: false, error: `Espera ${Math.ceil(60 - secsSince)} segundos antes de solicitar otro código.` }), {
+                    status: 429,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                });
+            }
+        }
+
         // ── Generar código ────────────────────────────────────────────
         const code      = Math.floor(1000 + Math.random() * 9000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
