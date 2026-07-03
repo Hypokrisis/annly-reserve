@@ -282,22 +282,16 @@ export default function PublicBookingPage() {
             const phoneE164 = normalizePhoneE164(customerInfo.phone.trim());
 
             // Dedup: ¿ya hay cita FUTURA activa en ESTE negocio con este email O teléfono?
-            // Solo citas de hoy en adelante — una cita pasada no bloquea nuevas reservas.
+            // Usa RPC SECURITY DEFINER — query directa a appointments retorna [] silencioso (RLS).
             const todayPR = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString().split('T')[0];
-            const dedupOr: string[] = [];
-            if (emailNorm) dedupOr.push(`customer_email.eq.${emailNorm}`);
-            if (phoneE164) dedupOr.push(`customer_phone.eq.${phoneE164}`);
-            if (dedupOr.length > 0) {
-                const { data: existingActive } = await supabase
-                    .from('appointments')
-                    .select('id')
-                    .eq('business_id', business.id)
-                    .in('status', ['confirmed', 'pending'])
-                    .gte('appointment_date', todayPR)
-                    .or(dedupOr.join(','))
-                    .limit(1);
-
-                if (existingActive && existingActive.length > 0) {
+            if (emailNorm || phoneE164) {
+                const { data: hasActive } = await supabase.rpc('has_active_appointment', {
+                    p_business_id: business.id,
+                    p_phone:       phoneE164 || '',
+                    p_email:       emailNorm || '',
+                    p_date:        todayPR,
+                });
+                if (hasActive) {
                     alert('Ya tienes una cita activa en esta barbería.');
                     setSubmitting(false);
                     return;
