@@ -372,19 +372,27 @@ export default function ClientHome() {
     }, [todayPR, tomorrowPR]);
 
     const handleRescheduleConfirm = useCallback(async (newDate: string, newTime: string) => {
-        if (!rescheduleApt?.cancel_token) {
-            alert('Esta cita no puede reagendarse desde aquí. Contacta a la barbería directamente.');
-            return;
-        }
+        if (!rescheduleApt) return;
         setReschedConfirming(true);
         try {
-            const { data, error } = await supabase.rpc('reschedule_appointment_by_token', {
-                p_token:     rescheduleApt.cancel_token,
-                p_new_date:  newDate,
-                p_new_start: newTime,
-            });
-            if (error) throw error;
-            if (!data?.success) throw new Error(data?.error || 'reschedule_failed');
+            let result: { data: any; error: any };
+            if (rescheduleApt.cancel_token) {
+                // Cita con token (flujo guest) → RPC por token
+                result = await supabase.rpc('reschedule_appointment_by_token', {
+                    p_token:     rescheduleApt.cancel_token,
+                    p_new_date:  newDate,
+                    p_new_start: newTime,
+                });
+            } else {
+                // Usuario autenticado → RPC por appointment_id + auth.uid()
+                result = await supabase.rpc('reschedule_my_appointment', {
+                    p_appointment_id: rescheduleApt.id,
+                    p_new_date:       newDate,
+                    p_new_start:      newTime,
+                });
+            }
+            if (result.error) throw result.error;
+            if (!result.data?.success) throw new Error(result.data?.error || 'reschedule_failed');
             setReschedDone({ date: newDate, time: newTime });
             await loadApts();
         } catch {
