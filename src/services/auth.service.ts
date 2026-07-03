@@ -44,13 +44,13 @@ export const signup = async (data: {
     if (authData.user && (data.full_name || data.phone || data.role)) {
         const { error: profileError } = await supabase
             .from('profiles')
-            .upsert({ // Changed to upsert to handle potential race conditions or existing profile
-                id: authData.user.id,
+            .upsert({
+                id:        authData.user.id,
                 full_name: data.full_name || '',
-                phone: data.phone || '',
-                // If 'profiles' table has a role column, adding it here would be good,
-                // but we rely on auth metadata for now as per plan.
-                // Assuming profiles schema is basic.
+                // Guardar null si no hay teléfono (no '') para que findRegisteredUser
+                // del bot filtre con .not('phone', 'is', null) correctamente.
+                // data.phone ya viene normalizado a E.164 desde RegisterClientPage.
+                phone: data.phone || null,
             });
 
         if (profileError) {
