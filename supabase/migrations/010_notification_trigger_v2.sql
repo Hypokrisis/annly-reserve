@@ -53,12 +53,15 @@ BEGIN
         RETURN NEW;
     END IF;
 
+    -- Upsert: si ya existe un job pendiente para esta cita+evento, actualizar payload.
+    -- Usamos DELETE+INSERT en vez de ON CONFLICT para no depender del nombre del constraint.
+    DELETE FROM public.notification_jobs
+    WHERE appointment_id = NEW.id
+      AND event_type     = v_event_type
+      AND status         = 'pending';
+
     INSERT INTO public.notification_jobs (appointment_id, event_type, payload, run_after)
-    VALUES (NEW.id, v_event_type, v_payload, now() + INTERVAL '3 seconds')
-    ON CONFLICT ON CONSTRAINT notification_jobs_unique_event
-    DO UPDATE SET
-        payload   = EXCLUDED.payload,
-        run_after = EXCLUDED.run_after;
+    VALUES (NEW.id, v_event_type, v_payload, now() + INTERVAL '3 seconds');
 
     RETURN NEW;
 END;
