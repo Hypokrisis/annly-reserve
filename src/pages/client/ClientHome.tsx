@@ -5,11 +5,18 @@ import { getCustomerAppointments } from '@/services/appointments.service';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { BusinessCard, type BusinessResult } from '@/components/directory/BusinessCard';
-import { formatDate, parseDate, formatTimeDisplay } from '@/utils';
+import { formatTimeDisplay } from '@/utils';
 import {
     Calendar, CalendarClock, Check, Home, LogOut, Phone,
     Scissors, Search, ShieldCheck, Store, User as UserIcon, X,
 } from 'lucide-react';
+
+// "Sábado 4 de julio" — usa UTC para evitar shift de timezone en fechas YYYY-MM-DD
+function formatAptDate(dateStr: string): string {
+    return new Intl.DateTimeFormat('es', {
+        weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC',
+    }).format(new Date(dateStr + 'T00:00:00Z'));
+}
 
 // ── Modal de reagendamiento — definido a nivel de módulo (regla: nunca dentro de render) ──
 
@@ -51,7 +58,7 @@ function RescheduleModal({ apt, todayStr, tomorrowStr, slots, loading, confirmin
     const dayLabel = (dateStr: string) => {
         if (dateStr === todayStr) return 'Hoy';
         if (dateStr === tomorrowStr) return 'Mañana';
-        return dateStr;
+        return formatAptDate(dateStr);
     };
 
     return (
@@ -622,7 +629,7 @@ export default function ClientHome() {
                                 const barberName  = apt.barbers?.name;
                                 const bizName     = apt.business?.name;
                                 const bizSlug     = apt.business?.slug;
-                                const dateStr     = formatDate(parseDate(apt.appointment_date));
+                                const dateStr     = formatAptDate(apt.appointment_date);
                                 const timeStr     = formatTimeDisplay(apt.start_time);
                                 const isCancelling = cancellingId === apt.id;
 
