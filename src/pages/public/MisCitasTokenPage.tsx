@@ -23,10 +23,7 @@ export default function MisCitasTokenPage() {
         (async () => {
             try {
                 const { data, error: err } = await supabase
-                    .from('appointments')
-                    .select('id, customer_name, appointment_date, start_time, status, services(name), barbers(name), businesses(name, slug)')
-                    .eq('cancel_token', token)
-                    .maybeSingle();
+                    .rpc('get_appointment_by_cancel_token', { p_token: token });
                 if (err || !data) { setError('No encontramos una cita con este link.'); return; }
                 setAppointment(data);
                 if (data.status === 'cancelled') setCancelled(true);
