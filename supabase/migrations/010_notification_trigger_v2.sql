@@ -55,7 +55,7 @@ BEGIN
 
     INSERT INTO public.notification_jobs (appointment_id, event_type, payload, run_after)
     VALUES (NEW.id, v_event_type, v_payload, now() + INTERVAL '3 seconds')
-    ON CONFLICT ON CONSTRAINT notification_jobs_pending_unique
+    ON CONFLICT ON CONSTRAINT notification_jobs_unique_event
     DO UPDATE SET
         payload   = EXCLUDED.payload,
         run_after = EXCLUDED.run_after;
