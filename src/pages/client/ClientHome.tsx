@@ -2,14 +2,146 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCustomerAppointments } from '@/services/appointments.service';
+import { calculateAvailability, type AvailableSlot } from '@/services/availability.service';
 import { supabase } from '@/supabaseClient';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { BusinessCard, type BusinessResult } from '@/components/directory/BusinessCard';
 import { formatDate, parseDate, formatTimeDisplay } from '@/utils';
 import {
-    Calendar, CalendarClock, Home, LogOut, Phone,
+    Calendar, CalendarClock, Check, Home, LogOut, Phone,
     Scissors, Search, ShieldCheck, Store, User as UserIcon, X,
 } from 'lucide-react';
+
+// ── Modal de reagendamiento — definido a nivel de módulo (regla: nunca dentro de render) ──
+
+interface ReschedSlots { today: AvailableSlot[]; tomorrow: AvailableSlot[]; }
+
+interface RescheduleModalProps {
+    apt: any;
+    todayStr: string;
+    tomorrowStr: string;
+    slots: ReschedSlots;
+    loading: boolean;
+    confirming: boolean;
+    done: { date: string; time: string } | null;
+    bookingLink: string | undefined;
+    onClose: () => void;
+    onConfirm: (date: string, time: string) => void;
+}
+
+interface SlotButtonProps { date: string; time: string; confirming: boolean; onConfirm: (d: string, t: string) => void; }
+function SlotButton({ date, time, confirming, onConfirm }: SlotButtonProps) {
+    return (
+        <button
+            onClick={() => onConfirm(date, time)}
+            disabled={confirming}
+            className="flex-1 min-w-[100px] h-10 rounded-xl border border-space-border/60 text-sm font-bold text-space-text hover:border-space-primary hover:text-space-primary hover:bg-space-primary/5 transition-all disabled:opacity-40">
+            {formatTimeDisplay(time)}
+        </button>
+    );
+}
+
+function RescheduleModal({ apt, todayStr, tomorrowStr, slots, loading, confirming, done, bookingLink, onClose, onConfirm }: RescheduleModalProps) {
+    const serviceName = apt.services?.name || 'Servicio';
+    const barberName  = apt.barbers?.name;
+
+    const dayLabel = (dateStr: string) => {
+        if (dateStr === todayStr) return 'Hoy';
+        if (dateStr === tomorrowStr) return 'Mañana';
+        return dateStr;
+    };
+
+    const hasAnySlot = slots.today.length > 0 || slots.tomorrow.length > 0;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="bg-space-card border border-space-border rounded-2xl w-full max-w-sm shadow-2xl">
+
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-space-border/40">
+                    <div>
+                        <h3 className="font-extrabold text-base">Reagendar cita</h3>
+                        <p className="text-xs text-space-muted mt-0.5">
+                            {serviceName}{barberName ? ` · ${barberName}` : ''}
+                        </p>
+                    </div>
+                    <button onClick={onClose} className="p-1.5 rounded-lg text-space-muted hover:text-space-text transition-colors">
+                        <X size={16} />
+                    </button>
+                </div>
+
+                <div className="px-5 py-4 space-y-4">
+                    {/* Estado de carga */}
+                    {loading && (
+                        <div className="py-8 flex justify-center"><LoadingSpinner /></div>
+                    )}
+
+                    {/* Confirmación exitosa */}
+                    {!loading && done && (
+                        <div className="py-6 text-center space-y-3">
+                            <div className="w-12 h-12 mx-auto rounded-full bg-space-success/10 flex items-center justify-center">
+                                <Check size={22} className="text-space-success" />
+                            </div>
+                            <div>
+                                <p className="font-extrabold text-space-text">¡Cita reagendada!</p>
+                                <p className="text-sm text-space-muted mt-1">
+                                    {dayLabel(done.date)} · {formatTimeDisplay(done.time)}
+                                </p>
+                            </div>
+                            <button onClick={onClose} className="btn-primary text-xs px-6 py-2">Listo</button>
+                        </div>
+                    )}
+
+                    {/* Slots disponibles */}
+                    {!loading && !done && hasAnySlot && (
+                        <>
+                            {slots.today.length > 0 && (
+                                <div>
+                                    <p className="text-xs font-extrabold uppercase tracking-widest text-space-muted mb-2">Hoy</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {slots.today.map(s => <SlotButton key={s.time} date={todayStr} time={s.time} confirming={confirming} onConfirm={onConfirm} />)}
+                                    </div>
+                                </div>
+                            )}
+                            {slots.tomorrow.length > 0 && (
+                                <div>
+                                    <p className="text-xs font-extrabold uppercase tracking-widest text-space-muted mb-2">Mañana</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {slots.tomorrow.map(s => <SlotButton key={s.time} date={tomorrowStr} time={s.time} confirming={confirming} onConfirm={onConfirm} />)}
+                                    </div>
+                                </div>
+                            )}
+                            {confirming && (
+                                <div className="flex items-center gap-2 text-sm text-space-muted pt-1">
+                                    <span className="w-4 h-4 rounded-full border-2 border-space-primary/30 border-t-space-primary animate-spin" />
+                                    Guardando…
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {/* Sin disponibilidad hoy/mañana */}
+                    {!loading && !done && !hasAnySlot && (
+                        <div className="py-4 text-center space-y-2">
+                            <p className="text-sm text-space-muted">No hay disponibilidad hoy ni mañana.</p>
+                        </div>
+                    )}
+
+                    {/* Link para otras fechas */}
+                    {!loading && !done && bookingLink && (
+                        <div className="pt-2 border-t border-space-border/40">
+                            <a href={bookingLink} target="_blank" rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-1.5 text-xs font-bold text-space-primary hover:opacity-70 transition-opacity">
+                                <CalendarClock size={12} /> Ver más fechas →
+                            </a>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
 
 const FAVORITES_KEY = 'favoriteBusinesses';
 
@@ -24,6 +156,13 @@ export default function ClientHome() {
     const [appointments, setAppointments] = useState<any[]>([]);
     const [loadingApts, setLoadingApts] = useState(true);
     const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+    // ── Reagendamiento ────────────────────────────────────────────────────
+    const [rescheduleApt,  setRescheduleApt]  = useState<any>(null);
+    const [reschedSlots,   setReschedSlots]   = useState<ReschedSlots>({ today: [], tomorrow: [] });
+    const [reschedLoading, setReschedLoading] = useState(false);
+    const [reschedConfirming, setReschedConfirming] = useState(false);
+    const [reschedDone,    setReschedDone]    = useState<{ date: string; time: string } | null>(null);
 
     const [businesses, setBusinesses] = useState<BusinessResult[]>([]);
     const [loadingBiz, setLoadingBiz] = useState(true);
@@ -123,6 +262,53 @@ export default function ClientHome() {
             setCancellingId(null);
         }
     };
+
+    // ── Reagendamiento handlers ───────────────────────────────────────────────
+    const todayPR = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const tomorrowPR = (() => {
+        const d = new Date(todayPR + 'T12:00:00');
+        d.setDate(d.getDate() + 1);
+        return d.toISOString().split('T')[0];
+    })();
+
+    const handleOpenReschedule = useCallback(async (apt: any) => {
+        setRescheduleApt(apt);
+        setReschedSlots({ today: [], tomorrow: [] });
+        setReschedDone(null);
+        setReschedLoading(true);
+        try {
+            const params = { businessId: apt.business_id, serviceId: apt.service_id, barberId: apt.barber_id };
+            const [todaySlots, tomorrowSlots] = await Promise.all([
+                calculateAvailability({ ...params, date: todayPR }),
+                calculateAvailability({ ...params, date: tomorrowPR }),
+            ]);
+            setReschedSlots({ today: todaySlots, tomorrow: tomorrowSlots });
+        } catch {
+            setReschedSlots({ today: [], tomorrow: [] });
+        } finally {
+            setReschedLoading(false);
+        }
+    }, [todayPR, tomorrowPR]);
+
+    const handleRescheduleConfirm = useCallback(async (newDate: string, newTime: string) => {
+        if (!rescheduleApt?.cancel_token) return;
+        setReschedConfirming(true);
+        try {
+            const { data, error } = await supabase.rpc('reschedule_appointment_by_token', {
+                p_token:     rescheduleApt.cancel_token,
+                p_new_date:  newDate,
+                p_new_start: newTime,
+            });
+            if (error) throw error;
+            if (!data?.success) throw new Error(data?.error || 'reschedule_failed');
+            setReschedDone({ date: newDate, time: newTime });
+            await loadApts();
+        } catch {
+            alert('No se pudo reagendar. Intenta de nuevo o contacta a la barbería.');
+        } finally {
+            setReschedConfirming(false);
+        }
+    }, [rescheduleApt, loadApts]);
 
     // ── Verificación handlers ─────────────────────────────────────────────────
     const sendVerifSMS = async () => {
@@ -393,12 +579,11 @@ export default function ClientHome() {
 
                                         {/* Botones */}
                                         <div className="flex gap-2 pt-3 border-t border-space-border/40">
-                                            {bizSlug && (
-                                                <Link to={`/book/${bizSlug}`}
-                                                    className="flex-1 h-9 flex items-center justify-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wide rounded-xl border border-space-border/60 text-space-muted hover:border-space-primary/40 hover:text-space-primary transition-all">
-                                                    <CalendarClock size={12} /> Reagendar
-                                                </Link>
-                                            )}
+                                            <button
+                                                onClick={() => handleOpenReschedule(apt)}
+                                                className="flex-1 h-9 flex items-center justify-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wide rounded-xl border border-space-border/60 text-space-muted hover:border-space-primary/40 hover:text-space-primary transition-all">
+                                                <CalendarClock size={12} /> Reagendar
+                                            </button>
                                             <button
                                                 onClick={() => handleCancel(apt)}
                                                 disabled={isCancelling}
@@ -458,6 +643,24 @@ export default function ClientHome() {
                 </section>
 
             </main>
+
+            {/* ── Modal de reagendamiento ── */}
+            {rescheduleApt && (
+                <RescheduleModal
+                    apt={rescheduleApt}
+                    todayStr={todayPR}
+                    tomorrowStr={tomorrowPR}
+                    slots={reschedSlots}
+                    loading={reschedLoading}
+                    confirming={reschedConfirming}
+                    done={reschedDone}
+                    bookingLink={rescheduleApt.business?.slug
+                        ? `${window.location.origin}/book/${rescheduleApt.business.slug}`
+                        : undefined}
+                    onClose={() => { setRescheduleApt(null); setReschedDone(null); }}
+                    onConfirm={handleRescheduleConfirm}
+                />
+            )}
         </div>
     );
 }
