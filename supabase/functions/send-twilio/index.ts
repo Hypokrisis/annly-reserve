@@ -219,12 +219,26 @@ serve(async (req) => {
                     smsFallback  = `❌ Hola ${customerName}, tu cita${serviceName ? ` de ${serviceName}` : ''} del ${humanDate} a las ${time} fue cancelada.`;
 
                 } else if (et === 'rescheduled') {
-                    const oldDate    = job.payload?.old_date ? getFullDate(job.payload.old_date)  : 'fecha anterior';
-                    const oldTime    = job.payload?.old_time ? formatTime(job.payload.old_time)   : '';
-                    contentSid   = tmplRescheduled;
-                    // {{1}} nombre, {{2}} fecha anterior, {{3}} hora anterior, {{4}} nueva fecha, {{5}} nueva hora
-                    templateVars = { "1": customerName, "2": oldDate, "3": oldTime, "4": fullDate, "5": time };
-                    smsFallback  = `🔄 Hola ${customerName}, tu cita fue reagendada.\nAntes: ${humanDate} ${oldTime}\nAhora: ${humanDate} a las ${time}`;
+                    const oldDate     = job.payload?.old_date ? getFullDate(job.payload.old_date)   : 'fecha anterior';
+                    const oldDateHuman= job.payload?.old_date ? getHumanDate(job.payload.old_date)  : 'fecha anterior';
+                    const oldTime     = job.payload?.old_time ? formatTime(job.payload.old_time)    : '';
+                    const barberName  = (apt.barbers as any)?.name || '';
+                    // Si hay template aprobado → usarlo. Si no → texto libre WhatsApp (funciona en ventana 24h).
+                    if (tmplRescheduled) {
+                        contentSid   = tmplRescheduled;
+                        // {{1}} nombre, {{2}} fecha anterior, {{3}} hora anterior, {{4}} nueva fecha, {{5}} nueva hora
+                        templateVars = { "1": customerName, "2": oldDate, "3": oldTime, "4": fullDate, "5": time };
+                    } else {
+                        // Sin template: mensaje de texto libre (cliente dentro de ventana 24h)
+                        smsFallback = `🔄 Tu cita fue reagendada, ${customerName}.\n` +
+                            `${serviceName ? `✂️ ${serviceName}${barberName ? ` con ${barberName}` : ''}\n` : ''}` +
+                            `📅 ${fullDate} a las ${time}\n\n` +
+                            `❌ Responde CANCELAR para cancelar\n🔄 Responde REAGENDAR para cambiarla`;
+                    }
+                    // smsFallback para cuando el template falla (siempre se define como backup)
+                    if (!smsFallback) {
+                        smsFallback = `🔄 Hola ${customerName}, tu cita fue reagendada.\nAntes: ${oldDateHuman} ${oldTime}\nAhora: ${fullDate} a las ${time}`;
+                    }
 
                 } else if (et.startsWith('reminder')) {
                     contentSid   = tmplReminder;
@@ -244,6 +258,23 @@ serve(async (req) => {
                 // E. Send notifications
                 const logs: any[] = [];
                 const cleanPhone  = normalizePhone(customerPhone);
+
+                // Para 'rescheduled' sin template: WhatsApp texto libre (ventana 24h activa)
+                if (et === 'rescheduled' && !contentSid && waNumber && smsFallback) {
+                    try {
+                        const params = new URLSearchParams({ From: waFrom, To: `whatsapp:${cleanPhone}`, Body: smsFallback });
+                        const resp = await fetch(twilioUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': `Basic ${credential}` },
+                            body: params,
+                        });
+                        if (!resp.ok) { const t = await resp.text(); throw new Error(`WA ${resp.status}: ${t}`); }
+                        const d = await resp.json();
+                        logs.push({ channel: 'whatsapp_freetext', status: 'sent', sid: d.sid });
+                    } catch (waErr: any) {
+                        logs.push({ channel: 'whatsapp_freetext', status: 'failed', error: waErr.message });
+                    }
+                }
 
                 // Try WhatsApp template first
                 if (contentSid && waNumber) {
