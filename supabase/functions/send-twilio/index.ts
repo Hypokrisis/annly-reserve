@@ -45,23 +45,28 @@ function normalizePhone(raw: string): string {
     return p;
 }
 
+// Para SMS fallback conversacional: "Hoy", "Mañana", o fecha larga.
+// Usa hora PR (UTC-4) para el cálculo del día relativo.
 function getHumanDate(dateStr: string): string {
     if (!dateStr) return "Fecha desconocida";
-    // "Hoy/Mañana" relativo al día de PUERTO RICO (UTC-4, sin DST), no al UTC del
-    // servidor Deno. Antes, cerca de medianoche, comparar contra el UTC del server
-    // corría la fecha un día (una cita de mañana se veía como "Hoy").
-    const nowPR = new Date(Date.now() - 4 * 60 * 60 * 1000);
+    const nowPR   = new Date(Date.now() - 4 * 60 * 60 * 1000);
     const todayPR = `${nowPR.getUTCFullYear()}-${String(nowPR.getUTCMonth() + 1).padStart(2, '0')}-${String(nowPR.getUTCDate()).padStart(2, '0')}`;
-
-    // Aritmética de fechas pura (ambas a medianoche UTC) → diff exacto en días.
     const dateMs  = new Date(dateStr + 'T00:00:00Z').getTime();
-    const todayMs = new Date(todayPR + 'T00:00:00Z').getTime();
-    const diff = Math.round((dateMs - todayMs) / 86400000);
+    const todayMs = new Date(todayPR  + 'T00:00:00Z').getTime();
+    const diff    = Math.round((dateMs - todayMs) / 86400000);
     if (diff === 0)  return "Hoy";
     if (diff === 1)  return "Mañana";
     if (diff === -1) return "Ayer";
+    return new Intl.DateTimeFormat('es', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
+        .format(new Date(dateStr + 'T00:00:00Z'));
+}
 
-    return new Intl.DateTimeFormat('es-ES', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(dateStr + 'T00:00:00Z'));
+// Para variables de template de Twilio: siempre la fecha completa (nunca "Hoy"/"Mañana").
+// Las templates son registros permanentes — el cliente necesita la fecha real.
+function getFullDate(dateStr: string): string {
+    if (!dateStr) return "Fecha desconocida";
+    return new Intl.DateTimeFormat('es', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
+        .format(new Date(dateStr + 'T00:00:00Z'));
 }
 
 function formatTime(timeStr: string): string {
@@ -188,15 +193,18 @@ serve(async (req) => {
                 }
 
                 // D. Build message content based on event type
-                const customerName = apt.customer_name  || 'Cliente';
-                const serviceName  = (apt.services as any)?.name || 'Servicio';
+                const customerName = apt.customer_name         || 'Cliente';
+                const serviceName  = (apt.services as any)?.name || '';
                 // Fecha/hora CONGELADAS al encolar (payload del trigger), no recalculadas
                 // desde la fila fresca. Así un reintento no cambia lo que se prometió al
                 // cliente. Fallback a la fila por compatibilidad con jobs viejos sin payload.
-                const aptDate      = (job.payload as any)?.appointment_date || apt.appointment_date;
-                const aptTime      = (job.payload as any)?.start_time       || apt.start_time;
-                const humanDate    = getHumanDate(aptDate);
-                const time         = formatTime(aptTime);
+                const aptDate   = (job.payload as any)?.appointment_date || apt.appointment_date;
+                const aptTime   = (job.payload as any)?.start_time       || apt.start_time;
+                // humanDate → "Hoy"/"Mañana" para SMS fallback (conversacional)
+                // fullDate  → fecha completa para templates Twilio (registro permanente)
+                const humanDate = getHumanDate(aptDate);
+                const fullDate  = getFullDate(aptDate);
+                const time      = formatTime(aptTime);
 
                 let contentSid    = '';
                 let templateVars: Record<string, string> = {};
@@ -206,27 +214,31 @@ serve(async (req) => {
 
                 if (et === 'cancelled') {
                     contentSid   = tmplCancelled;
-                    templateVars = { "1": customerName, "2": humanDate, "3": time };
-                    smsFallback  = `❌ Hola ${customerName}, tu cita del ${humanDate} a las ${time} ha sido cancelada.`;
+                    // {{1}} nombre, {{2}} fecha, {{3}} hora, {{4}} servicio
+                    templateVars = { "1": customerName, "2": fullDate, "3": time, "4": serviceName };
+                    smsFallback  = `❌ Hola ${customerName}, tu cita${serviceName ? ` de ${serviceName}` : ''} del ${humanDate} a las ${time} fue cancelada.`;
 
                 } else if (et === 'rescheduled') {
-                    const oldDate = job.payload?.old_date ? getHumanDate(job.payload.old_date) : 'anterior';
-                    const oldTime = job.payload?.old_time ? formatTime(job.payload.old_time)   : '';
+                    const oldDate    = job.payload?.old_date ? getFullDate(job.payload.old_date)  : 'fecha anterior';
+                    const oldTime    = job.payload?.old_time ? formatTime(job.payload.old_time)   : '';
                     contentSid   = tmplRescheduled;
-                    templateVars = { "1": customerName, "2": oldDate, "3": oldTime, "4": humanDate, "5": time };
-                    smsFallback  = `✏️ Hola ${customerName}, tu cita fue reagendada.\nAntes: ${oldDate} ${oldTime}\nAhora: ${humanDate} a las ${time}`;
+                    // {{1}} nombre, {{2}} fecha anterior, {{3}} hora anterior, {{4}} nueva fecha, {{5}} nueva hora
+                    templateVars = { "1": customerName, "2": oldDate, "3": oldTime, "4": fullDate, "5": time };
+                    smsFallback  = `🔄 Hola ${customerName}, tu cita fue reagendada.\nAntes: ${humanDate} ${oldTime}\nAhora: ${humanDate} a las ${time}`;
 
                 } else if (et.startsWith('reminder')) {
                     contentSid   = tmplReminder;
-                    const badge  = et === 'reminder_30m' ? '⏰ ¡En 30 minutos!' : '📅 Recordatorio (mañana)';
-                    templateVars = { "1": customerName, "2": serviceName, "3": humanDate, "4": time };
-                    smsFallback  = `${badge}\nHola ${customerName}, recuerda tu cita de ${serviceName} el ${humanDate} a las ${time}.`;
+                    const badge  = et === 'reminder_30m' ? '⏰ ¡En 30 minutos!' : '📅 Recordatorio';
+                    // {{1}} nombre, {{2}} servicio, {{3}} fecha, {{4}} hora
+                    templateVars = { "1": customerName, "2": serviceName, "3": fullDate, "4": time };
+                    smsFallback  = `${badge}\nHola ${customerName}, recuerda tu cita${serviceName ? ` de ${serviceName}` : ''} el ${humanDate} a las ${time}.`;
 
                 } else {
                     // created / confirmed / default
                     contentSid   = tmplConfirmed;
-                    templateVars = { "1": customerName, "2": serviceName, "3": humanDate, "4": time };
-                    smsFallback  = `✅ Hola ${customerName}, tu cita de ${serviceName} está confirmada para el ${humanDate} a las ${time}.`;
+                    // {{1}} nombre, {{2}} servicio, {{3}} fecha, {{4}} hora
+                    templateVars = { "1": customerName, "2": serviceName, "3": fullDate, "4": time };
+                    smsFallback  = `✅ Hola ${customerName}, tu cita${serviceName ? ` de ${serviceName}` : ''} está confirmada para el ${humanDate} a las ${time}.`;
                 }
 
                 // E. Send notifications
