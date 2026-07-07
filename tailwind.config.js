@@ -5,7 +5,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Outfit', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'Outfit', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['"Instrument Serif"', 'Georgia', 'serif'],
       },
       colors: {
         'space-bg': 'rgb(var(--space-bg) / <alpha-value>)',
@@ -17,6 +18,8 @@ export default {
         'space-primary': 'rgb(var(--space-primary) / <alpha-value>)',
         'space-primary-dark': 'rgb(var(--space-primary-dark) / <alpha-value>)',
         'space-primary-light': 'rgb(var(--space-primary-light) / <alpha-value>)',
+        'space-primary-hover': '#86ad72',
+        'space-ink': '#22321c',
         'space-danger': 'rgb(var(--space-danger) / <alpha-value>)',
         'space-success': 'rgb(var(--space-success) / <alpha-value>)',
         'space-yellow': 'rgb(var(--space-yellow) / <alpha-value>)',
@@ -50,6 +53,12 @@ export default {
         'fade-in': 'fade-in 0.4s ease-out forwards',
         'fade-up': 'fade-up 0.4s ease-out forwards',
         'slide-in-right': 'slide-in-right 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        // Landing page animations
+        'floaty': 'floaty 6s ease-in-out infinite',
+        'floaty2': 'floaty2 8s ease-in-out infinite',
+        'pulse-dot': 'pulseDot 2s infinite',
+        'marquee': 'marquee 26s linear infinite',
+        'menu-in': 'menuIn 0.22s cubic-bezier(0.16,1,0.3,1)',
       },
       keyframes: {
         'float': {
@@ -75,6 +84,27 @@ export default {
         'slide-in-right': {
           '0%': { transform: 'translateX(100%)', opacity: '0' },
           '100%': { transform: 'translateX(0)', opacity: '1' }
+        },
+        // Landing page keyframes
+        'floaty': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' }
+        },
+        'floaty2': {
+          '0%, 100%': { transform: 'translateY(0) rotate(-1deg)' },
+          '50%': { transform: 'translateY(-14px) rotate(-1deg)' }
+        },
+        'pulseDot': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.4' }
+        },
+        'marquee': {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' }
+        },
+        'menuIn': {
+          '0%': { opacity: '0', transform: 'translateY(-10px) scale(0.98)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' }
         },
       }
     },
