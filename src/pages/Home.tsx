@@ -13,7 +13,7 @@ import Footer from '../components/landing/Footer';
 
 export default function Home() {
   return (
-    <div className="min-h-screen overflow-x-hidden bg-space-bg font-sans text-space-text">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-clip bg-space-bg font-sans text-space-text">
       <Nav />
       <Hero />
       <Ticker />

@@ -76,11 +76,18 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Prevent horizontal swipe-to-navigate on mobile (clip ≠ hidden: no scroll container) */
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    overscroll-behavior-x: none;
   }
 
   body {
     @apply bg-space-bg text-space-text font-sans;
-    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   * {

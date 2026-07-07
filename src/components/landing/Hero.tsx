@@ -120,8 +120,8 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Notificación WhatsApp flotante */}
-            <div className="absolute -bottom-5 -left-9 flex max-w-[300px] animate-floaty items-center gap-3 rounded-2xl border border-[#26382c] bg-[#131c17] py-3.5 pl-3.5 pr-[18px] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.6),0_0_32px_-8px_rgba(155,194,135,0.2)] max-sm:-bottom-3 max-sm:left-2">
+            {/* Notificación WhatsApp: flota en desktop, entra al flujo en <961px para no chocar con el dashboard */}
+            <div className="absolute -bottom-5 -left-9 flex max-w-[300px] animate-floaty items-center gap-3 rounded-2xl border border-[#26382c] bg-[#131c17] py-3.5 pl-3.5 pr-[18px] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.6),0_0_32px_-8px_rgba(155,194,135,0.2)] max-[960px]:static max-[960px]:mx-auto max-[960px]:mt-4 max-[960px]:max-w-full">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-500 text-[19px]">💬</span>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
