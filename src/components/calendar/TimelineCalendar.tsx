@@ -13,15 +13,15 @@ interface TimelineCalendarProps {
   services: Service[];
 }
 
-export function TimelineCalendar({ 
-  appointments, 
-  selectedDate, 
-  onDateChange, 
+export function TimelineCalendar({
+  appointments,
+  selectedDate,
+  onDateChange,
   onAppointmentClick,
   barbers,
   services
 }: TimelineCalendarProps) {
-  
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Configuration
@@ -31,7 +31,7 @@ export function TimelineCalendar({
   const hours = Array.from({ length: hoursCount }, (_, i) => startHour + i);
   const hourWidth = 180; // pixels per hour
   const minuteWidth = hourWidth / 60;
-  
+
   // Filter active barbers or those who have appointments
   const activeBarbers = barbers.filter(b => b.is_active || appointments.some(a => a.barber_id === b.id));
 
@@ -49,32 +49,27 @@ export function TimelineCalendar({
 
   const getAppointmentStyle = (apt: Appointment) => {
     const [hours, minutes] = apt.start_time.split(':').map(Number);
-    // Assuming 45 min duration if no end_time available
-    let durationMins = 45; 
+    let durationMins = 45;
     if (apt.end_time) {
       const [endHours, endMins] = apt.end_time.split(':').map(Number);
       durationMins = (endHours * 60 + endMins) - (hours * 60 + minutes);
     }
-    
-    // Default to 45 if calculation fails or is <= 0
+
     if (durationMins <= 0) durationMins = 45;
 
-    // Calculate left position
     const startMins = (hours - startHour) * 60 + minutes;
     const left = startMins * minuteWidth;
     const width = durationMins * minuteWidth;
 
-    // Determine colors based on status
-    let bgClasses = "bg-space-primary text-white border-space-primary-dark";
-    if (apt.status === 'completed') bgClasses = "bg-space-success text-white border-green-700";
-    if (apt.status === 'cancelled' || apt.status === 'no_show') bgClasses = "bg-space-danger text-white border-red-700 opacity-70";
-    // Using a subtle purple for pending or unconfirmed if needed, but standard is primary green
-    if (apt.status === 'confirmed') bgClasses = "bg-gradient-to-r from-space-primary to-[#3a7553] text-white shadow-md shadow-space-primary/20 hover:-translate-y-0.5";
+    let bgClasses = "bg-[#9bc287] text-[#22321c] border-[#86ad72]";
+    if (apt.status === 'completed') bgClasses = "bg-[#22c55e] text-white border-[#16a34a]";
+    if (apt.status === 'cancelled' || apt.status === 'no_show') bgClasses = "bg-[#ef4444] text-white border-[#b91c1c] opacity-70";
+    if (apt.status === 'confirmed') bgClasses = "bg-gradient-to-r from-[#9bc287] to-[#3a7553] text-[#22321c] shadow-md shadow-[#9bc287]/20 hover:-translate-y-0.5";
 
     return {
       style: {
         left: `${left}px`,
-        width: `${width - 4}px`, // subtract gap
+        width: `${width - 4}px`,
       },
       classes: bgClasses
     };
@@ -85,29 +80,35 @@ export function TimelineCalendar({
   };
 
   return (
-    <div className="bg-space-card rounded-3xl shadow-sm border border-space-border overflow-hidden flex flex-col">
+    <div className="rounded-[20px] border border-[#243529] overflow-hidden flex flex-col" style={{ background: '#131c17' }}>
       {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between p-5 border-b border-space-border gap-4 bg-space-card2/50">
-        <div className="flex items-center gap-2 bg-space-card rounded-full p-1 border border-space-border shadow-sm">
-          <button 
+      <div className="flex flex-col sm:flex-row items-center justify-between p-5 gap-4" style={{ borderBottom: '1px solid #243529', background: 'rgba(29,42,35,0.5)' }}>
+        <div className="flex items-center gap-2 rounded-full p-1" style={{ background: '#0e1611', border: '1px solid #243529' }}>
+          <button
             onClick={() => onDateChange(subDays(selectedDate, 1))}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-space-bg text-space-text transition"
+            className="w-8 h-8 flex items-center justify-center rounded-full transition"
+            style={{ color: '#f0f4ee' }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#1d2a23')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             <ChevronLeft size={18} />
           </button>
-          <div className="px-4 font-bold text-sm text-space-text capitalize font-serif min-w-[140px] text-center">
+          <div className="px-4 font-bold text-sm capitalize min-w-[140px] text-center" style={{ color: '#f0f4ee' }}>
             {format(selectedDate, "EEEE, d 'de' MMMM", { locale: es })}
           </div>
-          <button 
+          <button
             onClick={() => onDateChange(addDays(selectedDate, 1))}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-space-bg text-space-text transition"
+            className="w-8 h-8 flex items-center justify-center rounded-full transition"
+            style={{ color: '#f0f4ee' }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#1d2a23')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             <ChevronRight size={18} />
           </button>
         </div>
-        
+
         {isToday(selectedDate) && (
-          <span className="text-[10px] uppercase tracking-widest font-black text-space-success bg-space-success/10 px-3 py-1.5 rounded-full border border-space-success/20">
+          <span className="text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-full" style={{ color: '#22c55e', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
             Hoy
           </span>
         )}
@@ -116,41 +117,42 @@ export function TimelineCalendar({
       {/* Timeline Grid */}
       <div className="flex flex-1 overflow-hidden min-h-[400px]">
         {/* Y-Axis (Barbers) */}
-        <div className="w-20 sm:w-32 border-r border-space-border bg-space-card shrink-0 z-30 flex flex-col sticky left-0 shadow-[4px_0_12px_-4px_rgba(34,50,28,0.05)]">
-          <div className="h-10 sm:h-12 border-b border-space-border flex items-center justify-center bg-space-card">
-            <span className="text-[9px] font-black uppercase tracking-tight text-space-muted">Equipo</span>
+        <div className="w-20 sm:w-32 shrink-0 z-30 flex flex-col sticky left-0" style={{ background: '#131c17', borderRight: '1px solid #243529' }}>
+          <div className="h-10 sm:h-12 flex items-center justify-center" style={{ borderBottom: '1px solid #243529', background: '#131c17' }}>
+            <span className="text-[9px] font-black uppercase tracking-tight" style={{ color: '#95ab8a' }}>Equipo</span>
           </div>
           <div className="flex-1 overflow-y-auto hidden-scrollbar">
             {activeBarbers.length > 0 ? activeBarbers.map(barber => (
-              <div key={barber.id} className="h-20 sm:h-24 border-b border-space-border flex flex-col items-center justify-center gap-1 sm:gap-2 bg-space-card px-2">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-space-card2 flex items-center justify-center text-space-primary font-bold text-xs sm:text-sm shrink-0 border border-space-primary/10">
+              <div key={barber.id} className="h-20 sm:h-24 flex flex-col items-center justify-center gap-1 sm:gap-2 px-2" style={{ borderBottom: '1px solid #243529', background: '#131c17' }}>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shrink-0" style={{ background: 'linear-gradient(135deg, #9bc287, #3a7553)', color: '#22321c' }}>
                   {barber.name.charAt(0)}
                 </div>
                 <div className="min-w-0 text-center">
-                  <p className="font-bold text-space-text text-[10px] sm:text-xs truncate max-w-full">{barber.name.split(' ')[0]}</p>
+                  <p className="font-bold text-[10px] sm:text-xs truncate max-w-full" style={{ color: '#f0f4ee' }}>{barber.name.split(' ')[0]}</p>
                 </div>
               </div>
             )) : (
               <div className="flex-1 flex items-center justify-center p-4">
-                <p className="text-[10px] text-space-muted text-center italic">Sin equipo</p>
+                <p className="text-[10px] text-center italic" style={{ color: '#95ab8a' }}>Sin equipo</p>
               </div>
             )}
           </div>
         </div>
 
         {/* X-Axis & Scrollable Grid */}
-        <div 
+        <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-x-auto overflow-y-auto relative bg-space-bg scroll-smooth"
+          className="flex-1 overflow-x-auto overflow-y-auto relative scroll-smooth"
+          style={{ background: '#090d0b' }}
         >
           <div style={{ width: `${hoursCount * hourWidth}px` }} className="min-h-full flex flex-col">
             {/* Hours Header */}
-            <div className="h-10 sm:h-12 border-b border-space-border flex relative bg-space-card/90 backdrop-blur-sm sticky top-0 z-20">
+            <div className="h-10 sm:h-12 flex relative backdrop-blur-sm sticky top-0 z-20" style={{ borderBottom: '1px solid #243529', background: 'rgba(19,28,23,0.9)' }}>
               {hours.map((hour) => (
-                <div 
-                  key={hour} 
-                  style={{ width: `${hourWidth}px` }}
-                  className="shrink-0 flex items-center border-r border-space-border/50 text-[10px] sm:text-xs font-bold text-space-muted px-3"
+                <div
+                  key={hour}
+                  style={{ width: `${hourWidth}px`, borderRight: '1px solid rgba(36,53,41,0.5)', color: '#95ab8a' }}
+                  className="shrink-0 flex items-center text-[10px] sm:text-xs font-bold px-3"
                 >
                   <Clock size={12} className="mr-1.5 opacity-50" />
                   {hour.toString().padStart(2, '0')}:00
@@ -163,20 +165,22 @@ export function TimelineCalendar({
               {/* Vertical Grid Lines */}
               <div className="absolute inset-0 flex pointer-events-none">
                 {hours.map((hour) => (
-                  <div key={`line-${hour}`} style={{ width: `${hourWidth}px` }} className="shrink-0 border-r border-space-border/20 h-full"></div>
+                  <div key={`line-${hour}`} style={{ width: `${hourWidth}px`, borderRight: '1px solid rgba(36,53,41,0.2)' }} className="shrink-0 h-full"></div>
                 ))}
               </div>
 
               {/* Rows for Barbers */}
               {activeBarbers.length > 0 ? activeBarbers.map(barber => {
                 const barberApts = appointments.filter(a => a.barber_id === barber.id);
-                
+
                 return (
-                  <div key={`row-${barber.id}`} className="h-20 sm:h-24 border-b border-space-border/50 relative hover:bg-space-card2/20 transition-colors">
+                  <div key={`row-${barber.id}`} className="h-20 sm:h-24 relative transition-colors" style={{ borderBottom: '1px solid rgba(36,53,41,0.5)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(29,42,35,0.2)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >
                     {barberApts.map(apt => {
                       const { style, classes } = getAppointmentStyle(apt);
-                      
-                      // Skip if completely out of bounds (before startHour)
+
                       const [h] = apt.start_time.split(':').map(Number);
                       if (h < startHour - 1 || h > endHour + 1) return null;
 
@@ -192,10 +196,9 @@ export function TimelineCalendar({
                           <div className="text-[9px] sm:text-[10px] opacity-80 truncate leading-tight mt-0.5">
                             {getServiceName(apt.service_id)}
                           </div>
-                          
-                          {/* If pill is wide enough, show time */}
+
                           {parseInt(style.width) > 70 && (
-                            <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 text-[8px] sm:text-[9px] font-black opacity-60 bg-black/5 px-1 rounded uppercase">
+                            <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 text-[8px] sm:text-[9px] font-black opacity-60 bg-black/20 px-1 rounded uppercase">
                               {apt.start_time.slice(0, 5)}
                             </div>
                           )}
@@ -205,7 +208,7 @@ export function TimelineCalendar({
                   </div>
                 );
               }) : (
-                <div className="flex flex-col items-center justify-center py-20 text-space-muted italic text-sm">
+                <div className="flex flex-col items-center justify-center py-20 italic text-sm" style={{ color: '#95ab8a' }}>
                   Configura tu equipo para ver la agenda
                 </div>
               )}

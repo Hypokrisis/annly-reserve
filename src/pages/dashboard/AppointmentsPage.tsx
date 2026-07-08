@@ -152,7 +152,7 @@ export default function AppointmentsPage() {
             const selectedDateStr = currentDate.toISOString().split('T')[0];
             filters.date = selectedDateStr;
             // Fetch both confirmed and completed for the daily agenda
-            filters.status = 'confirmed'; 
+            filters.status = 'confirmed';
         } else if (activeTab === 'upcoming') {
             // For upcoming, we fetch all (or maybe should fetch from today onwards if backend supported it)
             // We will filter client-side for > today
@@ -357,28 +357,28 @@ export default function AppointmentsPage() {
     const getClientBadge = (appointment: Appointment) => {
         const isRegistered = !!(appointment.client_id || appointment.customer_user_id);
         return isRegistered ? (
-            <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-extrabold tracking-widest bg-space-primary/10 border border-space-primary/20 text-space-primary flex items-center gap-1">
+            <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-extrabold tracking-widest flex items-center gap-1" style={{ background: 'rgba(155,194,135,0.1)', border: '1px solid rgba(155,194,135,0.2)', color: '#9bc287' }}>
                 <User size={9} />Registrado
             </span>
         ) : (
-            <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-extrabold tracking-widest bg-space-muted/10 border border-space-muted/20 text-space-muted">
+            <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-extrabold tracking-widest" style={{ background: 'rgba(149,171,138,0.1)', border: '1px solid rgba(149,171,138,0.2)', color: '#95ab8a' }}>
                 Invitado
             </span>
         );
     };
 
     const getStatusBadge = (status: string) => {
-        const badges = {
-            confirmed: { bg: 'bg-space-success/10 border-space-success/20', text: 'text-space-success', label: 'Confirmada' },
-            cancelled: { bg: 'bg-space-danger/10 border-space-danger/20', text: 'text-space-danger', label: 'Cancelada' },
-            completed: { bg: 'bg-space-primary/10 border-space-primary/20', text: 'text-space-primary', label: 'Completada' },
-            no_show: { bg: 'bg-space-muted/10 border-space-muted/20', text: 'text-space-muted', label: 'No asistió' },
+        const badges: Record<string, { bg: string; border: string; color: string; label: string }> = {
+            confirmed: { bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.2)', color: '#22c55e', label: 'Confirmada' },
+            cancelled: { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.2)', color: '#ef4444', label: 'Cancelada' },
+            completed: { bg: 'rgba(155,194,135,0.1)', border: 'rgba(155,194,135,0.2)', color: '#9bc287', label: 'Completada' },
+            no_show: { bg: 'rgba(149,171,138,0.1)', border: 'rgba(149,171,138,0.2)', color: '#95ab8a', label: 'No asistió' },
         };
 
-        const badge = badges[status as keyof typeof badges] || badges.confirmed;
+        const badge = badges[status] || badges.confirmed;
 
         return (
-            <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest border ${badge.bg} ${badge.text}`}>
+            <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-widest" style={{ background: badge.bg, border: `1px solid ${badge.border}`, color: badge.color }}>
                 {badge.label}
             </span>
         );
@@ -414,7 +414,7 @@ export default function AppointmentsPage() {
         return (
             <DashboardLayout>
                 <div className="text-center py-12">
-                    <p className="text-space-muted">No tienes permisos para ver las citas.</p>
+                    <p style={{ color: '#95ab8a' }}>No tienes permisos para ver las citas.</p>
                 </div>
             </DashboardLayout>
         );
@@ -426,8 +426,8 @@ export default function AppointmentsPage() {
                 {/* Header */}
                 <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="text-xl font-extrabold tracking-tight text-[#f0f4ee]">Citas</h1>
-                        <p className="mt-0.5 text-xs text-[#95ab8a]">Gestiona la agenda y el historial</p>
+                        <h1 className="text-xl font-extrabold tracking-tight" style={{ color: '#f0f4ee' }}>Citas</h1>
+                        <p className="mt-0.5 text-xs" style={{ color: '#95ab8a' }}>Gestiona la agenda y el historial</p>
                     </div>
                     <div className="flex items-center gap-2">
                         {role === 'owner' && activeTab === 'all' && (
@@ -448,13 +448,17 @@ export default function AppointmentsPage() {
                 {/* Filters & Tabs */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
                     {/* Tabs */}
-                    <div className="flex p-1 bg-white border border-space-border rounded-xl w-full lg:w-auto shadow-card">
+                    <div className="flex p-1 rounded-xl w-full lg:w-auto" style={{ background: '#1d2a23', border: '1px solid #243529' }}>
                         {(['today', 'upcoming', 'all'] as const).map((tab) => {
                             const label = tab === 'today' ? 'Agenda Diaria' : tab === 'upcoming' ? 'Próximas' : 'Historial';
+                            const isActive = activeTab === tab;
                             return (
                                 <button key={tab} onClick={() => setActiveTab(tab)}
-                                    className={`flex-1 lg:flex-none px-5 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap
-                                        ${activeTab === tab ? 'bg-space-primary text-white shadow-btn' : 'text-space-muted hover:text-space-text'}`}
+                                    className="flex-1 lg:flex-none px-5 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap"
+                                    style={{
+                                        background: isActive ? '#9bc287' : 'transparent',
+                                        color: isActive ? '#22321c' : '#95ab8a',
+                                    }}
                                 >{label}</button>
                             );
                         })}
@@ -464,7 +468,7 @@ export default function AppointmentsPage() {
                     {!isStaffBarber && (
                         <div className="w-full lg:w-64">
                             <div className="relative">
-                                <Filter size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-space-muted" />
+                                <Filter size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#95ab8a' }} />
                                 <select
                                     value={selectedBarberId}
                                     onChange={(e) => setSelectedBarberId(e.target.value)}
@@ -487,7 +491,7 @@ export default function AppointmentsPage() {
                     <div className="space-y-6">
                         {activeTab === 'today' ? (
                             <div className="animate-fade-in">
-                                <TimelineCalendar 
+                                <TimelineCalendar
                                     appointments={filteredAppointments}
                                     selectedDate={currentDate}
                                     onDateChange={setCurrentDate}
@@ -497,12 +501,12 @@ export default function AppointmentsPage() {
                                 />
                             </div>
                         ) : filteredAppointments.length === 0 ? (
-                            <div className="flex flex-col items-center rounded-[20px] border border-dashed border-[#243529] bg-[#131c17] p-16 text-center">
-                                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1d2a23]">
-                                    <CalendarIcon size={28} className="text-[#95ab8a]" />
+                            <div className="flex flex-col items-center rounded-[20px] p-16 text-center" style={{ border: '1px dashed #243529', background: '#131c17' }}>
+                                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full" style={{ background: '#1d2a23' }}>
+                                    <CalendarIcon size={28} style={{ color: '#95ab8a' }} />
                                 </div>
-                                <h3 className="mb-1 text-lg font-bold text-[#f0f4ee]">No hay citas</h3>
-                                <p className="max-w-xs text-sm text-[#95ab8a]">
+                                <h3 className="mb-1 text-lg font-bold" style={{ color: '#f0f4ee' }}>No hay citas</h3>
+                                <p className="max-w-xs text-sm" style={{ color: '#95ab8a' }}>
                                     {activeTab === 'upcoming' ? 'No hay citas próximas confirmadas.' : 'No hay historial para mostrar.'}
                                 </p>
                             </div>
@@ -510,24 +514,28 @@ export default function AppointmentsPage() {
                             <div className="space-y-3 animate-fade-in">
                                 {filteredAppointments.map((appointment) => (
                                     <div key={appointment.id} onClick={() => handleViewDetails(appointment)}
-                                        className="card p-5 hover:shadow-card-lg transition-all cursor-pointer group hover:border-space-primary/40">
+                                        className="rounded-[20px] p-5 transition cursor-pointer group"
+                                        style={{ border: '1px solid #243529', background: '#131c17' }}
+                                        onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(155,194,135,0.4)')}
+                                        onMouseLeave={e => (e.currentTarget.style.borderColor = '#243529')}
+                                    >
                                         <div className="flex items-center justify-between gap-4">
                                             <div className="flex gap-4 items-center overflow-hidden">
                                                 {/* Time block */}
-                                                <div className="flex flex-col items-center justify-center bg-space-card2 border border-space-border w-12 h-12 sm:w-14 sm:h-14 rounded-xl shrink-0">
-                                                    <span className="text-[10px] font-bold uppercase text-space-muted">{formatTimeDisplay(appointment.start_time).split(' ')[1]}</span>
-                                                    <span className="text-lg font-black text-space-text">{formatTimeDisplay(appointment.start_time).split(' ')[0]}</span>
+                                                <div className="flex flex-col items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl shrink-0" style={{ background: '#1d2a23', border: '1px solid #243529' }}>
+                                                    <span className="text-[10px] font-bold uppercase" style={{ color: '#95ab8a' }}>{formatTimeDisplay(appointment.start_time).split(' ')[1]}</span>
+                                                    <span className="text-lg font-black" style={{ color: '#f0f4ee' }}>{formatTimeDisplay(appointment.start_time).split(' ')[0]}</span>
                                                 </div>
                                                 <div className="min-w-0">
                                                     <div className="flex items-center gap-2 flex-wrap">
-                                                        <h4 className="font-bold text-space-text truncate group-hover:text-space-primary transition-colors">
+                                                        <h4 className="font-bold truncate transition-colors" style={{ color: '#f0f4ee' }}>
                                                             {appointment.customer_name}
                                                         </h4>
                                                         {getClientBadge(appointment)}
                                                     </div>
-                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-space-muted mt-1">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs mt-1" style={{ color: '#95ab8a' }}>
                                                         <span className="flex items-center gap-1">
-                                                            <User size={12} className="text-space-primary" />
+                                                            <User size={12} style={{ color: '#9bc287' }} />
                                                             {getBarberName(appointment.barber_id)}
                                                         </span>
                                                         <span className="hidden sm:block">·</span>
@@ -537,7 +545,7 @@ export default function AppointmentsPage() {
                                             </div>
                                             <div className="shrink-0 flex flex-col items-end gap-1.5">
                                                 {getStatusBadge(appointment.status)}
-                                                <span className="text-[10px] text-space-muted flex items-center gap-1">
+                                                <span className="text-[10px] flex items-center gap-1" style={{ color: '#95ab8a' }}>
                                                     <Clock size={10} />
                                                     {formatRelativeTime(appointment.appointment_date, appointment.start_time)}
                                                 </span>
@@ -554,13 +562,13 @@ export default function AppointmentsPage() {
                 {selectedAppointment && (
                     <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Detalles de la Cita">
                         <div className="space-y-5">
-                            <div className="flex justify-between items-start pb-4 border-b border-space-border">
+                            <div className="flex justify-between items-start pb-4" style={{ borderBottom: '1px solid #243529' }}>
                                 <div>
                                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                                        <h3 className="text-xl font-bold text-space-text">{selectedAppointment.customer_name}</h3>
+                                        <h3 className="text-xl font-bold" style={{ color: '#f0f4ee' }}>{selectedAppointment.customer_name}</h3>
                                         {getClientBadge(selectedAppointment)}
                                     </div>
-                                    <div className="flex items-center gap-2 text-space-muted text-sm mt-1">
+                                    <div className="flex items-center gap-2 text-sm mt-1" style={{ color: '#95ab8a' }}>
                                         <CalendarIcon size={13} />{formatDateDisplay(selectedAppointment.appointment_date)}
                                         <span>·</span><Clock size={13} />{formatTimeDisplay(selectedAppointment.start_time)}
                                     </div>
@@ -568,38 +576,38 @@ export default function AppointmentsPage() {
                                 {getStatusBadge(selectedAppointment.status)}
                             </div>
 
-                            <div className="bg-space-bg rounded-xl p-4 border border-space-border space-y-2">
-                                <p className="text-[10px] font-bold uppercase text-space-muted tracking-widest">Contacto</p>
-                                <div className="flex items-center gap-2 text-sm text-space-text">
-                                    <Mail size={14} className="text-space-primary" />{selectedAppointment.customer_email}
+                            <div className="rounded-xl p-4 space-y-2" style={{ background: '#090d0b', border: '1px solid #243529' }}>
+                                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#95ab8a' }}>Contacto</p>
+                                <div className="flex items-center gap-2 text-sm" style={{ color: '#f0f4ee' }}>
+                                    <Mail size={14} style={{ color: '#9bc287' }} />{selectedAppointment.customer_email}
                                 </div>
                                 {selectedAppointment.customer_phone && (
-                                    <div className="flex items-center gap-2 text-sm text-space-text">
-                                        <Phone size={14} className="text-space-primary" />{selectedAppointment.customer_phone}
+                                    <div className="flex items-center gap-2 text-sm" style={{ color: '#f0f4ee' }}>
+                                        <Phone size={14} style={{ color: '#9bc287' }} />{selectedAppointment.customer_phone}
                                     </div>
                                 )}
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div className="bg-space-bg p-4 rounded-xl border border-space-border">
-                                    <p className="text-[10px] font-bold uppercase text-space-muted tracking-widest mb-1">Servicio</p>
-                                    <p className="font-bold text-space-text">{getServicesName(selectedAppointment.service_id!)}</p>
+                                <div className="p-4 rounded-xl" style={{ background: '#0e1611', border: '1px solid #243529' }}>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#95ab8a' }}>Servicio</p>
+                                    <p className="font-bold" style={{ color: '#f0f4ee' }}>{getServicesName(selectedAppointment.service_id!)}</p>
                                 </div>
-                                <div className="bg-space-bg p-4 rounded-xl border border-space-border">
-                                    <p className="text-[10px] font-bold uppercase text-space-muted tracking-widest mb-1">Barbero</p>
-                                    <p className="font-bold text-space-text">{getBarberName(selectedAppointment.barber_id)}</p>
+                                <div className="p-4 rounded-xl" style={{ background: '#0e1611', border: '1px solid #243529' }}>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#95ab8a' }}>Barbero</p>
+                                    <p className="font-bold" style={{ color: '#f0f4ee' }}>{getBarberName(selectedAppointment.barber_id)}</p>
                                 </div>
                             </div>
 
                             {selectedAppointment.customer_notes && (
-                                <div className="bg-space-bg p-4 rounded-xl border border-space-border">
-                                    <p className="text-[10px] font-bold uppercase text-space-muted tracking-widest mb-1">Notas</p>
-                                    <p className="text-space-muted text-sm italic">"{selectedAppointment.customer_notes}"</p>
+                                <div className="p-4 rounded-xl" style={{ background: '#0e1611', border: '1px solid #243529' }}>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#95ab8a' }}>Notas</p>
+                                    <p className="text-sm italic" style={{ color: '#95ab8a' }}>"{selectedAppointment.customer_notes}"</p>
                                 </div>
                             )}
 
                             {selectedAppointment.status === 'confirmed' && !rescheduleMode && (
-                                <div className="space-y-3 pt-4 border-t border-space-border">
+                                <div className="space-y-3 pt-4" style={{ borderTop: '1px solid #243529' }}>
                                     <button
                                         onClick={async () => {
                                             if (!window.confirm('¿Enviar recordatorio a este cliente?')) return;
@@ -614,22 +622,38 @@ export default function AppointmentsPage() {
                                                 toast.error('Error al enviar recordatorio: ' + e.message);
                                             }
                                         }}
-                                        className="w-full py-2.5 rounded-xl text-sm font-semibold bg-space-primary/10 text-space-primary hover:bg-space-primary hover:text-white border border-space-primary/20 transition flex items-center justify-center gap-2">
+                                        className="w-full py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2"
+                                        style={{ background: 'rgba(155,194,135,0.1)', color: '#9bc287', border: '1px solid rgba(155,194,135,0.2)' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = '#9bc287'; e.currentTarget.style.color = '#22321c'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(155,194,135,0.1)'; e.currentTarget.style.color = '#9bc287'; }}
+                                    >
                                         <Bell size={15} /> Enviar Recordatorio Manual
                                     </button>
 
                                     <button onClick={() => { setRescheduleMode(true); setRescheduleDate(null); setRescheduleTime(''); }}
-                                        className="w-full py-2.5 rounded-xl text-sm font-semibold bg-space-card2 text-space-text hover:bg-space-primary hover:text-white border border-space-border transition flex items-center justify-center gap-2 min-h-[44px]">
+                                        className="w-full py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 min-h-[44px]"
+                                        style={{ background: '#1d2a23', color: '#f0f4ee', border: '1px solid #243529' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = '#9bc287'; e.currentTarget.style.color = '#22321c'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = '#1d2a23'; e.currentTarget.style.color = '#f0f4ee'; }}
+                                    >
                                         <CalendarIcon size={15} /> Reagendar
                                     </button>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <button onClick={() => handleMarkCompleted(selectedAppointment.id)}
-                                            className="w-full py-2.5 rounded-xl text-sm font-semibold bg-green-50 text-space-success hover:bg-space-success hover:text-white border border-green-200 transition flex items-center justify-center gap-2 min-h-[44px]">
+                                            className="w-full py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 min-h-[44px]"
+                                            style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.2)' }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = '#22c55e'; e.currentTarget.style.color = 'white'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)'; e.currentTarget.style.color = '#22c55e'; }}
+                                        >
                                             <Check size={15} />Completar
                                         </button>
                                         <button onClick={() => handleCancel(selectedAppointment.id)}
-                                            className="w-full py-2.5 rounded-xl text-sm font-semibold bg-red-50 text-space-danger hover:bg-space-danger hover:text-white border border-red-200 transition flex items-center justify-center gap-2 min-h-[44px]">
+                                            className="w-full py-2.5 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 min-h-[44px]"
+                                            style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = 'white'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444'; }}
+                                        >
                                             <X size={15} />Cancelar
                                         </button>
                                     </div>
@@ -638,11 +662,15 @@ export default function AppointmentsPage() {
 
                             {/* Reschedule sub-panel */}
                             {selectedAppointment.status === 'confirmed' && rescheduleMode && (
-                                <div className="space-y-4 pt-4 border-t border-space-border">
+                                <div className="space-y-4 pt-4" style={{ borderTop: '1px solid #243529' }}>
                                     <div className="flex items-center justify-between">
-                                        <p className="text-sm font-bold text-space-text">Reagendar cita</p>
+                                        <p className="text-sm font-bold" style={{ color: '#f0f4ee' }}>Reagendar cita</p>
                                         <button onClick={() => setRescheduleMode(false)}
-                                            className="text-xs text-space-muted hover:text-space-text transition">← Volver</button>
+                                            className="text-xs transition"
+                                            style={{ color: '#95ab8a' }}
+                                            onMouseEnter={e => (e.currentTarget.style.color = '#f0f4ee')}
+                                            onMouseLeave={e => (e.currentTarget.style.color = '#95ab8a')}
+                                        >← Volver</button>
                                     </div>
 
                                     <div>
@@ -664,7 +692,7 @@ export default function AppointmentsPage() {
                                             {reschedLoading ? (
                                                 <div className="py-4 flex justify-center"><LoadingSpinner /></div>
                                             ) : reschedSlots.length === 0 ? (
-                                                <p className="text-sm text-space-muted py-3 text-center bg-space-bg rounded-xl border border-space-border">
+                                                <p className="text-sm py-3 text-center rounded-xl" style={{ color: '#95ab8a', background: '#090d0b', border: '1px solid #243529' }}>
                                                     No hay horarios disponibles ese día.
                                                 </p>
                                             ) : (
@@ -674,11 +702,11 @@ export default function AppointmentsPage() {
                                                             key={slot.time}
                                                             type="button"
                                                             onClick={() => setRescheduleTime(slot.time)}
-                                                            className={`py-2 rounded-xl text-xs font-bold border transition-all ${
-                                                                rescheduleTime === slot.time
-                                                                    ? 'bg-space-primary text-white border-space-primary'
-                                                                    : 'bg-white text-space-text border-space-border hover:border-space-primary/40'
-                                                            }`}
+                                                            className="py-2 rounded-xl text-xs font-bold border transition-all"
+                                                            style={rescheduleTime === slot.time
+                                                                ? { background: '#9bc287', color: '#22321c', borderColor: '#9bc287' }
+                                                                : { background: '#1d2a23', color: '#f0f4ee', borderColor: '#243529' }
+                                                            }
                                                         >
                                                             {formatTimeDisplay(slot.time)}
                                                         </button>
@@ -709,14 +737,14 @@ export default function AppointmentsPage() {
                 >
                     {newAptCreated ? (
                         <div className="space-y-5">
-                            <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-200">
-                                <Check size={20} className="text-space-success flex-shrink-0" />
-                                <p className="text-sm text-space-text">
+                            <div className="flex items-center gap-3 p-4 rounded-xl" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                                <Check size={20} style={{ color: '#22c55e', flexShrink: 0 }} />
+                                <p className="text-sm" style={{ color: '#f0f4ee' }}>
                                     La cita quedó confirmada. El cliente recibió su confirmación automáticamente por WhatsApp.
                                 </p>
                             </div>
-                            <p className="text-sm text-space-muted">
-                                ¿Avisar a <strong className="text-space-text">{newAptCreated.barberName}</strong> que tiene una cita nueva?
+                            <p className="text-sm" style={{ color: '#95ab8a' }}>
+                                ¿Avisar a <strong style={{ color: '#f0f4ee' }}>{newAptCreated.barberName}</strong> que tiene una cita nueva?
                             </p>
                             <a
                                 href={newAptCreated.barberWhatsApp}
@@ -742,16 +770,19 @@ export default function AppointmentsPage() {
                                     required
                                 />
                                 {customerResults.length > 0 && (
-                                    <div className="absolute z-20 mt-1 w-full bg-white border border-space-border rounded-xl shadow-card-lg overflow-hidden">
+                                    <div className="absolute z-20 mt-1 w-full rounded-xl overflow-hidden shadow-lg" style={{ background: '#1d2a23', border: '1px solid #243529' }}>
                                         {customerResults.map((c, i) => (
                                             <button
                                                 key={i}
                                                 type="button"
                                                 onClick={() => pickCustomer(c)}
-                                                className="w-full text-left px-4 py-2.5 hover:bg-space-card2 transition border-b border-space-border/40 last:border-0"
+                                                className="w-full text-left px-4 py-2.5 transition last:border-0"
+                                                style={{ borderBottom: '1px solid rgba(36,53,41,0.4)' }}
+                                                onMouseEnter={e => (e.currentTarget.style.background = '#243529')}
+                                                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                                             >
-                                                <p className="text-sm font-semibold text-space-text">{c.customer_name}</p>
-                                                <p className="text-[11px] text-space-muted">{c.customer_phone || c.customer_email}</p>
+                                                <p className="text-sm font-semibold" style={{ color: '#f0f4ee' }}>{c.customer_name}</p>
+                                                <p className="text-[11px]" style={{ color: '#95ab8a' }}>{c.customer_phone || c.customer_email}</p>
                                             </button>
                                         ))}
                                     </div>
@@ -839,7 +870,7 @@ export default function AppointmentsPage() {
                                     {loadingSlots ? (
                                         <div className="py-4 flex justify-center"><LoadingSpinner /></div>
                                     ) : availableSlots.length === 0 ? (
-                                        <p className="text-sm text-space-muted py-3 text-center bg-space-bg rounded-xl border border-space-border">
+                                        <p className="text-sm py-3 text-center rounded-xl" style={{ color: '#95ab8a', background: '#090d0b', border: '1px solid #243529' }}>
                                             No hay horarios disponibles ese día.
                                         </p>
                                     ) : (
@@ -849,11 +880,11 @@ export default function AppointmentsPage() {
                                                     key={slot.time}
                                                     type="button"
                                                     onClick={() => setNewAptForm(p => ({ ...p, time: slot.time }))}
-                                                    className={`py-2 rounded-xl text-xs font-bold border transition-all ${
-                                                        newAptForm.time === slot.time
-                                                            ? 'bg-space-primary text-white border-space-primary'
-                                                            : 'bg-white text-space-text border-space-border hover:border-space-primary/40'
-                                                    }`}
+                                                    className="py-2 rounded-xl text-xs font-bold border transition-all"
+                                                    style={newAptForm.time === slot.time
+                                                        ? { background: '#9bc287', color: '#22321c', borderColor: '#9bc287' }
+                                                        : { background: '#1d2a23', color: '#f0f4ee', borderColor: '#243529' }
+                                                    }
                                                 >
                                                     {formatTimeDisplay(slot.time)}
                                                 </button>
