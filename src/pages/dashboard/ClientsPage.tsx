@@ -230,13 +230,13 @@ export default function ClientsPage() {
 
     return (
         <DashboardLayout>
-            <div className="animate-fade-up">
+            <div className="space-y-6">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
                     <div>
-                        <h1 className="text-3xl font-black text-space-text tracking-tight uppercase italic">Mis Clientes</h1>
-                        <p className="text-space-muted font-bold tracking-widest uppercase text-[10px] mt-1 flex items-center gap-2">
-                             <User size={12} className="text-space-primary" /> {clients.length} clientes registrados
+                        <h1 className="text-xl font-extrabold tracking-tight text-[#f0f4ee]">Clientes</h1>
+                        <p className="mt-0.5 flex items-center gap-1.5 text-xs text-[#95ab8a]">
+                            <User size={12} className="text-[#9bc287]" /> {clients.length} clientes registrados
                         </p>
                     </div>
                 </div>

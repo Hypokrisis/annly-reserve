@@ -3,10 +3,10 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/supabaseClient';
-import { 
-    Zap, Calendar, Users, Send, Clock, 
-    Plus, History, XCircle,
-    Trash2, CheckCircle2, AlertCircle, 
+import {
+    Zap, Calendar, Users, Send, Clock,
+    Plus, History, XCircle, Crown,
+    Trash2, CheckCircle2, AlertCircle,
     Loader2, Gift, X, Check, ArrowRight
 } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';

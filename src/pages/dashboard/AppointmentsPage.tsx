@@ -422,12 +422,12 @@ export default function AppointmentsPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-5xl mx-auto animate-fade-up">
+            <div className="mx-auto max-w-5xl space-y-6">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="page-title">Citas</h1>
-                        <p className="page-subtitle">Gestiona la agenda y el historial</p>
+                        <h1 className="text-xl font-extrabold tracking-tight text-[#f0f4ee]">Citas</h1>
+                        <p className="mt-0.5 text-xs text-[#95ab8a]">Gestiona la agenda y el historial</p>
                     </div>
                     <div className="flex items-center gap-2">
                         {role === 'owner' && activeTab === 'all' && (
@@ -497,12 +497,12 @@ export default function AppointmentsPage() {
                                 />
                             </div>
                         ) : filteredAppointments.length === 0 ? (
-                            <div className="bg-white rounded-2xl p-16 text-center border-2 border-dashed border-space-border animate-fade-up">
-                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <CalendarIcon size={28} className="text-space-muted" />
-                                    </div>
-                                <h3 className="text-lg font-bold text-space-text mb-1">No hay citas</h3>
-                                <p className="text-space-muted text-sm max-w-xs mx-auto">
+                            <div className="flex flex-col items-center rounded-[20px] border border-dashed border-[#243529] bg-[#131c17] p-16 text-center">
+                                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1d2a23]">
+                                    <CalendarIcon size={28} className="text-[#95ab8a]" />
+                                </div>
+                                <h3 className="mb-1 text-lg font-bold text-[#f0f4ee]">No hay citas</h3>
+                                <p className="max-w-xs text-sm text-[#95ab8a]">
                                     {activeTab === 'upcoming' ? 'No hay citas próximas confirmadas.' : 'No hay historial para mostrar.'}
                                 </p>
                             </div>

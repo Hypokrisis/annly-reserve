@@ -118,11 +118,11 @@ export default function SchedulesPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-4xl animate-fade-up">
+            <div className="max-w-4xl space-y-6">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="page-title">Horarios</h1>
-                    <p className="page-subtitle">Configura los horarios de trabajo de tu equipo</p>
+                <div>
+                    <h1 className="text-xl font-extrabold tracking-tight text-[#f0f4ee]">Horarios</h1>
+                    <p className="mt-0.5 text-xs text-[#95ab8a]">Configura los horarios de trabajo de tu equipo</p>
                 </div>
 
                 {/* Barber Selector */}

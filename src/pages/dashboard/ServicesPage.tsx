@@ -104,8 +104,8 @@ export default function ServicesPage() {
     if (!canManageServices) {
         return (
             <DashboardLayout>
-                <div className="text-center py-12">
-                    <p className="text-space-muted">No tienes permisos para gestionar servicios.</p>
+                <div className="py-12 text-center">
+                    <p className="text-[#95ab8a]">No tienes permisos para gestionar servicios.</p>
                 </div>
             </DashboardLayout>
         );
@@ -113,79 +113,84 @@ export default function ServicesPage() {
 
     return (
         <DashboardLayout>
-            <div className="animate-fade-up">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+            <div className="space-y-6">
+                <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="page-title">Servicios</h1>
-                        <p className="page-subtitle">Define tu catálogo y precios</p>
+                        <h1 className="text-xl font-extrabold tracking-tight text-[#f0f4ee]">Servicios</h1>
+                        <p className="mt-0.5 text-xs text-[#95ab8a]">Define tu catálogo y precios</p>
                     </div>
-                    <button onClick={() => handleOpenModal()} className="btn-primary w-full sm:w-auto">
-                        <Plus size={16} />Nuevo Servicio
+                    <button onClick={() => handleOpenModal()}
+                        className="flex w-full items-center justify-center gap-2 rounded-full bg-[#9bc287] px-5 py-2.5 text-sm font-extrabold text-[#22321c] transition hover:bg-[#86ad72] sm:w-auto">
+                        <Plus size={16} /> Nuevo servicio
                     </button>
                 </div>
 
                 {loading && services.length === 0 ? (
                     <div className="flex justify-center py-20"><LoadingSpinner /></div>
                 ) : services.length === 0 ? (
-                    <div className="bg-space-card rounded-2xl p-8 sm:p-16 text-center border-2 border-dashed border-space-border">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Scissors size={28} className="text-space-muted" />
+                    <div className="flex flex-col items-center rounded-[20px] border border-dashed border-[#243529] bg-[#131c17] p-10 text-center sm:p-16">
+                        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1d2a23]">
+                            <Scissors size={28} className="text-[#95ab8a]" />
                         </div>
-                        <h3 className="text-lg font-bold text-space-text mb-2">Catálogo vacío</h3>
-                        <p className="text-space-muted text-sm mb-6 max-w-xs mx-auto">
+                        <h3 className="mb-2 text-lg font-bold text-[#f0f4ee]">Catálogo vacío</h3>
+                        <p className="mb-6 max-w-xs text-sm text-[#95ab8a]">
                             Agrega tu primer servicio para empezar a recibir reservas.
                         </p>
-                        <button onClick={() => handleOpenModal()} className="btn-primary w-full sm:w-auto">
-                            <Plus size={16} />Crear Servicio
+                        <button onClick={() => handleOpenModal()}
+                            className="flex items-center gap-2 rounded-full bg-[#9bc287] px-5 py-2.5 text-sm font-extrabold text-[#22321c] transition hover:bg-[#86ad72]">
+                            <Plus size={16} /> Crear servicio
                         </button>
                     </div>
                 ) : (
-                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {services.map((service) => (
                             <div key={service.id}
-                                className={`card p-4 sm:p-5 hover:shadow-card-lg transition-all group ${!service.is_active ? 'opacity-60' : ''}`}>
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <div className="flex gap-3 items-start flex-1 min-w-0">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0
-                                            ${service.is_active ? 'bg-space-primary-light text-space-primary' : 'bg-space-card2 text-space-muted'}`}>
+                                className={`rounded-[20px] border border-[#243529] bg-[#131c17] p-5 transition hover:border-[#9bc287]/30 ${!service.is_active ? 'opacity-60' : ''}`}>
+                                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                                    <div className="flex min-w-0 flex-1 items-start gap-3">
+                                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${service.is_active ? 'bg-[#9bc287]/10 text-[#9bc287]' : 'bg-[#1d2a23] text-[#95ab8a]'}`}>
                                             <Scissors size={18} />
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                                                <h3 className="font-bold text-space-text truncate text-sm sm:text-base">{service.name}</h3>
-                                                {!service.is_active && <span className="badge-gray">Inactivo</span>}
+                                            <div className="mb-0.5 flex flex-wrap items-center gap-2">
+                                                <h3 className="truncate text-sm font-bold text-[#f0f4ee] sm:text-base">{service.name}</h3>
+                                                {!service.is_active && (
+                                                    <span className="rounded-full bg-[#95ab8a]/10 px-2 py-0.5 text-[9px] font-bold uppercase text-[#95ab8a]">
+                                                        Inactivo
+                                                    </span>
+                                                )}
                                             </div>
                                             {service.description && (
-                                                <p className="text-space-muted text-xs line-clamp-1 mb-1.5">{service.description}</p>
+                                                <p className="mb-1.5 line-clamp-1 text-xs text-[#95ab8a]">{service.description}</p>
                                             )}
                                             <div className="flex items-center gap-3">
-                                                <span className="flex items-center gap-1 text-xs text-space-muted bg-space-border/30 px-2 py-0.5 rounded-md">
-                                                    <Clock size={11} />{service.duration_minutes} min
+                                                <span className="flex items-center gap-1 rounded-md bg-[#243529]/50 px-2 py-0.5 text-xs text-[#95ab8a]">
+                                                    <Clock size={11} /> {service.duration_minutes} min
                                                 </span>
-                                                <span className="text-sm font-black text-space-primary">
+                                                <span className="text-sm font-extrabold text-[#9bc287]">
                                                     {formatCurrency(service.price)}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                                    <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
                                         <button onClick={() => handleOpenModal(service)}
-                                            className="w-9 h-9 flex items-center justify-center rounded-xl text-space-muted hover:text-space-primary hover:bg-space-card2 border border-space-border transition-all">
+                                            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#243529] text-[#95ab8a] transition hover:border-[#9bc287]/40 hover:text-[#9bc287]">
                                             <Edit2 size={16} />
                                         </button>
                                         {service.is_active ? (
                                             <button onClick={() => handleDelete(service)}
-                                                className="w-9 h-9 flex items-center justify-center rounded-xl text-space-muted hover:text-space-danger hover:bg-space-danger/10 border border-space-border transition-all">
+                                                className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#243529] text-[#95ab8a] transition hover:border-[#ef4444]/40 hover:bg-[#ef4444]/10 hover:text-[#ef4444]">
                                                 <Ban size={16} />
                                             </button>
                                         ) : (
                                             <button onClick={() => updateService(service.id, { is_active: true })}
-                                                className="px-3 h-9 rounded-xl text-xs font-black text-space-success bg-space-card2 border border-space-success/20 hover:bg-space-success hover:text-white transition-all">
+                                                className="h-9 rounded-xl border border-[#22c55e]/20 bg-[#1d2a23] px-3 text-xs font-extrabold text-[#22c55e] transition hover:bg-[#22c55e] hover:text-white">
                                                 Activar
                                             </button>
                                         )}
                                         <button onClick={() => handleHardDelete(service)}
-                                            className="w-9 h-9 flex items-center justify-center rounded-xl text-space-danger hover:bg-space-danger hover:text-white border border-space-danger/20 transition-all">
+                                            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#ef4444]/20 text-[#ef4444] transition hover:bg-[#ef4444] hover:text-white">
                                             <ShieldAlert size={16} />
                                         </button>
                                     </div>
@@ -203,13 +208,13 @@ export default function ServicesPage() {
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 error={formErrors.name} placeholder="Ej: Corte de pelo + Lavado" required />
                             <div>
-                                <label className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2 mb-1.5 block">Descripción</label>
+                                <label className="mb-1.5 ml-2 block text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#95ab8a]">Descripción</label>
                                 <textarea value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full px-5 py-3 bg-space-card2 border border-space-border/40 rounded-2xl text-sm text-space-text focus:ring-4 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-space-muted/40 resize-none min-h-[100px]"
+                                    className="min-h-[100px] w-full resize-none rounded-2xl border border-[#243529] bg-[#1d2a23] px-5 py-3 text-sm text-[#f0f4ee] outline-none placeholder-[#95ab8a]/40 transition-all focus:border-[#9bc287] focus:ring-2 focus:ring-[#9bc287]/10"
                                     placeholder="Describe brevemente qué incluye este servicio..." />
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <Input label="Duración (minutos)" type="number" value={formData.duration_minutes}
                                     onChange={(e) => setFormData({ ...formData, duration_minutes: e.target.value })}
                                     error={formErrors.duration_minutes} placeholder="30" min="1" required />
@@ -219,14 +224,14 @@ export default function ServicesPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-space-border">
+                        <div className="flex flex-col justify-end gap-3 border-t border-[#243529] pt-4 sm:flex-row">
                             <button type="button" onClick={handleCloseModal}
-                                className="btn-secondary w-full sm:w-auto h-12 rounded-2xl text-[10px] font-bold uppercase tracking-widest">
+                                className="h-12 w-full rounded-full border border-[#243529] text-sm font-bold text-[#95ab8a] transition hover:border-[#9bc287] hover:text-[#9bc287] sm:w-auto sm:px-6">
                                 Cancelar
                             </button>
                             <button type="submit" disabled={loading}
-                                className="btn-primary w-full sm:w-auto h-12 rounded-2xl text-[10px] font-black uppercase tracking-widest">
-                                {loading ? 'Guardando...' : editingService ? 'Actualizar Servicio' : 'Crear Servicio'}
+                                className="h-12 w-full rounded-full bg-[#9bc287] text-sm font-extrabold text-[#22321c] transition hover:bg-[#86ad72] disabled:opacity-50 sm:w-auto sm:px-6">
+                                {loading ? 'Guardando...' : editingService ? 'Actualizar' : 'Crear servicio'}
                             </button>
                         </div>
                     </form>

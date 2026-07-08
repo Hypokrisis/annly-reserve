@@ -10,11 +10,11 @@ const APPOINTMENTS = [
 export default function Hero() {
   return (
     <div id="top" className="px-4 pt-24">
-      <header className="relative mx-auto max-w-[1400px] overflow-hidden rounded-[36px] border border-[#26382c] bg-[#0e1611] bg-gradient-to-b from-[#121b15] via-[#0b120e] to-[#0a0f0c] px-14 pb-22 pt-[110px] max-sm:px-6 max-sm:pb-18 max-sm:pt-24">
+      <header className="relative mx-auto max-w-[1400px] overflow-hidden rounded-[36px] border border-[#26382c] bg-[#0e1611] bg-gradient-to-b from-[#121b15] via-[#0b120e] to-[#0a0f0c] px-14 pb-24 pt-[80px] max-sm:px-6 max-sm:pb-16 max-sm:pt-20">
         {/* Fondo decorativo */}
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <div className="absolute -top-80 left-1/2 h-[700px] w-[1100px] -translate-x-1/2 blur-[20px] [background:radial-gradient(ellipse_at_center,rgba(155,194,135,0.15)_0%,rgba(155,194,135,0.06)_40%,transparent_70%)]" />
-          <div className="absolute inset-0 [background-image:radial-gradient(rgba(155,194,135,0.13)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,black_20%,transparent_75%)]" />
+          <div className="absolute inset-0 [background-image:radial-gradient(rgba(155,194,135,0.13)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_80%_70%_at_50%_50%,black_20%,transparent_75%)]" />
           <div className="absolute left-1/2 top-10 h-[1400px] w-[1400px] -translate-x-1/2 rounded-full border border-space-primary/10" />
           <div className="absolute left-1/2 top-[120px] h-[1100px] w-[1100px] -translate-x-1/2 rounded-full border border-space-primary/[0.07]" />
         </div>
@@ -62,7 +62,8 @@ export default function Hero() {
           </div>
 
           {/* Columna derecha: dashboard flotante */}
-          <div className="relative min-h-[480px] max-[960px]:mx-auto max-[960px]:min-h-0 max-[960px]:w-full max-[960px]:max-w-[560px]">
+          <div className="max-[960px]:mx-auto max-[960px]:w-full max-[960px]:max-w-[560px]">
+            <div className="relative min-h-[480px] max-[960px]:min-h-0 min-[961px]:pb-24">
             <div className="animate-floaty2 overflow-hidden rounded-[20px] border border-[#26382c] bg-[#131c17] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.6),0_0_0_1px_rgba(155,194,135,0.06),0_0_60px_-12px_rgba(155,194,135,0.15)]">
               {/* Barra de ventana */}
               <div className="flex items-center gap-1.5 border-b border-[#26382c] bg-[#1a2620] px-4 py-3">
@@ -120,8 +121,21 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Notificación WhatsApp: flota en desktop, entra al flujo en <961px para no chocar con el dashboard */}
-            <div className="absolute -bottom-5 -left-9 flex max-w-[300px] animate-floaty items-center gap-3 rounded-2xl border border-[#26382c] bg-[#131c17] py-3.5 pl-3.5 pr-[18px] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.6),0_0_32px_-8px_rgba(155,194,135,0.2)] max-[960px]:static max-[960px]:mx-auto max-[960px]:mt-4 max-[960px]:max-w-full">
+            {/* Notificación — desktop: flota en el espacio pb-24 bajo el dashboard */}
+            <div className="absolute bottom-4 -left-9 hidden max-w-[300px] animate-floaty items-center gap-3 rounded-2xl border border-[#26382c] bg-[#131c17] py-3.5 pl-3.5 pr-[18px] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.6),0_0_32px_-8px_rgba(155,194,135,0.2)] min-[961px]:flex">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-500 text-[19px]">💬</span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-extrabold text-[#f0f4ee]">Nueva reserva vía WhatsApp</span>
+                  <span className="h-[7px] w-[7px] shrink-0 animate-pulse-dot rounded-full bg-space-primary" />
+                </div>
+                <div className="mt-0.5 text-[11px] font-semibold text-[#95ab8a]">Carlos Méndez · Corte + Barba · 3:30 PM</div>
+              </div>
+            </div>
+            </div>
+
+            {/* Notificación — mobile: flujo estático debajo del dashboard */}
+            <div className="mt-4 flex min-[961px]:hidden items-center gap-3 rounded-2xl border border-[#26382c] bg-[#131c17] py-3.5 pl-3.5 pr-[18px] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.6),0_0_32px_-8px_rgba(155,194,135,0.2)]">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-500 text-[19px]">💬</span>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">

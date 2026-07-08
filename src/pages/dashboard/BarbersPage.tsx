@@ -207,17 +207,16 @@ export default function BarbersPage() {
 
     return (
         <DashboardLayout>
-            <div className="animate-fade-up">
+            <div className="space-y-6">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="page-title">Equipo</h1>
-                        <p className="page-subtitle">Coordina tu equipo y disponibilidad</p>
+                        <h1 className="text-xl font-extrabold tracking-tight text-[#f0f4ee]">Equipo</h1>
+                        <p className="mt-0.5 text-xs text-[#95ab8a]">Coordina tu equipo y disponibilidad</p>
                     </div>
                     <button onClick={() => handleOpenModal()}
-                        className="btn-primary w-full sm:w-auto">
-                        <Plus size={16} />
-                        Añadir Barbero
+                        className="flex w-full items-center justify-center gap-2 rounded-full bg-[#9bc287] px-5 py-2.5 text-sm font-extrabold text-[#22321c] transition hover:bg-[#86ad72] sm:w-auto">
+                        <Plus size={16} /> Añadir barbero
                     </button>
                 </div>
 
@@ -225,100 +224,87 @@ export default function BarbersPage() {
                 {loading && barbers.length === 0 ? (
                     <div className="flex justify-center py-20"><LoadingSpinner /></div>
                 ) : barbers.length === 0 ? (
-                    <div className="bg-space-card rounded-2xl p-16 text-center border-2 border-dashed border-space-border animate-fade-up">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <UsersIcon size={28} className="text-space-muted" />
-                            </div>
-                        <h3 className="text-lg font-bold text-space-text mb-2">Equipo vacío</h3>
-                        <p className="text-space-muted text-sm mb-6 max-w-xs mx-auto">
-                            Agrega tu primer barbero para empezar a recibir citas.
-                        </p>
-                        <button onClick={() => handleOpenModal()} className="btn-primary w-full sm:w-auto">
-                            <Plus size={16} />Crear Barbero
+                    <div className="flex flex-col items-center rounded-[20px] border border-dashed border-[#243529] bg-[#131c17] p-16 text-center">
+                        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1d2a23]">
+                            <UsersIcon size={28} className="text-[#95ab8a]" />
+                        </div>
+                        <h3 className="mb-2 text-lg font-bold text-[#f0f4ee]">Equipo vacío</h3>
+                        <p className="mb-6 max-w-xs text-sm text-[#95ab8a]">Agrega tu primer barbero para empezar a recibir citas.</p>
+                        <button onClick={() => handleOpenModal()}
+                            className="flex items-center gap-2 rounded-full bg-[#9bc287] px-5 py-2.5 text-sm font-extrabold text-[#22321c] transition hover:bg-[#86ad72]">
+                            <Plus size={16} /> Crear barbero
                         </button>
                     </div>
                 ) : (
-                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {barbers.map((barber) => (
                             <div key={barber.id}
-                                className={`card p-4 sm:p-5 transition-all duration-300 hover:shadow-card-lg group relative overflow-hidden
-                                    ${!barber.is_active ? 'opacity-60' : ''}`}
-                            >
+                                className={`rounded-[20px] border border-[#243529] bg-[#131c17] p-5 transition hover:border-[#9bc287]/30 ${!barber.is_active ? 'opacity-60' : ''}`}>
                                 <div className="flex flex-col gap-4">
-                                    <div className="flex gap-4 items-start flex-1 min-w-0">
-                                        {/* Avatar */}
+                                    <div className="flex min-w-0 flex-1 items-start gap-4">
                                         {barber.avatar_url ? (
-                                            <img
-                                                src={barber.avatar_url}
-                                                alt={barber.name}
-                                                className={`w-12 h-12 rounded-2xl object-cover shrink-0 shadow-sm ${!barber.is_active ? 'grayscale' : ''}`}
-                                            />
+                                            <img src={barber.avatar_url} alt={barber.name}
+                                                className={`h-12 w-12 shrink-0 rounded-2xl object-cover ${!barber.is_active ? 'grayscale' : ''}`} />
                                         ) : (
-                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-lg font-black shadow-sm
-                                                ${barber.is_active ? 'bg-space-primary-light text-space-primary' : 'bg-space-card2 text-space-muted'}`}
-                                            >
+                                            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-lg font-extrabold text-white ${barber.is_active ? '' : 'opacity-60'}`}
+                                                style={{ background: 'linear-gradient(135deg, #9bc287, #3a7553)' }}>
                                                 {barber.name.charAt(0)}
                                             </div>
                                         )}
                                         <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                                                <h3 className="font-bold text-space-text truncate group-hover:text-space-primary transition-colors text-sm sm:text-base">{barber.name}</h3>
+                                            <div className="mb-0.5 flex flex-wrap items-center gap-2">
+                                                <h3 className="truncate text-sm font-bold text-[#f0f4ee] sm:text-base">{barber.name}</h3>
                                                 {!barber.is_active && (
-                                                    <span className="badge-gray scale-90 origin-left">Inactivo</span>
+                                                    <span className="rounded-full bg-[#95ab8a]/10 px-2 py-0.5 text-[9px] font-bold uppercase text-[#95ab8a]">
+                                                        Inactivo
+                                                    </span>
                                                 )}
                                             </div>
-                                            {barber.bio && <p className="text-space-muted text-xs line-clamp-1 mb-1.5">{barber.bio}</p>}
+                                            {barber.bio && <p className="mb-1.5 line-clamp-1 text-xs text-[#95ab8a]">{barber.bio}</p>}
                                             <div className="flex flex-col gap-1">
-                                                {barber.email && (
-                                                    <span className="text-[10px] text-space-muted overflow-hidden text-ellipsis">{barber.email}</span>
-                                                )}
-                                                {barber.phone && (
-                                                    <span className="text-[10px] text-space-muted font-bold tracking-wider">{barber.phone}</span>
-                                                )}
+                                                {barber.email && <span className="overflow-hidden text-ellipsis text-[10px] text-[#95ab8a]">{barber.email}</span>}
+                                                {barber.phone && <span className="text-[10px] font-bold tracking-wider text-[#95ab8a]">{barber.phone}</span>}
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* ── Analytics Strip ── */}
                                     {barberStats[barber.id] && (
-                                        <div className="grid grid-cols-3 gap-2 py-3 border-t border-b border-space-border/20 my-1">
+                                        <div className="my-1 grid grid-cols-3 gap-2 border-b border-t border-[#243529]/40 py-3">
                                             <div className="text-center">
-                                                <p className="text-[9px] font-black text-space-muted uppercase tracking-widest">Total</p>
-                                                <p className="text-lg font-black text-space-text">{barberStats[barber.id].total}</p>
+                                                <p className="text-[9px] font-extrabold uppercase tracking-widest text-[#95ab8a]">Total</p>
+                                                <p className="text-lg font-extrabold text-[#f0f4ee]">{barberStats[barber.id].total}</p>
                                             </div>
                                             <div className="text-center">
-                                                <p className="text-[9px] font-black text-space-muted uppercase tracking-widest">Este Mes</p>
-                                                <p className="text-lg font-black text-space-primary">{barberStats[barber.id].thisMonth}</p>
+                                                <p className="text-[9px] font-extrabold uppercase tracking-widest text-[#95ab8a]">Este mes</p>
+                                                <p className="text-lg font-extrabold text-[#9bc287]">{barberStats[barber.id].thisMonth}</p>
                                             </div>
                                             <div className="text-center">
-                                                <p className="text-[9px] font-black text-space-muted uppercase tracking-widest">Esta Semana</p>
-                                            <p className="text-lg font-black text-space-success">{barberStats[barber.id].thisWeek}</p>
+                                                <p className="text-[9px] font-extrabold uppercase tracking-widest text-[#95ab8a]">Esta semana</p>
+                                                <p className="text-lg font-extrabold text-[#22c55e]">{barberStats[barber.id].thisWeek}</p>
                                             </div>
                                         </div>
                                     )}
 
-                                    <div className="flex items-center justify-between pt-4 border-t border-space-border/20">
+                                    <div className="flex items-center justify-between border-t border-[#243529]/40 pt-4">
                                         <div className="flex items-center gap-1.5">
                                             <button onClick={() => handleOpenModal(barber)}
-                                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-space-card2 text-space-muted hover:text-white hover:bg-space-primary transition-all border border-space-border shadow-sm" title="Editar">
+                                                className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#243529] text-[#95ab8a] transition hover:border-[#9bc287]/40 hover:text-[#9bc287]" title="Editar">
                                                 <Edit2 size={14} />
                                             </button>
                                             {barber.is_active ? (
                                                 <button onClick={() => handleDelete(barber)}
-                                                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-space-card2 text-space-muted hover:text-white hover:bg-space-danger transition-all border border-space-border shadow-sm"
-                                                    title="Desactivar">
+                                                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#243529] text-[#95ab8a] transition hover:border-[#ef4444]/40 hover:text-[#ef4444]" title="Desactivar">
                                                     <UserMinus size={14} />
                                                 </button>
                                             ) : (
                                                 <button onClick={() => updateBarber(barber.id, { is_active: true })}
-                                                    className="px-3 h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-space-success bg-space-card2 border border-space-success/20 hover:bg-space-success hover:text-white transition-all shadow-sm">
+                                                    className="h-9 rounded-xl border border-[#22c55e]/20 bg-[#1d2a23] px-3 text-[10px] font-extrabold text-[#22c55e] transition hover:bg-[#22c55e] hover:text-white">
                                                     Activar
                                                 </button>
                                             )}
                                         </div>
                                         <button onClick={() => handleHardDelete(barber)}
-                                            className="w-9 h-9 flex items-center justify-center rounded-xl bg-space-danger/10 text-space-danger hover:bg-space-danger hover:text-white transition-all border border-space-danger/20 shadow-sm"
-                                            title="Eliminar permanentemente">
+                                            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#ef4444]/20 text-[#ef4444] transition hover:bg-[#ef4444] hover:text-white" title="Eliminar permanentemente">
                                             <ShieldAlert size={14} />
                                         </button>
                                     </div>
