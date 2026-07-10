@@ -199,7 +199,7 @@ export default function BarbersPage() {
         return (
             <DashboardLayout>
                 <div className="text-center py-12">
-                    <p className="text-space-muted">No tienes permisos para gestionar barberos.</p>
+                    <p className="text-[#95ab8a]">No tienes permisos para gestionar barberos.</p>
                 </div>
             </DashboardLayout>
         );
@@ -348,37 +348,53 @@ export default function BarbersPage() {
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2 mb-1.5 block">Biografía</label>
+                                <label className="text-[10px] font-black text-[#95ab8a] uppercase tracking-[0.2em] ml-2 mb-1.5 block">Biografía</label>
                                 <textarea value={formData.bio}
                                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                    className="w-full px-5 py-3 bg-space-card2 border border-space-border/40 rounded-2xl text-sm font-medium text-space-text focus:bg-space-card focus:ring-4 focus:ring-space-primary/10 focus:border-space-primary transition-all outline-none placeholder-space-muted/40 resize-none min-h-[80px]" placeholder="Información sobre el barbero" />
+                                    className="w-full px-5 py-3 rounded-2xl text-sm font-medium transition-all outline-none resize-none min-h-[80px] placeholder-[#95ab8a]/40"
+                                    style={{ background: '#1d2a23', border: '1px solid #243529', color: '#f0f4ee' }}
+                                    placeholder="Información sobre el barbero" />
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-black text-space-muted uppercase tracking-[0.2em] ml-2 mb-1.5 block">Servicios que ofrece <span className="text-space-danger">*</span></label>
+                                <label className="text-[10px] font-black text-[#95ab8a] uppercase tracking-[0.2em] ml-2 mb-1.5 block">
+                                    Servicios que ofrece <span className="text-[#ef4444]">*</span>
+                                </label>
                                 {services.length === 0 ? (
-                                    <p className="text-sm text-space-muted italic p-4 bg-neutral-50 rounded-xl border border-dashed border-space-border">No hay servicios creados aún. Ve a la página de Servicios primero.</p>
+                                    <p className="text-sm text-[#95ab8a] italic p-4 rounded-xl border border-dashed" style={{ borderColor: '#243529' }}>
+                                        No hay servicios creados aún. Ve a la página de Servicios primero.
+                                    </p>
                                 ) : (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-space-border/30 rounded-2xl p-3 bg-space-card2/50">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto rounded-2xl p-3 border" style={{ background: '#1d2a23', borderColor: '#243529' }}>
                                         {services.map((service) => (
                                             <label key={service.id}
-                                                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${selectedServices.includes(service.id) ? 'bg-space-card border-space-primary shadow-sm' : 'bg-transparent border-transparent hover:bg-space-card/50'}`}>
+                                                className="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border"
+                                                style={{
+                                                    background: selectedServices.includes(service.id) ? '#131c17' : 'transparent',
+                                                    borderColor: selectedServices.includes(service.id) ? '#9bc287' : 'transparent',
+                                                }}>
                                                 <input type="checkbox"
                                                     checked={selectedServices.includes(service.id)}
                                                     onChange={() => toggleService(service.id)}
-                                                    className="w-4 h-4 text-space-primary rounded border-space-border focus:ring-space-primary" />
-                                                <span className="text-xs font-bold text-space-text truncate">{service.name}</span>
+                                                    className="w-4 h-4 rounded accent-[#9bc287]" />
+                                                <span className="text-xs font-bold text-[#f0f4ee] truncate">{service.name}</span>
                                             </label>
                                         ))}
                                     </div>
                                 )}
-                                {formErrors.services && <p className="mt-1.5 text-[10px] font-bold text-space-danger uppercase ml-2 select-none tracking-wider">{formErrors.services}</p>}
+                                {formErrors.services && <p className="mt-1.5 text-[10px] font-bold text-[#ef4444] uppercase ml-2 select-none tracking-wider">{formErrors.services}</p>}
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-space-border sticky bottom-0 bg-space-card z-10 pb-2">
-                            <button type="button" onClick={handleCloseModal} className="btn-secondary w-full sm:w-auto h-12 rounded-2xl font-bold uppercase tracking-widest text-[10px]">Cancelar</button>
-                            <button type="submit" disabled={loading} className="btn-primary w-full sm:w-auto h-12 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-space-primary/15">
+                        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t sticky bottom-0 z-10 pb-2" style={{ borderColor: '#243529', background: '#131c17' }}>
+                            <button type="button" onClick={handleCloseModal}
+                                className="w-full sm:w-auto h-12 px-6 rounded-full font-bold uppercase tracking-widest text-[10px] border transition"
+                                style={{ borderColor: '#243529', color: '#95ab8a' }}>
+                                Cancelar
+                            </button>
+                            <button type="submit" disabled={loading}
+                                className="w-full sm:w-auto h-12 px-6 rounded-full font-black uppercase tracking-widest text-[10px] transition disabled:opacity-50"
+                                style={{ background: '#9bc287', color: '#22321c' }}>
                                 {loading ? 'Guardando...' : editingBarber ? 'Actualizar' : 'Crear'}
                             </button>
                         </div>
@@ -387,30 +403,32 @@ export default function BarbersPage() {
 
                 {/* Limit Gating Modal */}
                 <Modal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)}
-                    title="👑 Plan Superior Requerido" size="md">
+                    title="Plan Superior Requerido" size="md">
                     <div className="p-6 text-center space-y-6">
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mx-auto" style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}>
                             <ShieldAlert size={32} />
                         </div>
                         <div className="space-y-2">
-                            <h3 className="text-xl font-bold text-space-text">Límite de Barberos Alcanzado</h3>
-                            <p className="text-space-muted text-sm leading-relaxed">
-                                Tu plan actual <strong>{subscription?.subscription_tiers?.name || 'Spacey Starter'}</strong> te permite tener hasta <strong>{subscription?.subscription_tiers?.max_barbers || 3} barberos</strong> activos.
+                            <h3 className="text-xl font-bold text-[#f0f4ee]">Límite de Barberos Alcanzado</h3>
+                            <p className="text-sm leading-relaxed text-[#95ab8a]">
+                                Tu plan actual <strong className="text-[#f0f4ee]">{subscription?.subscription_tiers?.name || 'Spacey Starter'}</strong> te permite tener hasta <strong className="text-[#f0f4ee]">{subscription?.subscription_tiers?.max_barbers || 3} barberos</strong> activos.
                             </p>
-                            <p className="text-space-muted text-xs leading-relaxed font-semibold">
+                            <p className="text-xs leading-relaxed font-semibold text-[#95ab8a]">
                                 Sube a un plan superior para expandir tu equipo, habilitar más cuentas de acceso y seguir creciendo de forma ordenada.
                             </p>
                         </div>
                         <div className="flex flex-col gap-3 pt-4">
                             <button
                                 onClick={() => navigate('/dashboard/billing')}
-                                className="btn-primary w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-lg shadow-space-primary/20"
+                                className="w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition"
+                                style={{ background: '#9bc287', color: '#22321c' }}
                             >
                                 Ver Planes y Precios <Plus size={16} />
                             </button>
                             <button
                                 onClick={() => setShowLimitModal(false)}
-                                className="btn-secondary w-full h-12 rounded-xl font-bold uppercase tracking-widest text-[10px]"
+                                className="w-full h-12 rounded-xl font-bold uppercase tracking-widest text-[10px] border transition"
+                                style={{ borderColor: '#243529', color: '#95ab8a' }}
                             >
                                 Volver
                             </button>

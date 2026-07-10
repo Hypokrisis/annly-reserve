@@ -17,8 +17,6 @@ interface Subscription {
     stripe_customer_id: string | null;
 }
 
-
-
 const PLANS = [
     {
         id: 'starter',
@@ -38,11 +36,13 @@ const PLANS = [
             'Estadísticas y Reportes Financieros',
             'Control de Inventario y Herramientas Pro'
         ],
-        color: 'text-gray-400',
-        bg: 'bg-gray-400/10',
-        border: 'border-space-border/40',
-        activeBorder: 'border-gray-400',
-        btn: 'bg-space-card hover:bg-space-border text-space-text',
+        iconColor: '#95ab8a',
+        iconBg: 'rgba(149,171,138,0.1)',
+        borderColor: '#243529',
+        activeBorderColor: '#95ab8a',
+        badgeBg: 'rgba(149,171,138,0.1)',
+        badgeColor: '#95ab8a',
+        buttonStyle: { background: '#1d2a23', color: '#f0f4ee', border: '1px solid #243529' } as React.CSSProperties,
         popular: false,
     },
     {
@@ -63,11 +63,13 @@ const PLANS = [
             'Gestión de Inventario de Productos',
             'Reportes avanzados y exportación de datos'
         ],
-        color: 'text-space-primary',
-        bg: 'bg-space-primary/10',
-        border: 'border-space-primary',
-        activeBorder: 'border-space-primary',
-        btn: 'bg-space-primary hover:bg-space-primary-dark text-white',
+        iconColor: '#9bc287',
+        iconBg: 'rgba(155,194,135,0.1)',
+        borderColor: '#9bc287',
+        activeBorderColor: '#9bc287',
+        badgeBg: 'rgba(155,194,135,0.1)',
+        badgeColor: '#9bc287',
+        buttonStyle: { background: '#9bc287', color: '#22321c' } as React.CSSProperties,
         popular: true,
     },
     {
@@ -85,11 +87,13 @@ const PLANS = [
             'Reportes avanzados y exportación de datos'
         ],
         missingFeatures: [],
-        color: 'text-yellow-400',
-        bg: 'bg-yellow-400/10',
-        border: 'border-yellow-400/30',
-        activeBorder: 'border-yellow-400',
-        btn: 'bg-gradient-to-r from-yellow-500 to-yellow-400 hover:from-yellow-400 hover:to-yellow-300 text-black font-black',
+        iconColor: '#f59e0b',
+        iconBg: 'rgba(245,158,11,0.1)',
+        borderColor: 'rgba(245,158,11,0.3)',
+        activeBorderColor: '#f59e0b',
+        badgeBg: 'rgba(245,158,11,0.1)',
+        badgeColor: '#f59e0b',
+        buttonStyle: { background: 'linear-gradient(135deg, #f59e0b, #fbbf24)', color: '#1a1000' } as React.CSSProperties,
         popular: false,
     },
 ];
@@ -159,10 +163,7 @@ export default function SubscriptionPage() {
         setIsLoadingPortal(true);
         try {
             const { data, error } = await supabase.functions.invoke('create-portal-session', {
-                body: {
-                    businessId: currentBusiness.id,
-                    returnUrl: `${window.location.origin}/dashboard/billing`,
-                }
+                body: { businessId: currentBusiness.id, returnUrl: `${window.location.origin}/dashboard/billing` }
             });
             if (error) throw error;
             if (data?.url) window.location.href = data.url;
@@ -188,61 +189,63 @@ export default function SubscriptionPage() {
 
                 {/* Header */}
                 <div className="text-center space-y-3">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-space-primary/10 text-space-primary text-xs font-black uppercase tracking-widest border border-space-primary/20">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest"
+                        style={{ background: 'rgba(155,194,135,0.1)', color: '#9bc287', border: '1px solid rgba(155,194,135,0.2)' }}>
                         <ShieldCheck size={14} /> 14 Días de Prueba Gratis
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-space-text tracking-tight">
-                        {hasActiveSub ? 'Tu Plan Actual' : 'Elige tu'} <span className="text-space-primary">{hasActiveSub ? '' : 'Plan'}</span>
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tight text-[#f0f4ee]">
+                        {hasActiveSub ? 'Tu Plan Actual' : 'Elige tu'} <span className="text-[#9bc287]">{hasActiveSub ? '' : 'Plan'}</span>
                     </h1>
                 </div>
 
-                {/* Loading State */}
                 {loadingSub && (
                     <div className="flex justify-center py-12">
-                        <Loader2 size={32} className="animate-spin text-space-primary" />
+                        <Loader2 size={32} className="animate-spin" style={{ color: '#9bc287' }} />
                     </div>
                 )}
 
-                {/* PAST DUE ALERT */}
+                {/* Past due alert */}
                 {!loadingSub && isPastDue && (
-                    <div className="flex items-start gap-4 p-6 bg-red-50 border-2 border-red-300 rounded-3xl">
-                        <AlertTriangle size={28} className="text-space-danger flex-shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-4 p-6 rounded-3xl border-2" style={{ background: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.3)' }}>
+                        <AlertTriangle size={28} style={{ color: '#ef4444' }} className="flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
-                            <h3 className="font-black text-space-danger text-lg mb-1">Pago Fallido — Acción Requerida</h3>
-                            <p className="text-red-700 text-sm">Tu pago mensual no pudo procesarse. Actualiza tu método de pago para evitar la suspensión del servicio.</p>
+                            <h3 className="font-black text-lg mb-1" style={{ color: '#ef4444' }}>Pago Fallido — Acción Requerida</h3>
+                            <p className="text-sm text-[#95ab8a]">Tu pago mensual no pudo procesarse. Actualiza tu método de pago para evitar la suspensión del servicio.</p>
                         </div>
-                        <button
-                            onClick={handleManagePortal}
-                            disabled={isLoadingPortal}
-                            className="flex items-center gap-2 px-5 py-3 bg-space-danger text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-700 transition whitespace-nowrap"
-                        >
+                        <button onClick={handleManagePortal} disabled={isLoadingPortal}
+                            className="flex items-center gap-2 px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-widest whitespace-nowrap transition disabled:opacity-50"
+                            style={{ background: '#ef4444', color: 'white' }}>
                             {isLoadingPortal ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
                             Actualizar Pago
                         </button>
                     </div>
                 )}
 
-                {/* ACTIVE SUBSCRIPTION CARD */}
+                {/* Active subscription card */}
                 {!loadingSub && hasActiveSub && activePlan && (
-                    <div className={`p-8 rounded-3xl border-2 ${activePlan.activeBorder} bg-space-card relative overflow-hidden`}>
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-space-primary/5 rounded-full -mr-32 -mt-32 pointer-events-none" />
+                    <div className="p-8 rounded-3xl border-2 relative overflow-hidden" style={{ background: '#131c17', borderColor: activePlan.activeBorderColor }}>
+                        <div className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none" style={{ background: 'rgba(155,194,135,0.04)', marginRight: '-8rem', marginTop: '-8rem' }} />
                         <div className="relative flex flex-col md:flex-row md:items-center gap-6">
-                            <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-2xl ${activePlan.bg} ${activePlan.color} flex items-center justify-center flex-shrink-0`}>
-                                    <activePlan.icon size={32} />
-                                </div>
+                            <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
+                                style={{ background: activePlan.iconBg, color: activePlan.iconColor }}>
+                                <activePlan.icon size={32} />
+                            </div>
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-1">
-                                    <h2 className="text-2xl font-black text-space-text">Spacey {activePlan.name}</h2>
-                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest ${
-                                        isTrialing ? 'bg-blue-100 text-blue-700' :
-                                        isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                    }`}>
+                                    <h2 className="text-2xl font-black text-[#f0f4ee]">Spacey {activePlan.name}</h2>
+                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest"
+                                        style={isTrialing
+                                            ? { background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)' }
+                                            : isActive
+                                                ? { background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.2)' }
+                                                : { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
+                                        }>
                                         <BadgeCheck size={12} />
                                         {isTrialing ? `Trial · ${daysLeft} días restantes` : isActive ? 'Activo' : 'Cancelado'}
                                     </span>
                                 </div>
                                 {subscription?.current_period_end && (
-                                    <div className="flex items-center gap-2 text-space-muted text-sm font-medium">
+                                    <div className="flex items-center gap-2 text-sm font-medium text-[#95ab8a]">
                                         <CalendarClock size={14} />
                                         {isTrialing
                                             ? `Trial vence el ${formatDate(subscription.current_period_end)}`
@@ -254,17 +257,18 @@ export default function SubscriptionPage() {
                                 )}
                             </div>
                             <div className="flex flex-col sm:flex-row gap-3">
-                                <button
-                                    onClick={loadSubscription}
-                                    className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border-2 border-space-border text-space-muted hover:text-space-text hover:border-space-text text-xs font-black uppercase tracking-widest transition"
-                                >
+                                <button onClick={loadSubscription}
+                                    className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition"
+                                    style={{ borderColor: '#243529', color: '#95ab8a' }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#f0f4ee'; e.currentTarget.style.color = '#f0f4ee'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#243529'; e.currentTarget.style.color = '#95ab8a'; }}>
                                     <RefreshCw size={14} /> Actualizar
                                 </button>
-                                <button
-                                    onClick={handleManagePortal}
-                                    disabled={isLoadingPortal}
-                                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-space-text text-white text-xs font-black uppercase tracking-widest hover:bg-space-primary transition disabled:opacity-50"
-                                >
+                                <button onClick={handleManagePortal} disabled={isLoadingPortal}
+                                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition disabled:opacity-50"
+                                    style={{ background: '#f0f4ee', color: '#22321c' }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = '#9bc287'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = '#f0f4ee'; }}>
                                     {isLoadingPortal ? <Loader2 size={14} className="animate-spin" /> : <Settings2 size={14} />}
                                     Gestionar Plan
                                 </button>
@@ -273,27 +277,29 @@ export default function SubscriptionPage() {
                     </div>
                 )}
 
-                {/* TRIAL ENDING SOON WARNING */}
+                {/* Trial ending soon */}
                 {!loadingSub && isTrialing && daysLeft <= 3 && (
-                    <div className="flex items-center gap-4 p-5 bg-amber-50 border-2 border-amber-300 rounded-2xl">
-                        <AlertTriangle size={22} className="text-amber-600 flex-shrink-0" />
-                        <p className="text-amber-800 text-sm font-bold flex-1">
+                    <div className="flex items-center gap-4 p-5 rounded-2xl border-2" style={{ background: 'rgba(245,158,11,0.08)', borderColor: 'rgba(245,158,11,0.3)' }}>
+                        <AlertTriangle size={22} style={{ color: '#f59e0b' }} className="flex-shrink-0" />
+                        <p className="text-sm font-bold flex-1 text-[#f0f4ee]">
                             Tu periodo de prueba vence en <strong>{daysLeft} {daysLeft === 1 ? 'día' : 'días'}</strong>. Agrega un método de pago para no perder el acceso.
                         </p>
-                        <button onClick={handleManagePortal} disabled={isLoadingPortal} className="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-amber-600 transition whitespace-nowrap">
+                        <button onClick={handleManagePortal} disabled={isLoadingPortal}
+                            className="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition whitespace-nowrap"
+                            style={{ background: '#f59e0b', color: '#1a0f00' }}>
                             Añadir Tarjeta
                         </button>
                     </div>
                 )}
 
-                {/* PLAN CARDS — always shown, even on active sub */}
+                {/* Plan cards */}
                 {!loadingSub && (
                     <>
                         <div className="flex items-center gap-4">
-                            <h2 className="text-lg font-black text-space-text uppercase tracking-tight">
+                            <h2 className="text-lg font-black uppercase tracking-tight text-[#f0f4ee]">
                                 {hasActiveSub ? 'Cambiar de Plan' : 'Selecciona un Plan'}
                             </h2>
-                            <span className="h-px flex-1 bg-space-border" />
+                            <span className="h-px flex-1" style={{ background: '#243529' }} />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -303,40 +309,49 @@ export default function SubscriptionPage() {
                                 return (
                                     <div
                                         key={plan.id}
-                                        className={`relative flex flex-col p-7 rounded-3xl border-2 transition-all duration-300 bg-space-card
-                                            ${isCurrent ? `${plan.activeBorder} shadow-lg` : plan.popular ? 'border-space-primary md:-translate-y-3 shadow-[0_0_40px_-10px_rgba(123,160,108,0.3)]' : 'border-space-border/40 hover:border-space-border'}
-                                        `}
+                                        className="relative flex flex-col p-7 rounded-3xl border-2 transition-all duration-300"
+                                        style={{
+                                            background: '#131c17',
+                                            borderColor: isCurrent ? plan.activeBorderColor : plan.popular ? plan.borderColor : '#243529',
+                                            transform: !isCurrent && plan.popular ? 'translateY(-12px)' : 'none',
+                                            boxShadow: !isCurrent && plan.popular ? `0 0 40px -10px rgba(155,194,135,0.3)` : 'none',
+                                        }}
                                     >
                                         {plan.popular && !isCurrent && (
-                                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-space-primary text-white text-xs font-black uppercase tracking-widest rounded-full">
+                                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest"
+                                                style={{ background: '#9bc287', color: '#22321c' }}>
                                                 Más Popular
                                             </div>
                                         )}
                                         {isCurrent && (
-                                            <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 ${plan.bg} ${plan.color} border ${plan.activeBorder} text-xs font-black uppercase tracking-widest rounded-full`}>
+                                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border"
+                                                style={{ background: plan.badgeBg, color: plan.badgeColor, borderColor: plan.activeBorderColor }}>
                                                 ✓ Plan Actual
                                             </div>
                                         )}
 
                                         <div className="mb-5">
-                                            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl ${plan.bg} ${plan.color} flex items-center justify-center mb-5`}>
+                                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
+                                                style={{ background: plan.iconBg, color: plan.iconColor }}>
                                                 <Icon size={24} />
                                             </div>
-                                            <h3 className="text-lg font-bold text-space-text mb-1">Spacey {plan.name}</h3>
-                                            <p className="text-space-muted text-sm leading-relaxed">{plan.description}</p>
+                                            <h3 className="text-lg font-bold text-[#f0f4ee] mb-1">Spacey {plan.name}</h3>
+                                            <p className="text-sm leading-relaxed text-[#95ab8a]">{plan.description}</p>
                                         </div>
 
                                         <div className="mb-7 flex items-end gap-1">
-                                            <span className="text-4xl font-black text-space-text tracking-tighter">{plan.price}</span>
-                                            <span className="text-space-muted font-medium mb-1">/mes</span>
+                                            <span className="text-4xl font-black tracking-tighter text-[#f0f4ee]">{plan.price}</span>
+                                            <span className="font-medium mb-1 text-[#95ab8a]">/mes</span>
                                         </div>
 
                                         <button
                                             disabled={isLoadingCheckout !== null || isCurrent}
                                             onClick={() => !isCurrent && handleSubscribe(plan.id)}
-                                            className={`w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all duration-200 uppercase tracking-widest text-xs font-bold mb-6 disabled:opacity-50
-                                                ${isCurrent ? 'bg-space-bg text-space-muted cursor-not-allowed border border-space-border' : plan.btn}
-                                            `}
+                                            className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all duration-200 uppercase tracking-widest text-xs font-bold mb-6 disabled:opacity-50"
+                                            style={isCurrent
+                                                ? { background: '#1d2a23', color: '#95ab8a', border: '1px solid #243529', cursor: 'not-allowed' }
+                                                : plan.buttonStyle
+                                            }
                                         >
                                             {isLoadingCheckout === plan.id ? (
                                                 <Loader2 size={15} className="animate-spin" />
@@ -350,18 +365,19 @@ export default function SubscriptionPage() {
                                         <div className="space-y-3 flex-1">
                                             {plan.features.map((f, i) => (
                                                 <div key={i} className="flex items-start gap-3">
-                                                    <div className="mt-0.5 w-5 h-5 rounded-full bg-space-primary/10 flex items-center justify-center flex-shrink-0">
-                                                        <Check size={11} className="text-space-primary" />
+                                                    <div className="mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                                                        style={{ background: 'rgba(155,194,135,0.1)' }}>
+                                                        <Check size={11} style={{ color: '#9bc287' }} />
                                                     </div>
-                                                    <span className="text-sm text-space-text/90">{f}</span>
+                                                    <span className="text-sm text-[#f0f4ee]/90">{f}</span>
                                                 </div>
                                             ))}
                                             {plan.missingFeatures.map((f, i) => (
                                                 <div key={i} className="flex items-start gap-3 opacity-35">
-                                                    <div className="mt-0.5 w-5 h-5 rounded-full bg-space-bg flex items-center justify-center flex-shrink-0 border border-space-border">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-space-muted" />
+                                                    <div className="mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border" style={{ background: '#090d0b', borderColor: '#243529' }}>
+                                                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#95ab8a' }} />
                                                     </div>
-                                                    <span className="text-sm text-space-text">{f}</span>
+                                                    <span className="text-sm text-[#f0f4ee]">{f}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -372,13 +388,12 @@ export default function SubscriptionPage() {
                     </>
                 )}
 
-                {/* Footer Info */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4 text-space-muted text-xs font-bold uppercase tracking-widest">
-                    <span className="flex items-center gap-2"><ShieldCheck size={14} className="text-space-primary" /> Pagos 100% seguros via Stripe</span>
-                    <span className="flex items-center gap-2"><CreditCard size={14} className="text-space-primary" /> Cancela en cualquier momento</span>
-                    <span className="flex items-center gap-2"><BadgeCheck size={14} className="text-space-primary" /> 14 días de prueba gratis</span>
+                {/* Footer */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4 text-xs font-bold uppercase tracking-widest text-[#95ab8a]">
+                    <span className="flex items-center gap-2"><ShieldCheck size={14} style={{ color: '#9bc287' }} /> Pagos 100% seguros via Stripe</span>
+                    <span className="flex items-center gap-2"><CreditCard size={14} style={{ color: '#9bc287' }} /> Cancela en cualquier momento</span>
+                    <span className="flex items-center gap-2"><BadgeCheck size={14} style={{ color: '#9bc287' }} /> 14 días de prueba gratis</span>
                 </div>
-
             </div>
         </DashboardLayout>
     );

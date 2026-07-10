@@ -28,10 +28,10 @@ interface Member {
 }
 
 const ROLE_META: Record<string, { label: string; icon: typeof Scissors; color: string }> = {
-    barber: { label: 'Barbero', icon: Scissors, color: 'text-space-primary' },
-    admin: { label: 'Admin', icon: Shield, color: 'text-space-yellow' },
-    member: { label: 'Recepcionista', icon: User, color: 'text-space-muted' },
-    owner: { label: 'Dueño', icon: Shield, color: 'text-space-primary' },
+    barber: { label: 'Barbero', icon: Scissors, color: 'text-[#9bc287]' },
+    admin: { label: 'Admin', icon: Shield, color: 'text-[#f59e0b]' },
+    member: { label: 'Recepcionista', icon: User, color: 'text-[#95ab8a]' },
+    owner: { label: 'Dueño', icon: Shield, color: 'text-[#9bc287]' },
 };
 
 export default function TeamPage() {
@@ -108,7 +108,6 @@ export default function TeamPage() {
 
             if (error) throw error;
 
-            // Auto-create barber record so slot availability works immediately
             if (form.role === 'barber') {
                 const { data: existing } = await supabase
                     .from('barbers')
@@ -161,16 +160,20 @@ export default function TeamPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-4xl mx-auto animate-fade-up pb-20">
+            <div className="max-w-4xl mx-auto pb-20">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h1 className="text-xl font-black text-space-text tracking-tight">Equipo</h1>
-                        <p className="text-space-muted text-[10px] font-bold uppercase tracking-widest">
+                        <h1 className="text-xl font-extrabold tracking-tight text-[#f0f4ee]">Equipo</h1>
+                        <p className="text-[#95ab8a] text-[10px] font-bold uppercase tracking-widest mt-0.5">
                             Invita y gestiona tu staff
                         </p>
                     </div>
-                    <button onClick={() => setModalOpen(true)} className="btn-primary h-11 px-5 gap-2">
+                    <button
+                        onClick={() => setModalOpen(true)}
+                        className="h-11 px-5 rounded-full text-sm font-extrabold flex items-center gap-2 transition"
+                        style={{ background: '#9bc287', color: '#22321c' }}
+                    >
                         <UserPlus size={16} /> Invitar al equipo
                     </button>
                 </div>
@@ -181,12 +184,12 @@ export default function TeamPage() {
                     <div className="space-y-8">
                         {/* Active members */}
                         <section>
-                            <h2 className="text-sm font-black text-space-text uppercase tracking-wide mb-3">
+                            <h2 className="text-sm font-black uppercase tracking-wide mb-3 text-[#f0f4ee]">
                                 Miembros activos ({members.length})
                             </h2>
                             {members.length === 0 ? (
-                                <div className="bg-space-card border border-space-border rounded-2xl p-8 text-center">
-                                    <p className="text-space-muted text-sm">Aún no hay miembros activos. Invita a tu primer empleado.</p>
+                                <div className="rounded-[20px] p-8 text-center border" style={{ background: '#131c17', borderColor: '#243529' }}>
+                                    <p className="text-sm text-[#95ab8a]">Aún no hay miembros activos. Invita a tu primer empleado.</p>
                                 </div>
                             ) : (
                                 <div className="space-y-2">
@@ -196,16 +199,18 @@ export default function TeamPage() {
                                         const meta = ROLE_META[displayRole] || ROLE_META.member;
                                         const Icon = meta.icon;
                                         return (
-                                            <div key={m.user_id} className="bg-space-card border border-space-border rounded-2xl p-4 flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-space-card2 flex items-center justify-center text-sm font-bold text-space-text flex-shrink-0">
+                                            <div key={m.user_id} className="rounded-2xl p-4 flex items-center gap-3 border"
+                                                style={{ background: '#131c17', borderColor: '#243529' }}>
+                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0"
+                                                    style={{ background: '#1d2a23', color: '#f0f4ee' }}>
                                                     {m.name?.[0]?.toUpperCase() || '?'}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-bold text-space-text text-sm truncate">
+                                                    <p className="font-bold text-sm truncate text-[#f0f4ee]">
                                                         {m.name}
-                                                        {isOwner && <span className="ml-2 text-[9px] font-extrabold uppercase tracking-widest text-space-muted">(tú)</span>}
+                                                        {isOwner && <span className="ml-2 text-[9px] font-extrabold uppercase tracking-widest text-[#95ab8a]">(tú)</span>}
                                                     </p>
-                                                    <p className="text-[11px] text-space-muted truncate">{m.email}</p>
+                                                    <p className="text-[11px] text-[#95ab8a] truncate">{m.email}</p>
                                                 </div>
                                                 <span className={`flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider ${meta.color}`}>
                                                     <Icon size={12} /> {meta.label}
@@ -220,20 +225,22 @@ export default function TeamPage() {
                         {/* Pending invitations */}
                         {pendingInvites.length > 0 && (
                             <section>
-                                <h2 className="text-sm font-black text-space-text uppercase tracking-wide mb-3">
+                                <h2 className="text-sm font-black uppercase tracking-wide mb-3 text-[#f0f4ee]">
                                     Invitaciones pendientes ({pendingInvites.length})
                                 </h2>
                                 <div className="space-y-2">
                                     {pendingInvites.map(inv => {
                                         const meta = ROLE_META[inv.role] || ROLE_META.member;
                                         return (
-                                            <div key={inv.id} className="bg-space-card border border-space-border/60 border-dashed rounded-2xl p-4 flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-space-yellow/10 flex items-center justify-center flex-shrink-0">
-                                                    <Clock size={16} className="text-space-yellow" />
+                                            <div key={inv.id} className="rounded-2xl p-4 flex items-center gap-3 border border-dashed"
+                                                style={{ background: '#131c17', borderColor: '#243529' }}>
+                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                                                    style={{ background: 'rgba(245,158,11,0.1)' }}>
+                                                    <Clock size={16} style={{ color: '#f59e0b' }} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-bold text-space-text text-sm truncate">{inv.name}</p>
-                                                    <p className="text-[11px] text-space-muted truncate flex items-center gap-1">
+                                                    <p className="font-bold text-sm truncate text-[#f0f4ee]">{inv.name}</p>
+                                                    <p className="text-[11px] text-[#95ab8a] truncate flex items-center gap-1">
                                                         <Mail size={10} /> {inv.email} · {meta.label}
                                                     </p>
                                                 </div>
@@ -241,7 +248,10 @@ export default function TeamPage() {
                                                     href={buildWhatsAppMessage(inv)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex items-center gap-1.5 px-3 h-9 rounded-xl bg-space-primary/10 text-space-primary text-[10px] font-extrabold uppercase tracking-wider hover:bg-space-primary hover:text-space-card transition-all flex-shrink-0"
+                                                    className="flex items-center gap-1.5 px-3 h-9 rounded-xl text-[10px] font-extrabold uppercase tracking-wider transition-all flex-shrink-0"
+                                                    style={{ background: 'rgba(155,194,135,0.1)', color: '#9bc287', border: '1px solid rgba(155,194,135,0.2)' }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = '#9bc287'; e.currentTarget.style.color = '#22321c'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(155,194,135,0.1)'; e.currentTarget.style.color = '#9bc287'; }}
                                                 >
                                                     <Send size={12} /> WhatsApp
                                                 </a>
@@ -282,7 +292,7 @@ export default function TeamPage() {
                             placeholder="787-555-1234"
                         />
                         <div>
-                            <label className="input-label">Rol</label>
+                            <label className="mb-1.5 ml-2 block text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#95ab8a]">Rol</label>
                             <div className="grid grid-cols-3 gap-2">
                                 {[
                                     { id: 'barber', label: 'Barbero', icon: Scissors },
@@ -293,11 +303,12 @@ export default function TeamPage() {
                                         key={r.id}
                                         type="button"
                                         onClick={() => setForm(p => ({ ...p, role: r.id }))}
-                                        className={`h-16 rounded-2xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${
-                                            form.role === r.id
-                                                ? 'border-space-primary bg-space-primary/5 text-space-primary'
-                                                : 'border-space-border text-space-muted hover:border-space-primary/40'
-                                        }`}
+                                        className="h-16 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all border-2"
+                                        style={{
+                                            borderColor: form.role === r.id ? '#9bc287' : '#243529',
+                                            background: form.role === r.id ? 'rgba(155,194,135,0.05)' : 'transparent',
+                                            color: form.role === r.id ? '#9bc287' : '#95ab8a',
+                                        }}
                                     >
                                         <r.icon size={16} />
                                         <span className="text-[10px] font-extrabold uppercase tracking-wider">{r.label}</span>
@@ -305,42 +316,58 @@ export default function TeamPage() {
                                 ))}
                             </div>
                         </div>
-                        <button type="submit" disabled={submitting} className="btn-primary w-full h-11">
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="w-full h-11 rounded-full text-sm font-extrabold transition disabled:opacity-50"
+                            style={{ background: '#9bc287', color: '#22321c' }}
+                        >
                             {submitting ? 'Generando...' : 'Generar invitación'}
                         </button>
                     </form>
                 ) : (
                     <div className="space-y-5">
-                        <div className="bg-space-card2/50 rounded-2xl p-4 space-y-3">
+                        <div className="rounded-2xl p-4 space-y-3" style={{ background: '#1d2a23', border: '1px solid #243529' }}>
                             <div>
-                                <p className="text-[9px] font-extrabold uppercase tracking-widest text-space-muted mb-1">Enlace de activación</p>
+                                <p className="text-[9px] font-extrabold uppercase tracking-widest mb-1 text-[#95ab8a]">Enlace de activación</p>
                                 <div className="flex items-center gap-2">
-                                    <code className="text-xs text-space-text break-all flex-1 bg-space-card rounded-lg p-2 border border-space-border/50">
+                                    <code className="text-xs break-all flex-1 p-2 rounded-lg border text-[#f0f4ee]"
+                                        style={{ background: '#131c17', borderColor: '#243529' }}>
                                         {buildJoinLink(createdInvite.invitation_code)}
                                     </code>
-                                    <button onClick={() => copyLink(createdInvite.invitation_code)} className="p-2 text-space-primary hover:opacity-70 flex-shrink-0">
+                                    <button onClick={() => copyLink(createdInvite.invitation_code)}
+                                        className="p-2 flex-shrink-0 transition-opacity hover:opacity-70"
+                                        style={{ color: '#9bc287' }}>
                                         {copied ? <Check size={16} /> : <Copy size={16} />}
                                     </button>
                                 </div>
                             </div>
                             <div>
-                                <p className="text-[9px] font-extrabold uppercase tracking-widest text-space-muted mb-1">Contraseña temporal</p>
-                                <code className="text-sm font-bold text-space-text bg-space-card rounded-lg p-2 border border-space-border/50 inline-block">
+                                <p className="text-[9px] font-extrabold uppercase tracking-widest mb-1 text-[#95ab8a]">Contraseña temporal</p>
+                                <code className="text-sm font-bold p-2 rounded-lg border inline-block text-[#f0f4ee]"
+                                    style={{ background: '#131c17', borderColor: '#243529' }}>
                                     {createdInvite.temp_password}
                                 </code>
                             </div>
-                            <p className="text-[10px] text-space-muted">El enlace expira en 48 horas. El empleado establecerá su contraseña definitiva al activar.</p>
+                            <p className="text-[10px] text-[#95ab8a]">El enlace expira en 48 horas. El empleado establecerá su contraseña definitiva al activar.</p>
                         </div>
 
                         <a
                             href={buildWhatsAppMessage(createdInvite)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="btn-primary w-full h-11 gap-2"
+                            className="w-full h-11 rounded-full text-sm font-extrabold flex items-center justify-center gap-2 transition"
+                            style={{ background: '#9bc287', color: '#22321c' }}
                         >
                             <Send size={16} /> Compartir por WhatsApp
                         </a>
-                        <button onClick={closeModal} className="btn-secondary w-full h-11">
+                        <button
+                            onClick={closeModal}
+                            className="w-full h-11 rounded-full text-sm font-bold border transition"
+                            style={{ borderColor: '#243529', color: '#95ab8a' }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#9bc287'; e.currentTarget.style.color = '#9bc287'; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#243529'; e.currentTarget.style.color = '#95ab8a'; }}
+                        >
                             Listo
                         </button>
                     </div>
