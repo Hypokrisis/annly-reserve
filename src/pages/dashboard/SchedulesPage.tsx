@@ -110,7 +110,7 @@ export default function SchedulesPage() {
         return (
             <DashboardLayout>
                 <div className="text-center py-12">
-                    <p className="text-space-muted">No tienes permisos para gestionar horarios.</p>
+                    <p style={{ color: '#95ab8a' }}>No tienes permisos para gestionar horarios.</p>
                 </div>
             </DashboardLayout>
         );
@@ -126,8 +126,8 @@ export default function SchedulesPage() {
                 </div>
 
                 {/* Barber Selector */}
-                <div className="card p-5 mb-6">
-                    <label className="input-label">Selecciona un barbero</label>
+                <div className="rounded-[20px] border border-[#243529] bg-[#131c17] p-5 mb-6">
+                    <label className="mb-1.5 ml-2 block text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#95ab8a]">Selecciona un barbero</label>
                     <div className="relative">
                         <select
                             value={selectedBarber?.id || ''}
@@ -142,7 +142,7 @@ export default function SchedulesPage() {
                                 <option key={barber.id} value={barber.id}>{barber.name}</option>
                             ))}
                         </select>
-                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-space-muted pointer-events-none" size={16} />
+                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" size={16} style={{ color: '#95ab8a' }} />
                     </div>
                 </div>
 
@@ -154,28 +154,38 @@ export default function SchedulesPage() {
                         <div className="space-y-3">
                             {weekSchedule.map((day) => (
                                 <div key={day.dayOfWeek}
-                                    className={`card p-5 transition-all ${day.isActive ? 'border-space-primary/30' : 'opacity-70'}`}>
+                                    className="rounded-[20px] p-5 transition-all"
+                                    style={{
+                                        background: '#131c17',
+                                        border: `1px solid ${day.isActive ? 'rgba(155,194,135,0.3)' : '#243529'}`,
+                                        opacity: day.isActive ? 1 : 0.7,
+                                    }}>
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                                         <div className="flex items-center gap-3">
                                             <label className="flex items-center gap-2.5 cursor-pointer">
                                                 <div onClick={() => handleToggleDay(day.dayOfWeek)}
-                                                    className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors cursor-pointer
-                                                        ${day.isActive ? 'bg-space-primary border-space-primary' : 'border-gray-300'}`}>
-                                                    {day.isActive && <Check size={12} className="text-white" />}
+                                                    className="w-5 h-5 rounded flex items-center justify-center border-2 transition-colors cursor-pointer"
+                                                    style={{
+                                                        background: day.isActive ? '#9bc287' : 'transparent',
+                                                        borderColor: day.isActive ? '#9bc287' : '#243529',
+                                                    }}>
+                                                    {day.isActive && <Check size={12} className="text-[#22321c]" />}
                                                 </div>
-                                                <span className={`font-semibold transition-colors ${day.isActive ? 'text-space-text' : 'text-space-muted'}`}>
+                                                <span className="font-semibold transition-colors" style={{ color: day.isActive ? '#f0f4ee' : '#95ab8a' }}>
                                                     {getDayName(day.dayOfWeek)}
                                                 </span>
                                             </label>
                                             {!day.isActive && (
-                                                <span className="badge-gray">Cerrado</span>
+                                                <span className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider" style={{ background: '#1d2a23', color: '#95ab8a' }}>
+                                                    Cerrado
+                                                </span>
                                             )}
                                         </div>
                                         <button
                                             onClick={() => handleCopyToAll(day.dayOfWeek)}
                                             disabled={!day.isActive}
-                                            className={`text-xs flex items-center gap-1.5 transition
-                                                ${day.isActive ? 'text-space-primary hover:text-space-primary-dark' : 'text-space-muted opacity-40 cursor-not-allowed'}`}>
+                                            className="text-xs flex items-center gap-1.5 transition"
+                                            style={{ color: day.isActive ? '#9bc287' : '#95ab8a', opacity: day.isActive ? 1 : 0.4, cursor: day.isActive ? 'pointer' : 'not-allowed' }}>
                                             <Copy size={12} /> Copiar a todos
                                         </button>
                                     </div>
@@ -183,7 +193,7 @@ export default function SchedulesPage() {
                                     {day.isActive && (
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="input-label flex items-center gap-1.5">
+                                                <label className="mb-1.5 ml-2 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em]" style={{ color: '#95ab8a' }}>
                                                     <Clock size={11} /> Inicio
                                                 </label>
                                                 <input type="time" value={day.startTime}
@@ -191,7 +201,7 @@ export default function SchedulesPage() {
                                                     className="input-field" />
                                             </div>
                                             <div>
-                                                <label className="input-label flex items-center gap-1.5">
+                                                <label className="mb-1.5 ml-2 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em]" style={{ color: '#95ab8a' }}>
                                                     <Clock size={11} /> Cierre
                                                 </label>
                                                 <input type="time" value={day.endTime}
@@ -206,18 +216,19 @@ export default function SchedulesPage() {
                             {/* Save Button */}
                             <div className="flex justify-end pt-4">
                                 <button onClick={handleSave} disabled={!hasChanges || loading}
-                                    className={`btn-primary ${!hasChanges || loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                    className="h-11 rounded-full px-6 text-sm font-extrabold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                    style={{ background: '#9bc287', color: '#22321c' }}>
                                     {loading ? 'Guardando...' : 'Guardar Horarios'}
                                 </button>
                             </div>
                         </div>
                     )
                 ) : (
-                    <div className="bg-space-card rounded-2xl p-12 text-center border-2 border-dashed border-space-border">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-space-card2 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Calendar size={28} className="text-space-muted" />
+                    <div className="rounded-[20px] p-12 text-center" style={{ background: '#131c17', border: '1px dashed #243529' }}>
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#1d2a23' }}>
+                            <Calendar size={28} style={{ color: '#95ab8a' }} />
                         </div>
-                        <p className="text-space-muted text-sm">
+                        <p className="text-sm" style={{ color: '#95ab8a' }}>
                             Selecciona un barbero para ver sus horarios
                         </p>
                     </div>
