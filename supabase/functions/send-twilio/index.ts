@@ -226,8 +226,8 @@ serve(async (req) => {
                     // Si hay template aprobado → usarlo. Si no → texto libre WhatsApp (funciona en ventana 24h).
                     if (tmplRescheduled) {
                         contentSid   = tmplRescheduled;
-                        // {{1}} nombre, {{2}} fecha anterior, {{3}} hora anterior, {{4}} nueva fecha, {{5}} nueva hora
-                        templateVars = { "1": customerName, "2": oldDate, "3": oldTime, "4": fullDate, "5": time };
+                        // {{1}} nombre, {{2}} servicio, {{3}} barbero, {{4}} nueva fecha, {{5}} nueva hora
+                        templateVars = { "1": customerName, "2": serviceName, "3": barberName, "4": fullDate, "5": time };
                     } else {
                         // Sin template: mensaje de texto libre (cliente dentro de ventana 24h)
                         smsFallback = `🔄 Tu cita fue reagendada, ${customerName}.\n` +
